@@ -1,14 +1,14 @@
 % Compare the transcription of r3 (hbP2 + 3 Runt binding sites) from the male/female 
 
 %% Load the Datasets
-% Eventually, I need to use the LoadMS2Sets, and excel tabs to pool
+% Eventually, I need to use the LoadMS2Sets, and spreadsheet tabs to pool
 % multiple datasets. But for now, I will just manually load the datasets.
-r3_Male1 = load('E:\YangJoon\LivemRNA\Data\DynamicsResults\2018-12-11-hbP2-r3-MS2V5-20sec-8\CompiledParticles.mat')
-r3_Male2 = load('E:\YangJoon\LivemRNA\Data\DynamicsResults\2018-12-11-hbP2-r3-MS2V5-20sec-9\CompiledParticles.mat')
+r3_Male1 = load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-12-11-hbP2-r3-MS2V5-20sec-8\CompiledParticles.mat')
+r3_Male2 = load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-12-11-hbP2-r3-MS2V5-20sec-9\CompiledParticles.mat')
 
-r3_Female1 = load('E:\YangJoon\LivemRNA\Data\DynamicsResults\2018-12-11-hbP2-r3-MS2V5-20sec-10\CompiledParticles.mat')
-r3_Female2 = load('E:\YangJoon\LivemRNA\Data\DynamicsResults\2018-12-11-hbP2-r3-MS2V5-20sec-12\CompiledParticles.mat')
-r3_Female3 = load('E:\YangJoon\LivemRNA\Data\DynamicsResults\2018-12-12-hbP2-r3-MS2V5-20sec-15\CompiledParticles.mat')
+r3_Female1 = load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-12-11-hbP2-r3-MS2V5-20sec-10\CompiledParticles.mat')
+r3_Female2 = load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-12-11-hbP2-r3-MS2V5-20sec-12\CompiledParticles.mat')
+r3_Female3 = load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-12-12-hbP2-r3-MS2V5-20sec-15\CompiledParticles.mat')
 
 %% Extract the fields that are needed for plotting
 
@@ -41,7 +41,7 @@ nc13_Female2 = r3_Female2.nc13;
 nc13_Female3 = r3_Female3.nc13;
 
 %%
-AP = 13;
+AP = 15;
 hold on
 errorbar(Time_Male1(nc13_Male1:end) - Time_Male1(nc13_Male1), MeanFluo_Male1(nc13_Male1:end, AP),...
             SDFluo_Male1(nc13_Male1:end, AP));
@@ -63,9 +63,9 @@ legend('Male1','Male2','Female1','Female2','Female3')
 r3Male = LoadMS2Sets('r3-male');
 r3Female = LoadMS2Sets('r3-female');
 
-%% (optional) Load the Runt dataset to show the gradient simultaneously
-RuntProtein_female = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\Runt-1min-200Hz-Female-Averaged.mat');
-RuntProtein_male = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\Runt-1min-200Hz-Male-Averaged.mat');
+%% (optional) Load the Runt protein dataset to show the gradient simultaneously
+RuntProtein_female = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\Runt-1min-200Hz-Female-Averaged.mat');
+RuntProtein_male = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\Runt-1min-200Hz-Male-Averaged.mat');
 %% 1) Mean Spot fluorescence
 % Use MeanVectorAP
 AP =13;
@@ -135,7 +135,7 @@ plothandle(4) = errorbar(0:0.025:1,RuntProtein_male.MeanVectorAP(13,:),RuntProte
 
 ylabel('Runt nuclear fluorescence (AU)')
 legend('Fraction On_{Male}','Fraction On_{Female}','Runt_{female}','Runt_{male}')
-standardizeFigure_YJK(gca,legend,[])
+standardizeFigure(gca,legend,[])
 hold off
 %% 4) Single traces
 % Define AP bin (and it's in nc13)
