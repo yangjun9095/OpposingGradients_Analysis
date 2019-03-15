@@ -13,11 +13,10 @@ function main_06_plot_Txn_output_boundary_features
 %% Load the datasets
 % We will start from plotting those info along AP axis, over time (nc 14)
 % First, Bicoid
-Bcd = load('E:\YangJoon\LivemRNA\Data\DynamicsResults\eGFP-Bcd-From-Liz-Jonathan\BcdGFPAnt.mat')
-BcdData = Bcd.DataBcd;
+Bcd = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\Bcd-Averaged.mat')
 
 % Second, Runt
-RuntData = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\2018-04-29-Runt-JB3-MCP-mCherry-vasa-eGFP1-edited-1percentAPbins\CompiledNuclei.mat')
+RuntData = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\Runt-1min-200Hz-Female-Averaged.mat')
 
 % Third, hbP2-r0,1,2,3-MS2.V5
 % first, run the code for averaging the datasets (Note that this

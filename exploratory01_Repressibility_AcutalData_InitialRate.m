@@ -2,7 +2,7 @@
 % Explanation goes here
 
 %% NC13
-Rate_NC13 = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\AveragedInitialRate_NC13.mat');
+Rate_NC13 = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\AveragedInitialRate_NC13.mat');
 Rate_NC13_r0 = Rate_NC13.Mean13(1,:);
 Rate_NC13_r1 = Rate_NC13.Mean13(2,:);
 Rate_NC13_r2 = Rate_NC13.Mean13(3,:);
@@ -31,25 +31,6 @@ title('Initial rate of RNAP loading over AP')
 xlabel('AP')
 ylabel('Initial rate of RNAP loading (AU/min)')
 legend('r0','r1','r2','r3')
-
- %% Hill eqn fitting
-% X = 0.2:0.01:0.45;%0:0.01:1; % X axis, EL
-% Y1 = Rate_NC13_r0_interp(21:46);
-% 
-% % MAPPING:  = Emax = b(1),  EC50 = b(2), n = b(3);
-% hill_fit = @(b,X)  b(1).*1./((1+X./b(2)).^b(3));
-% b0 = [250; 0.4; 1];                                  % Initial Parameter Estimates
-% B0 = lsqcurvefit(hill_fit, b0, X, Y1);
-% 
-% figure(1)
-% plot(X, Y1, 'bp')
-% hold on
-% plot(X, hill_fit(B0,X), '-r')
-% hold off
-% grid
-% xlabel('AP')
-% ylabel('r0')
-% legend('Data', 'Hill Equation Fit', 'Location','SE')
 
 %% Logistic function fit (r0)
 X = 0.2:0.01:0.47;%0:0.01:1; % X axis, EL
@@ -225,7 +206,7 @@ legend('r1','r2','r3')
 
 %% NC14
 % Load datasets (NC14)
-Rate_NC14 = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\AveragedInitialRate_NC14.mat');
+Rate_NC14 = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\AveragedInitialRate_NC14.mat');
 Rate_NC14_r0 = Rate_NC14.Mean14(1,:);
 Rate_NC14_r1 = Rate_NC14.Mean14(2,:);
 Rate_NC14_r2 = Rate_NC14.Mean14(3,:);

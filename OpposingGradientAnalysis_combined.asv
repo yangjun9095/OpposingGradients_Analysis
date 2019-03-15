@@ -1,5 +1,5 @@
 function main_06_plot_Txn_output_boundary_features
-% This is edited from "OpposingGradientAnalysis_combined.m"
+%   OpposingGradientAnalysis_combined
 % Description : This is a collection of sub-codes to generate plots of
 % analysis
 % INPUTS :
