@@ -444,5 +444,11 @@ title('Fraction ON in NC13 for different sex (r3)')
 xlabel('AP axis (Embryo Length)')
 ylabel('Fraction ON')
 legend('male','female')
-% save
+% save the plots
+
+%% save the processed results
+save('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\FractionON_sex_afterTr2D.mat',...
+        'FractionON_female','FractionON_male',...
+        'FractionON_individual_female','FractionON_individual_male',...
+        'FractionON_SEM_female','FractionON_SEM_male')
 

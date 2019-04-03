@@ -185,9 +185,9 @@ for j=1:numAPBins
     for i=1:numEmbryos
         % First, 
         Data(i).NEllipsesAP(Data(i).NEllipsesAP==0)=inf;
-        MeanVectorAP = cell2mat(Data(i).MeanVectorAP);
-        SDVectorAP = cell2mat(Data(i).SDVectorAP);
-        NParticlesAP = cell2mat(Data(i).NParticlesAP);
+        MeanVectorAP = Data(i).MeanVectorAP; %cell2mat(Data(i).MeanVectorAP);
+        SDVectorAP = Data(i).SDVectorAP; %cell2mat(Data(i).SDVectorAP);
+        NParticlesAP = Data(i).NParticlesAP; %cell2mat(Data(i).NParticlesAP);
         %NEllipsesAP = Data(i).NEllipsesAP;
         
         if NC==12 && nc12(i,j)~=0

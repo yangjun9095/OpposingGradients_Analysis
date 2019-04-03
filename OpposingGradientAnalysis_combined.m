@@ -54,7 +54,7 @@ RuntTime = RuntData.ElapsedTime;
 RuntTime = RuntData.ElapsedTime-RuntData.ElapsedTime(RuntData.nc14);
 
 %% r0
-r0Data = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\r0_FromNC12.mat')
+r0Data = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r0_FromNC12.mat')
 Time_r0 = r0Data.ElapsedTime;
 MeanVectorAP_r0 = r0Data.MeanVectorAP;
 SDVectorAP_r0 = r0Data.SDVectorAP;
@@ -70,7 +70,7 @@ nc13_r0 = r0Data.nc13;
 nc14_r0 = r0Data.nc14;
 
 %% r1
-r1Data = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\r1_FromNC12.mat')
+r1Data = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r1_FromNC12.mat')
 Time_r1 = r1Data.ElapsedTime;
 MeanVectorAP_r1 = r1Data.MeanVectorAP;
 SDVectorAP_r1 = r1Data.SDVectorAP;
@@ -85,7 +85,7 @@ nc13_r1 = r1Data.nc13;
 nc14_r1 = r1Data.nc14;
 
 %% r2
-r2Data = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\r2_FromNC12.mat')
+r2Data = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r2_FromNC12.mat')
 Time_r2 = r2Data.ElapsedTime;
 MeanVectorAP_r2 = r2Data.MeanVectorAP;
 SDVectorAP_r2 = r2Data.SDVectorAP;
@@ -99,7 +99,7 @@ nc12_r2 = r2Data.nc12;
 nc13_r2 = r2Data.nc13;
 nc14_r2 = r2Data.nc14;
 %% r3
-r3Data = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\r3_FromNC12.mat')
+r3Data = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r3_FromNC12.mat')
 Time_r3 = r3Data.ElapsedTime;
 MeanVectorAP_r3 = r3Data.MeanVectorAP;
 SDVectorAP_r3 = r3Data.SDVectorAP;
@@ -114,7 +114,7 @@ nc13_r3 = r3Data.nc13;
 nc14_r3 = r3Data.nc14;
 
 %% r3 prime (r3', scrambled Runt binding sites)
-r3primeData = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\r3prime_FromNC12.mat')
+r3primeData = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r3prime_FromNC12.mat')
 Time_r3prime = r3primeData.ElapsedTime;
 MeanVectorAP_r3prime = r3primeData.MeanVectorAP;
 SDVectorAP_r3prime = r3primeData.SDVectorAP;
@@ -284,9 +284,9 @@ AverageDatasets('r0-2','NC',12,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\Dro
 AverageDatasets('r0-3','NC',12,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient');
 
 %% Load the datasets - r0
-r0Data(1) = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\r0-1_FromNC12.mat');
-r0Data(2) = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\r0-2_FromNC12.mat');
-r0Data(3) = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\r0-3_FromNC12.mat');
+r0Data(1) = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r0-1_FromNC12.mat');
+r0Data(2) = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r0-2_FromNC12.mat');
+r0Data(3) = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r0-3_FromNC12.mat');
 
 [Xhalf_r0_1,Width_r0_1] = CalculateBoundary_SpotFluo(r0Data(1).AccumulatedmRNA_FractionON,...
                                                    r0Data(1).ElapsedTime,...
@@ -318,15 +318,15 @@ STDXhalf_r0 = nanstd([Xhalf_r0_1;Xhalf_r0_2;Xhalf_r0_3]);
 
 hold on
 errorbar(Time_r0_Min,MeanXhalf_r0,STDXhalf_r0)
-plot(Time_r0,Xhalf_r0)
+%plot(Time_r0,Xhalf_r0)
 plot([Time_r0(nc13_r0) Time_r0(nc13_r0)],[0 0.6],'k')%,'LineWidth',5)
 plot([Time_r0(nc14_r0) Time_r0(nc14_r0)],[0 0.6],'k')%,'LineWidth',5)
 ylim([0 0.6])
 title('Boundary position along Time')
 xlabel('Time')
 ylabel('Boundary Position (AP)')
-legend('Individual','Pooled')
-standardizeFigure_YJK(gca,legend,'black','black','red','cyan')
+legend('r0-Individual')
+%standardizeFigure(gca,legend,[])
 
 %% Plot the boundary width - r0 (average over individual embryo, vs from averaged traces)
 MinLength = min([length(Xhalf_r0_1),length(Xhalf_r0_2),length(Xhalf_r0_3)]);
@@ -358,9 +358,9 @@ AverageDatasets_FineTuning('r1-2','NC',12,'savePath','E:\YangJoon\LivemRNA\Data\
 AverageDatasets_FineTuning('r1-3','NC',12,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient');
 
 %% Load the datasets - r1
-r1Data(1) = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\r1-1_FromNC12.mat');
-r1Data(2) = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\r1-2_FromNC12.mat');
-r1Data(3) = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\r1-3_FromNC12.mat');
+r1Data(1) = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r1-1_FromNC12.mat');
+r1Data(2) = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r1-2_FromNC12.mat');
+r1Data(3) = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r1-3_FromNC12.mat');
 
 [Xhalf_r1_1,Width_r1_1] = CalculateBoundary_SpotFluo(r1Data(1).AccumulatedmRNA_FractionON,...
                                                    r1Data(1).ElapsedTime,...
@@ -419,14 +419,14 @@ standardizeFigure_YJK(gca,legend,'black','black','red','cyan')
 %% Individual embryos vs averaged embryos : r2 datasets
 % Calculate the AccumulatedmRNA, and also synchronize as the beginning of
 % nc12
-AverageDatasets_FineTuning('r2-1','NC',12,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient');
-AverageDatasets_FineTuning('r2-2','NC',12,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient');
-AverageDatasets_FineTuning('r2-3','NC',12,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient');
+AverageDatasets('r2-1','NC',12,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient');
+AverageDatasets('r2-2','NC',12,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient');
+AverageDatasets('r2-3','NC',12,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient');
 
 %% Load the datasets - r2
-r2Data(1) = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\r2-1_FromNC12.mat');
-r2Data(2) = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\r2-2_FromNC12.mat');
-r2Data(3) = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\r2-3_FromNC12.mat');
+r2Data(1) = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r2-1_FromNC12.mat');
+r2Data(2) = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r2-2_FromNC12.mat');
+r2Data(3) = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r2-3_FromNC12.mat');
 
 [Xhalf_r2_1,Width_r2_1] = CalculateBoundary_SpotFluo(r2Data(1).AccumulatedmRNA_FractionON,...
                                                    r2Data(1).ElapsedTime,...
@@ -491,9 +491,9 @@ AverageDatasets_FineTuning('r3-2','NC',12,'savePath','E:\YangJoon\LivemRNA\Data\
 AverageDatasets_FineTuning('r3-3','NC',12,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient');
 
 %% Load the datasets - r3
-r3Data(1) = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\r3-1_FromNC12.mat');
-r3Data(2) = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\r3-2_FromNC12.mat');
-r3Data(3) = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\r3-3_FromNC12.mat');
+r3Data(1) = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r3-1_FromNC12.mat');
+r3Data(2) = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r3-2_FromNC12.mat');
+r3Data(3) = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r3-3_FromNC12.mat');
 
 [Xhalf_r3_1,Width_r3_1] = CalculateBoundary_SpotFluo(r3Data(1).AccumulatedmRNA_FractionON,...
                                                    r3Data(1).ElapsedTime,...
@@ -515,7 +515,7 @@ Xhalf_r3_3 = Xhalf_r3_3(1,1:MinLength)
 Time_r3_Min = Time_r3(1:MinLength);
 
 MeanXhalf_r3 = nanmean([Xhalf_r3_1;Xhalf_r3_2;Xhalf_r3_3]);
-STDXhalf_r3 = nanstd([Xhalf_r3_1;Xhalf_r3_2;Xhalf_r3_3]);
+STDXhalf_r3 = nanstd([Xhalf_r3_1;Xhalf_r3_2;Xhalf_r3_3])./sqrt(3);
 
 hold on
 errorbar(Time_r3_Min,MeanXhalf_r3,STDXhalf_r3)
@@ -549,6 +549,78 @@ xlabel('Time')
 ylabel('Boundary width(AP)')
 legend('Individual','Pooled')
 standardizeFigure_YJK(gca,legend,'black','black','red','cyan')
+
+%% Individual embryos vs averaged embryos : r3prime datasets
+% Calculate the AccumulatedmRNA, and also synchronize as the beginning of
+% nc12
+% right now, the first dataset doesn't have nc12, so I just started from
+% nc13. It wouldn't make that much of a difference.
+
+AverageDatasets('r3prime-1','NC',12,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
+AverageDatasets('r3prime-2','NC',12,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
+AverageDatasets('r3prime-3','NC',12,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
+
+%% Load the datasets - r3prime (r3 mutated)
+r3primeData(1) = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r3prime-1.mat');
+r3primeData(2) = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r3prime-2.mat');
+r3primeData(3) = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r3prime-3.mat');
+
+[Xhalf_r3prime_1,Width_r3prime_1] = CalculateBoundary_SpotFluo(r3primeData(1).AccumulatedmRNA_FractionON,...
+                                                   r3primeData(1).ElapsedTime,...
+                                                    r3primeData(1).nc12,r3primeData(1).nc13,r3primeData(1).nc14);
+                                                
+[Xhalf_r3prime_2,Width_r3prime_2] = CalculateBoundary_SpotFluo(r3primeData(2).AccumulatedmRNA_FractionON,...
+                                                   r3primeData(2).ElapsedTime,...
+                                                    r3primeData(2).nc12,r3primeData(2).nc13,r3primeData(2).nc14); 
+                                                        
+[Xhalf_r3prime_3,Width_r3prime_3] = CalculateBoundary_SpotFluo(r3primeData(3).AccumulatedmRNA_FractionON,...
+                                                   r3primeData(3).ElapsedTime,...
+                                                    r3primeData(3).nc12,r3primeData(3).nc13,r3primeData(3).nc14);
+                                                
+%% Plot the boundary position (average over individual embryo, vs from averaged traces)
+MinLength = min([length(Xhalf_r3prime_1),length(Xhalf_r3prime_2),length(Xhalf_r3prime_3)]);
+Xhalf_r3prime_1 = Xhalf_r3prime_1(1,1:MinLength);
+Xhalf_r3prime_2 = Xhalf_r3prime_2(1,1:MinLength)
+Xhalf_r3prime_3 = Xhalf_r3prime_3(1,1:MinLength)
+Time_r3prime_Min = Time_r3prime(1:MinLength);
+
+MeanXhalf_r3prime = nanmean([Xhalf_r3prime_1;Xhalf_r3prime_2;Xhalf_r3prime_3]);
+STDXhalf_r3prime = nanstd([Xhalf_r3prime_1;Xhalf_r3prime_2;Xhalf_r3prime_3]);
+
+hold on
+errorbar(Time_r3prime_Min,MeanXhalf_r3prime,STDXhalf_r3prime)
+plot(Time_r3prime,Xhalf_r3prime)
+plot([Time_r3prime(nc13_r3prime) Time_r3prime(nc13_r3prime)],[0 0.6],'k')%,'LineWidth',5)
+plot([Time_r3prime(nc14_r3prime) Time_r3prime(nc14_r3prime)],[0 0.6],'k')%,'LineWidth',5)
+ylim([0 0.6])
+title('Boundary position along Time')
+xlabel('Time')
+ylabel('Boundary Position (AP)')
+legend('Individual','Pooled')
+standardizeFigure_YJK(gca,legend,'black','black','red','cyan')
+%% Plot the boundary width (average over individual embryo, vs from averaged traces)
+MinLength = min([length(Xhalf_r3prime_1),length(Xhalf_r3prime_2),length(Xhalf_r3prime_3)]);
+Width_r3prime_1 = Width_r3prime_1(1,1:MinLength);
+Width_r3prime_2 = Width_r3prime_2(1,1:MinLength)
+Width_r3prime_3 = Width_r3prime_3(1,1:MinLength)
+Time_r3prime_Min = Time_r3prime(1:MinLength);
+
+MeanWidth_r3prime = nanmean([Width_r3prime_1;Width_r3prime_2;Width_r3prime_3]);
+STDWidth_r3prime = nanstd([Width_r3prime_1;Width_r3prime_2;Width_r3prime_3]);
+
+hold on
+errorbar(Time_r3prime_Min,MeanWidth_r3prime,STDWidth_r3prime)
+plot(Time_r3prime,Width_r3prime)
+plot([Time_r3prime(nc13_r3prime) Time_r3prime(nc13_r3prime)],[0 0.6],'k')%,'LineWidth',5)
+plot([Time_r3prime(nc14_r3prime) Time_r3prime(nc14_r3prime)],[0 0.6],'k')%,'LineWidth',5)
+ylim([0 0.6])
+title('Boundary width along Time')
+xlabel('Time')
+ylabel('Boundary width(AP)')
+legend('Individual','Pooled')
+standardizeFigure_YJK(gca,legend,'black','black','red','cyan')
+
+
 %% Plot all boundary positions (r0,1,2,3)
 hold on
 plot([Time_r0(nc13_r0) Time_r0(nc13_r0)],[0 0.6],'k')%,'LineWidth',5)
