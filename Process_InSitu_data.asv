@@ -1,0 +1,139 @@
+function [Intensity_raw,...
+            nBins, Intensity_mean,  Intensity_std, ...
+            window_smooth, Intensity_mean_smooth,...
+            background_intensity, Intensity_mean_smooth_BGsubtracted,...
+            BoundaryPosition, Slope,...
+            BoundaryPosition_inflection, Slope_inflection] = Process_InSitu_data(InSituEmbryo, EmbryoName)
+%% This function grabs the raw .jpg file of In Situ embryo image, then process it 
+% 1) We can define the AP axis by clicking two points
+% 2) We can bin it with 100 AP bins, also smoothen it (this smoothing
+% window could be fed into as an option.)
+% 3) Background subtraction
+%% Step0. Convert RGB file to grayscale (8-bit), then invert the contrast
+
+InSituEmbryo_8bit = rgb2gray(InSituEmbryo_raw);
+
+InSituEmbryo = imcomplement(InSituEmbryo_8bit);
+
+
+
+%% Step1. Define the AP axis
+% This is done by clicking two points, using ginput
+
+% % For now, let's just assume that the embryos are alingned perfectly
+% % horizontal, thus I can just get the anterior point, and draw a horizontal
+% % line.
+
+% This has to be re-done later by setting up the AP line, then finding the pixels
+% based on that.
+hold on
+imshow(InSituEmbryo)
+
+% Define the AP axis by clicking the head and tail points.
+[X, Y] = ginput(2);
+
+head_x = X(1);
+head_y = Y(1);
+
+tail_x = X(2);
+tail_y = Y(2);
+
+hold on
+plot(head_x,head_y,'g.','MarkerSize',20);
+plot(tail_x,tail_y,'r.','MarkerSize',20);
+plot(X,Y,'k')
+
+mkdir(['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Embryos for Yang Joon\hbP2\20140303 G49 hb-lacZ 1-1',filesep,'APdefined'])
+Path = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Embryos for Yang Joon\hbP2\20140303 G49 hb-lacZ 1-1',filesep,'APdefined'
+saveas(gcf,['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Embryos for Yang Joon\hbP2\20140303 G49 hb-lacZ 1-1',filesep,'APdefined',EmbryoName])
+clf
+%% Step2. Define the box window 
+% Let's try to use the improfile
+Intensity_raw = improfile(InSituEmbryo,X,Y)
+
+hold on
+plot((1:length(Intensity_raw))/length(Intensity_raw) ,Intensity_raw)
+title('Intensity from In Situ embryo')
+xlabel('AP (EL)')
+ylabel('Intensity (AU)')
+%legend('Image41-raw')
+%StandardFigure(gcf,gca)
+%% Step3. Averaging over some window
+% Here, I need a good way of binning, for example, like in 100 bins as
+% Jeehae did.
+nBins = 100;
+deltaEL = 1/nBins;
+EL = 0:deltaEL:1;
+
+lengthAP = length(Intensity_raw);
+
+binSize = lengthAP/nBins;
+
+binFilter = floor((1:100) * binSize);
+binFilter = [1 binFilter];
+
+for i=1:nBins
+    Intensity_mean(i) = nanmean(Intensity_raw(binFilter(i:i+1)));
+    Intensity_std(i) = nanstd(Intensity_raw(binFilter(i:i+1)));
+end
+
+% Plot the averaged pixel intensity, std (over AP)
+errorbar(0.005:0.01:0.995,Intensity_mean,Intensity_std)
+title('Intensity from In Situ embryo')
+xlabel('AP (EL)')
+ylabel('Intensity (AU)')
+%legend('Image41-binned')
+
+%StandardFigure(gcf,gca)
+%% Optional : Smoothening the curve
+window_smooth = 5;
+Intensity_mean_smooth = movmean(Intensity_mean,window_smooth);
+plot(0.005:0.01:0.995,Intensity_mean_smooth)
+title('Intensity from In Situ embryo')
+xlabel('AP (EL)')
+ylabel('Intensity (AU)')
+% legend('Image41-smoothened')
+
+
+%% Step5. (Optional?) Background subtraction
+% The issue right now is that the background is underestimated when we only
+% think about the minimum value across AP.
+% Here, I'll make an assumption that there's no expression after 80% of the
+% embryo length (AP axis). 
+background_intensity = nanmean(Intensity_mean_smooth(61:100));
+
+Intensity_mean_smooth_BGsubtracted = Intensity_mean_smooth - background_intensity;
+
+% For the negative intensity, I'll assume that they are actually zeros, and
+% the negative value comes from the measurement noise, etc.
+Intensity_mean_smooth_BGsubtracted(Intensity_mean_smooth_BGsubtracted<0) =0;
+
+%% Get the boundary features, as our way, half-maximum
+% First, let's use our standard, which is getting the half-maximum, and
+% tangential line at that point.
+AP = 0.005:0.01:0.995;
+
+% [Max, Min, DynamicRange, BoundaryPosition, Slope] =...
+%                         getGradientFeatures (AP,Intensity_mean_smooth);
+                    
+[Max, Min, DynamicRange, BoundaryPosition, Slope] =...
+                        getGradientFeatures (AP,Intensity_mean_smooth_BGsubtracted);
+
+%% Get the boundary features _Tao, 2012
+%% Plot the Boundary features
+[BoundaryPosition_inflection, Slope_inflection] = ...
+                        Get_Boundary_inflection_points(AP,Intensity_mean_smooth_BGsubtracted)
+                    
+%% Plot the boundary features on top of the profile
+% half-maximum
+hold on
+plot(BoundaryPosition, Intensity_mean_smooth(AP == BoundaryPosition),'o','MarkerSize',10)
+plot(AP,Slope*(AP-BoundaryPosition) + Intensity_mean_smooth(AP == BoundaryPosition))
+ylim([0 max(Intensity_mean_smooth)+50])
+
+legend('raw','Binned','Smoothened')
+StandardFigure(gcf,gca)
+
+%% Save the result figure
+saveas(gcf,['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Embryos for Yang Joon\hbP2\20140303 G49 hb-lacZ 1-1\ProcessedResults,EmbryoName'])
+end

@@ -81,9 +81,25 @@ FractionON_SEM{3} = FractionON_Average_Error_r2;
 FractionON_SEM{4} = FractionON_Average_Error_r3;
 FractionON_SEM{5} = FractionON_Average_Error_r3prime;
 
+%% Color definition
+% This is defining the line color
+colorDict = struct();
+colorDict.blue = [115,143,193]/255; %[115,143,170]/255;
+colorDict.red =  [213,108,85]/255; %[200,108,85]/255;
+colorDict.yellow = [234,194,100]/255;
+colorDict.cyan = [108,188,233]/255;
+colorDict.magenta = [208,109,171]/255;
+colorDict.lightBlue = [115,142,193]/255;
+colorDict.purple = [171,133,172]/255;
+colorDict.green =  [122,169,116]/255; %[122,150,116]/255;
+colorDict.brown = [179,155,142]/255;
+colorDict.darkgreen = [126,157,144]/255;
+
+ColorChoice = [colorDict.magenta; colorDict.lightBlue; colorDict.yellow; colorDict.red; colorDict.brown]; % 4 embryos max. it could be extended easily
+%lineColor = ['m', 'b', 'y', 'r', 'g'];
 %% Plot the Fraction ON from all constructs for NC12-NC14
 for NC=12:14 % NC
-    figure(NC-11)
+    FractionON_figure(NC-11) = figure(NC-11);
     hold on
     % Loop over different constructs (r0,1,2,3,3')
     for i=1:length(FractionON_individual)
@@ -94,12 +110,14 @@ for NC=12:14 % NC
         
         [~,~,numEmbryos] = size(FractionON_individual_temp);
         
-        for j=1:numEmbryos
-            plot(0:0.025:1,FractionON_individual_temp(:,NC-11,j),'-o')
-        end
-        shadedErrorBar(0:0.025:1,FractionON_Average_temp(:,NC-11),FractionON_SEM_temp(:,NC-11))
+        % individual embryo (Fraction ON)
+%         for j=1:numEmbryos
+%             plot(0:0.025:1,FractionON_individual_temp(:,NC-11,j),'-o','Color',ColorChoice(i,:))
+%         end
+        %H(i) = shadedErrorBar(0:0.025:1,FractionON_Average_temp(:,NC-11),FractionON_SEM_temp(:,NC-11),'lineprops',{lineColor(i),'markerfacecolor',ColorChoice(i,:)})
+        errorbar(0:0.025:1,FractionON_Average_temp(:,NC-11),FractionON_SEM_temp(:,NC-11),'Color',ColorChoice(i,:))
     end
-    
+    %h(i) = H(i).mainLine;
 
     hold off
     title(['Fraction of Active Nuclei',' @ NC ',num2str(NC)])
@@ -107,7 +125,23 @@ for NC=12:14 % NC
     ylabel('Fraction ON')
     xlim([0.2 0.8])
     ylim([0 1.2])
-    %legend('embryo1','embryo2','Average')
-    StandardFigure(gcf,gca)
+    %legend(h,'r0','r1','r2','r3','r3prime')
+    legend('r0','r1','r2','r3','r3prime')
+    %StandardFigure(gcf,gca)
+
 end
+%% Save figures
+for i=1:3 % NC
+    standardizeFigure(FractionON_figure(i),gca,[])
+    pause(10)
 end
+
+%% Save the calculated fields
+
+% Define the folder structure
+[SourcePath,FISHPath,DropboxFolder,MS2CodePath,PreProcPath]=...
+    DetermineLocalFolders;
+DataPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
+
+save([DataPath,filesep,'FractionON_r01233prime_20190406_Preliminary.mat'],...
+    'FractionON_Average','FractionON_SEM','FractionON_individual');

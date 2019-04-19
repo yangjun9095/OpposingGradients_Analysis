@@ -57,13 +57,16 @@ numEmbryos = length(Data);
 % AP bin is too small, then the Fraction can be biased. Thus, I will set
 % this threshold as N_nuclei_thresh = 3 or 4;
 N_nuclei_thresh = 2;
-
+N_filter = zeros(41,3);
 %(1) Averaging the Fraction ON from each embryo.
 FractionON_individual = zeros(41,3,numEmbryos);
 for i=1:numEmbryos
     clear N_TotalNuclei
     clear N_filter
-    N_filter = Data(i).TotalEllipsesAP > N_nuclei_thresh;
+    N_filter(:,1) = Data(i).TotalEllipsesAP(:,1) > 2;%N_nuclei_thresh;
+    N_filter(:,2) = Data(i).TotalEllipsesAP(:,2) > 5;%N_nuclei_thresh;
+    N_filter(:,3) = Data(i).TotalEllipsesAP(:,3) > 5;%N_nuclei_thresh;
+    
     N_TotalNuclei = Data(i).TotalEllipsesAP.*N_filter;
     FractionON_individual(:,:,i) = Data(i).EllipsesOnAP{1,1}./N_TotalNuclei;
     FractionON_individual(FractionON_individual==inf) = nan;

@@ -1,4 +1,4 @@
-function main_08_compare_MS2Traces_single_vs_mean_MultipleEmbryos(DataType, varargin)
+function main_08_03_compare_MS2Traces_mean_MultipleEmbryos(DataType, varargin)
 % DESCRIPTION
 % This script is for comparing the individual MS2 traces with the mean, to
 % see if the average represent the individual trace features well.
@@ -33,7 +33,7 @@ Data = LoadMS2Sets(DataType);
 %Index = 1; % Default, the index of the dataset in the DataStatus.xlsx tab
 
 % Generate folder to save the data
-DataFolder=['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Figures-OpposingGradients\MS2traces_single_average\',DataType,'_40sec'];
+DataFolder=['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Figures-OpposingGradients\hbP2-r0123-AveragedMS2Traces\',DataType,'_Mean_spot_fluo_NC13'];
 mkdir(DataFolder)
 FigPath = DataFolder;
 
@@ -45,14 +45,20 @@ colorDict.red =  [213,108,85]/255; %[200,108,85]/255;
 colorDict.yellow = [234,194,100]/255;
 colorDict.cyan = [108,188,233]/255;
 colorDict.magenta = [208,109,171]/255;
+colorDict.green =  [122,169,116]/255; %[122,150,116]/255;
 colorDict.lightBlue = [115,142,193]/255;
 colorDict.purple = [171,133,172]/255;
-colorDict.green =  [122,169,116]/255; %[122,150,116]/255;
 colorDict.brown = [179.155,142]/255;
 colorDict.darkgreen = [126,157,144]/255;
 
-ColorChoice = [colorDict.blue; colorDict.red; colorDict.green; colorDict.purple]; % 4 embryos max. it could be extended easily
-lineColor = ['b', 'r', 'g', 'p'];
+ColorChoice = [colorDict.blue; colorDict.red; colorDict.green; colorDict.yellow;...
+               colorDict.magenta; colorDict.cyan; colorDict.blue; colorDict.red]; % 4 embryos max. it could be extended easily
+lineColor = ['b', 'r', 'g', 'y','m','c','b','r'];
+
+% % For 4 males and 4 females, as mixed datasets
+% ColorChoice = [colorDict.blue; colorDict.blue;colorDict.blue;colorDict.blue;...
+%                 colorDict.red;colorDict.red;colorDict.red;colorDict.red];
+% lineColor = ['b', 'b', 'b', 'b','r','r','r','r'];       
 %% Sort particles into corresponding AP bin, and NC, for all embryos,
 % thus I need to mark which embryo this is from. Embryo index
 % Make a cell structure to save the sorted out particles, this has rows of
@@ -60,6 +66,7 @@ lineColor = ['b', 'r', 'g', 'p'];
 
 %Particles_pooled = cell(2,41); 
 
+LegendString = ['embryo1';'embryo2';'embryo3';'embryo4'];
 
 for m=1:length(Data)
     % Initialize some of the variables
@@ -117,50 +124,16 @@ for m=1:length(Data)
         
         % Only take the AP bins where there are actual values, not Nans.
         if sum(~isnan(compiledParticles.MeanVectorAP{1}(:,i))) > 0 
-
-            % Loop through all particles, then sort out the particles corresponding
-            % to that AP bin.
-
-            % Indexing for the number of sorted out particles.
-            % This was for the gradation coloring of single traces
-            %k=1;
             
-            for j=1:length(CompiledParticles)
-            % check if the AP bin matches && NC
-             % NC 13 only (Note that I'm using the frame index to cut
-             % out the ones before NC13, and also after NC13.)
-                if CompiledParticles(j).MeanAP>compiledParticles.APbinID(i) && ...
-                         CompiledParticles(j).MeanAP<compiledParticles.APbinID(i+1) && ...
-                         CompiledParticles(j).Frame(1) > NC13 && ...
-                             CompiledParticles(j).Frame(1) < NC14 + 1
+            errorbar(ElapsedTime(TimeRange) - TimeStart,...
+                         compiledParticles.MeanVectorAP{1}(TimeRange,i),...
+                         compiledParticles.SDVectorAP{1}(TimeRange,i)./...
+                         sqrt(compiledParticles.NParticlesAP{1}(TimeRange,i)),'color',ColorChoice(m,:))
 
-                     % Define the fields that are needed for plotting the single
-                     % MS2 traces. (Note. This is assuming that the particle
-                     % tracking is really great, thus if I see some crappy traces,
-                     % then I might need to go back to the particle tracking.)
-                     clear Frames
-                     clear SpotFluo
-                     clear SpotTime
-                     Frames = CompiledParticles(j).Frame;
-                     SpotTime = ElapsedTime(Frames) - TimeStart; % To start T=0 from the previous mitosis.
-                     SpotFluo = CompiledParticles(j).Fluo;
-
-                     plot(SpotTime,SpotFluo,'-','color',ColorChoice(m,:))
-                     %k=k+1;  % count the index of particles   
-                end
-            end
-            % Now, plot the Mean spot fluorescence (MeanVectorAP, and
-            % SDVectorAP (SEVectorAP) in that AP bin, using errorbar
-
-            shadedErrorBar(ElapsedTime(TimeRange) - TimeStart,...
-                        compiledParticles.MeanVectorAP{1}(TimeRange,i),...
-                        compiledParticles.SDVectorAP{1}(TimeRange,i)./...
-                        sqrt(compiledParticles.NParticlesAP{1}(TimeRange,i)),'lineprops',{lineColor(m),'markerfacecolor',ColorChoice(m,:)})
-                                xlim([ElapsedTime(NC13)-TimeStart ElapsedTime(NC14)-TimeStart])
-
-            title({'MS2 spot fluorescence : single vs Mean ';[' AP = ',num2str(AP),'%']})
+            title({'Mean MS2 Spot fluorescence over time';[' AP = ',num2str(AP),'%']})
             xlabel('Time into NC13(min)')
             ylabel('Spot fluorescence (AU)')
+            %legend('male',~,~,~,'female')
             %legend([h(k) H.mainLine],'single','Mean')
             %l = l+1;
 
@@ -168,30 +141,35 @@ for m=1:length(Data)
             display(['APbin ',num2str(AP),'% does not have non-Nan values'])
 
         end
+        legend('embryo1-40sec','embryo2-40sec','embryo3-20sec')
     end
 end
 hold off
 
 %% Make the figure look better & save
 for i=1:length(Particle_trace_figure)
-    StandardFigure(Particle_trace_figure(i),gca)
-    pause(10)
+    StandardFigure(Particle_trace_figure(i),Particle_trace_figure(i).CurrentAxes)
+    %pause(30)
     % save
-    saveas(Particle_trace_figure(i),[FigPath,filesep, 'Embryos_together','_single_vs_averaged_MS2_traces at ' ,num2str((i+8-1)*2.5), '%_NC',num2str(NC) , '.tif']); 
-    saveas(Particle_trace_figure(i),[FigPath,filesep, 'Embryos_together','_single_vs_averaged_MS2_traces at ' ,num2str((i+8-1)*2.5), '%_NC',num2str(NC) , '.pdf']); 
+    % saveas(Particle_trace_figure(i),[FigPath,filesep, 'Embryos_together','_single_vs_averaged_MS2_traces at ' ,num2str((i+8-1)*2.5), '%_NC',num2str(NC) , '.tif']); 
+    % saveas(Particle_trace_figure(i),[FigPath,filesep, 'Embryos_together','_single_vs_averaged_MS2_traces at ' ,num2str((i+8-1)*2.5), '%_NC',num2str(NC) , '.pdf']); 
+    saveas(Particle_trace_figure(i),[FigPath,filesep, 'Embryos_together','Mean_MS2_traces at ' ,num2str((i+8-1)*2.5), '%_NC',num2str(NC) , '.tif']); 
+    saveas(Particle_trace_figure(i),[FigPath,filesep, 'Embryos_together','Mean_MS2_traces at ' ,num2str((i+8-1)*2.5), '%_NC',num2str(NC) , '.pdf']); 
     %pause
 end
 
 %% Make a montage of all images from a single embryo 
 % ( for all APbins in NC13, for example)
+%cd FigPath
 FigurePath = [FigPath,filesep];
 fileFolder = FigurePath;
-dirOutput = dir(fullfile(fileFolder,'Embryos_together*.tif'));
+dirOutput = dir(fullfile(fileFolder,'*Mean_MS2_traces*.tif'));
 fileNames = string({dirOutput.name});
 
+figure(10)
 Montage_single_vs_average = montage(fileNames)%'Size',[3 3]) % ,'Size',[1 9]) % option for m x n matrix
 % r1 : [3 5 7  11 13 15 20 22 24] for 25, 30, 35% AP bins
 
 % save the figure
-saveas(Montage_single_vs_average,[FigurePath 'Montage_',DataType,'_embryos_together ', '_NC13' , '.pdf']); 
+saveas(Montage_single_vs_average,[FigurePath 'Montage_',DataType,'_Mean_SpotFluo_MultipleEmbryos ', '_NC13' , '.pdf']); 
 end
