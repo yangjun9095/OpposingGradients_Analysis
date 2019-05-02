@@ -1,9 +1,7 @@
 function [Intensity_raw,...
             nBins, Intensity_mean,  Intensity_std, ...
             window_smooth, Intensity_mean_smooth,...
-            background_intensity, Intensity_mean_smooth_BGsubtracted,...
-            BoundaryPosition, Slope,...
-            BoundaryPosition_inflection, Slope_inflection] = Process_InSitu_data(InSituEmbryo, EmbryoName)
+            background_intensity, Intensity_mean_smooth_BGsubtracted, X, Y] = Process_InSitu_data(InSituEmbryo_raw, EmbryoName,filePath)
 %% This function grabs the raw .jpg file of In Situ embryo image, then process it 
 % 1) We can define the AP axis by clicking two points
 % 2) We can bin it with 100 AP bins, also smoothen it (this smoothing
@@ -43,21 +41,18 @@ plot(head_x,head_y,'g.','MarkerSize',20);
 plot(tail_x,tail_y,'r.','MarkerSize',20);
 plot(X,Y,'k')
 
-mkdir(['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Embryos for Yang Joon\hbP2\20140303 G49 hb-lacZ 1-1',filesep,'APdefined'])
-Path = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Embryos for Yang Joon\hbP2\20140303 G49 hb-lacZ 1-1',filesep,'APdefined'
-saveas(gcf,['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Embryos for Yang Joon\hbP2\20140303 G49 hb-lacZ 1-1',filesep,'APdefined',EmbryoName])
+mkdir([filePath,filesep,'APdefined'])
+mkdir([filePath,filesep,'ProcessedResults'])
+Path = [filePath,filesep,'APdefined'];
+saveas(gcf,[Path,filesep,EmbryoName])
 clf
 %% Step2. Define the box window 
 % Let's try to use the improfile
-Intensity_raw = improfile(InSituEmbryo,X,Y)
+Width = 30; % 30 pixels used in Chen, 2012 for the width
+[CX,CY,C_sum,C,xi,yi,im_pi2] = improfile_integrated(InSituEmbryo,Width,X,Y);
+Intensity_raw = C_sum/Width;
+% Intensity_raw_single = improfile(InSituEmbryo,X,Y);
 
-hold on
-plot((1:length(Intensity_raw))/length(Intensity_raw) ,Intensity_raw)
-title('Intensity from In Situ embryo')
-xlabel('AP (EL)')
-ylabel('Intensity (AU)')
-%legend('Image41-raw')
-%StandardFigure(gcf,gca)
 %% Step3. Averaging over some window
 % Here, I need a good way of binning, for example, like in 100 bins as
 % Jeehae did.
@@ -77,30 +72,16 @@ for i=1:nBins
     Intensity_std(i) = nanstd(Intensity_raw(binFilter(i:i+1)));
 end
 
-% Plot the averaged pixel intensity, std (over AP)
-errorbar(0.005:0.01:0.995,Intensity_mean,Intensity_std)
-title('Intensity from In Situ embryo')
-xlabel('AP (EL)')
-ylabel('Intensity (AU)')
-%legend('Image41-binned')
-
-%StandardFigure(gcf,gca)
 %% Optional : Smoothening the curve
 window_smooth = 5;
 Intensity_mean_smooth = movmean(Intensity_mean,window_smooth);
-plot(0.005:0.01:0.995,Intensity_mean_smooth)
-title('Intensity from In Situ embryo')
-xlabel('AP (EL)')
-ylabel('Intensity (AU)')
-% legend('Image41-smoothened')
-
 
 %% Step5. (Optional?) Background subtraction
 % The issue right now is that the background is underestimated when we only
 % think about the minimum value across AP.
-% Here, I'll make an assumption that there's no expression after 80% of the
+% Here, I'll make an assumption that there's no expression after 70% of the
 % embryo length (AP axis). 
-background_intensity = nanmean(Intensity_mean_smooth(61:100));
+background_intensity = nanmean(Intensity_mean_smooth(71:90));
 
 Intensity_mean_smooth_BGsubtracted = Intensity_mean_smooth - background_intensity;
 
@@ -108,32 +89,50 @@ Intensity_mean_smooth_BGsubtracted = Intensity_mean_smooth - background_intensit
 % the negative value comes from the measurement noise, etc.
 Intensity_mean_smooth_BGsubtracted(Intensity_mean_smooth_BGsubtracted<0) =0;
 
-%% Get the boundary features, as our way, half-maximum
-% First, let's use our standard, which is getting the half-maximum, and
-% tangential line at that point.
-AP = 0.005:0.01:0.995;
+%% Plot the processed In Situ intensity profile 
+% %(optional, this should be done in the upstream script, which is Supple_02_compare_InSitu_MS2MCP.m
+% 
+% % Define the Figure path
+% FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\InSitu_MS2_compare_plots';
+% 
+% hold on
+% % Raw intensity
+% plot((1:length(Intensity_raw))/length(Intensity_raw) ,Intensity_raw)
+% % Averaged pixel intensity, std (over AP)- binned
+% errorbar(0.005:0.01:0.995,Intensity_mean,Intensity_std)
+% % Smoothened over window_smooth
+% plot(0.005:0.01:0.995,Intensity_mean_smooth)
+% 
+% % plot(BoundaryPosition, Intensity_mean_smooth(AP == BoundaryPosition),'o','MarkerSize',10)
+% % plot(BoundaryPosition_inflection,Intensity_mean_smooth(AP == BoundaryPosition_inflection),'o','MarkerSize',10)
+% 
+% % Bar line for the Background
+% % plot(AP, ones(size(AP))*Background,'k')
+% 
+% % tangential line
+% % plot(AP,Slope*(AP-BoundaryPosition) + Intensity_mean_smooth(AP == BoundaryPosition))
+% 
+% ylim([0 max(Intensity_mean_smooth)+50])
+% title('Intensity from In Situ embryo')
+% xlabel('AP (EL)')
+% ylabel('Intensity (AU)')
+% legend('Raw','Binned','Smoothened')
+% StandardFigure(gcf,gca)
+% 
+% % Save the result figure
+% saveas(gcf,[FigPath,filesep,'ProcessedResults',filesep,EmbryoName(1:end-4),'.tif'])
+% saveas(gcf,[FigPath,filesep,'ProcessedResults',filesep,EmbryoName(1:end-4),'.pdf'])
+% 
+% %% Optional : Background-subtracted profile
+% plot(0.005:0.01:0.995,Intensity_mean_smooth_BGsubtracted)
+% title('Intensity from In Situ embryo-BG subtracted')
+% xlabel('AP (EL)')
+% ylabel('Intensity (AU)')
+% legend('In Situ intensity')
+% StandardFigure(gcf,gca)
+% 
+% % Save the result figure
+% saveas(gcf,[FigPath,filesep,'ProcessedResults',filesep,EmbryoName(1:end-4),'_BGsubtracted.tif'])
+% saveas(gcf,[FigPath,filesep,'ProcessedResults',filesep,EmbryoName(1:end-4),'_BGsubtracted.pdf'])
 
-% [Max, Min, DynamicRange, BoundaryPosition, Slope] =...
-%                         getGradientFeatures (AP,Intensity_mean_smooth);
-                    
-[Max, Min, DynamicRange, BoundaryPosition, Slope] =...
-                        getGradientFeatures (AP,Intensity_mean_smooth_BGsubtracted);
-
-%% Get the boundary features _Tao, 2012
-%% Plot the Boundary features
-[BoundaryPosition_inflection, Slope_inflection] = ...
-                        Get_Boundary_inflection_points(AP,Intensity_mean_smooth_BGsubtracted)
-                    
-%% Plot the boundary features on top of the profile
-% half-maximum
-hold on
-plot(BoundaryPosition, Intensity_mean_smooth(AP == BoundaryPosition),'o','MarkerSize',10)
-plot(AP,Slope*(AP-BoundaryPosition) + Intensity_mean_smooth(AP == BoundaryPosition))
-ylim([0 max(Intensity_mean_smooth)+50])
-
-legend('raw','Binned','Smoothened')
-StandardFigure(gcf,gca)
-
-%% Save the result figure
-saveas(gcf,['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Embryos for Yang Joon\hbP2\20140303 G49 hb-lacZ 1-1\ProcessedResults,EmbryoName'])
 end

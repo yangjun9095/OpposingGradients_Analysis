@@ -352,10 +352,7 @@ for i=1:maxAPIndex
         AccumulatedmRNA_SD(j,i) = sqrt(trapz(ElapsedTime(1:j),SDVectorAP(1:j,i).^2));
         
         AccumulatedmRNA_FractionON(j,i) = trapz(ElapsedTime(1:j),MeanVectorAP_ForSum(1:j,i).*FractionON(1:j,i));
-        % Define the error for the Accumulated mRNA, this should be
-        % revisited later for with more justification.
         AccumulatedmRNA_SD_FractionON(j,i) = sqrt(trapz(ElapsedTime(1:j),SDVectorAP(1:j,i).^2).*FractionON(1:j,i));
-        AccumulatedmRNA_SE_FractionON(j,i) = sqrt(trapz(ElapsedTime(1:j),SDVectorAP(1:j,i).^2).*FractionON(1:j,i));
     end
 end
 

@@ -1,4 +1,4 @@
-function [CX,CY,C_sum,C,xi,yi]=improfile_integrated(I,d,xi,yi);
+function [CX,CY,C_sum,C,xi,yi,im_pi2]=improfile_integrated(I,d,xi,yi);
 %
 %  function [CX,CY,C_sum,C,xi,yi]=improfile_integrated(I,d,xi,yi);
 %

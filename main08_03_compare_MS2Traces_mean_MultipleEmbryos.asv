@@ -33,7 +33,7 @@ Data = LoadMS2Sets(DataType);
 %Index = 1; % Default, the index of the dataset in the DataStatus.xlsx tab
 
 % Generate folder to save the data
-DataFolder=['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Figures-OpposingGradients\hbP2-r0123-AveragedMS2Traces\',DataType,'_Mean_spot_fluo_NC13_SEM'];
+DataFolder=['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Figures-OpposingGradients\hbP2-r0123-AveragedMS2Traces\',DataType,'_Mean_spot_fluo_NC13_SD'];
 mkdir(DataFolder)
 FigPath = DataFolder;
 
@@ -48,13 +48,12 @@ colorDict.magenta = [208,109,171]/255;
 colorDict.green =  [122,169,116]/255; %[122,150,116]/255;
 colorDict.lightBlue = [115,142,193]/255;
 colorDict.purple = [171,133,172]/255;
-colorDict.brown = [179,155,142]/255;
+colorDict.brown = [179.155,142]/255;
 colorDict.darkgreen = [126,157,144]/255;
 
 ColorChoice = [colorDict.blue; colorDict.red; colorDict.green; colorDict.yellow;...
-               colorDict.magenta; colorDict.cyan; colorDict.brown;...
-               colorDict.purple; colorDict.darkgreen]; % 4 embryos max. it could be extended easily
-%lineColor = ['b', 'r', 'g', 'y','m','c','b','r','g'];
+               colorDict.magenta; colorDict.cyan; colorDict.blue; colorDict.red]; % 4 embryos max. it could be extended easily
+lineColor = ['b', 'r', 'g', 'y','m','c','b','r'];
 
 % % For 4 males and 4 females, as mixed datasets
 % ColorChoice = [colorDict.blue; colorDict.blue;colorDict.blue;colorDict.blue;...
@@ -79,7 +78,7 @@ for m=1:length(Data)
     Data_Prefix = Data(Index).Prefix; % This should be expanded to all indices of the Datasets.
 
     compiledParticles = load([DropboxFolder,filesep,Data_Prefix,filesep,'CompiledParticles.mat']);
-    CompiledParticles = compiledParticles.CompiledParticles;%{1,1};
+    CompiledParticles = compiledParticles.CompiledParticles{1,1};
 
     %% Extract useful fields
     NC = 13; % This should be an option in future.
@@ -124,14 +123,14 @@ for m=1:length(Data)
         hold on
         
         % Only take the AP bins where there are actual values, not Nans.
-        if sum(~isnan(compiledParticles.MeanVectorAP(:,i))) > 0 
-            SEM = compiledParticles.SDVectorAP(TimeRange,i)./...
-                         sqrt(compiledParticles.NParticlesAP(TimeRange,i));
-            SD =  compiledParticles.SDVectorAP(TimeRange,i);
+        if sum(~isnan(compiledParticles.MeanVectorAP{1}(:,i))) > 0 
+            SEM = compiledParticles.SDVectorAP{1}(TimeRange,i)./...
+                         sqrt(compiledParticles.NParticlesAP{1}(TimeRange,i));
+            SD =  compiledParticles.SDVectorAP{1}(TimeRange,i);
             
             errorbar(ElapsedTime(TimeRange) - TimeStart,...
-                         compiledParticles.MeanVectorAP(TimeRange,i),...
-                         SEM,'color',ColorChoice(m,:))
+                         compiledParticles.MeanVectorAP{1}(TimeRange,i),...
+                         SD,'color',ColorChoice(m,:))
 
             title({'Mean MS2 Spot fluorescence over time';[' AP = ',num2str(AP),'%']})
             xlabel('Time into NC13(min)')
@@ -150,16 +149,16 @@ end
 hold off
 
 %% Make the figure look better & save
-for i=1:length(Particle_trace_figure)
-    StandardFigure(Particle_trace_figure(i),Particle_trace_figure(i).CurrentAxes)
-    %pause(30)
-    % sav
-    % saveas(Particle_trace_figure(i),[FigPath,filesep, 'Embryos_together','_single_vs_averaged_MS2_traces at ' ,num2str((i+8-1)*2.5), '%_NC',num2str(NC) , '.tif']); 
-    % saveas(Particle_trace_figure(i),[FigPath,filesep, 'Embryos_together','_single_vs_averaged_MS2_traces at ' ,num2str((i+8-1)*2.5), '%_NC',num2str(NC) , '.pdf']); 
-    saveas(Particle_trace_figure(i),[FigPath,filesep, 'Embryos_together','Mean_MS2_traces at ' ,num2str((i+8-1)*2.5), '%_NC',num2str(NC) , '.tif']); 
-    saveas(Particle_trace_figure(i),[FigPath,filesep, 'Embryos_together','Mean_MS2_traces at ' ,num2str((i+8-1)*2.5), '%_NC',num2str(NC) , '.pdf']); 
-    %pause
-end
+% for i=1:length(Particle_trace_figure)
+%     StandardFigure(Particle_trace_figure(i),Particle_trace_figure(i).CurrentAxes)
+%     %pause(30)
+%     % sav
+%     % saveas(Particle_trace_figure(i),[FigPath,filesep, 'Embryos_together','_single_vs_averaged_MS2_traces at ' ,num2str((i+8-1)*2.5), '%_NC',num2str(NC) , '.tif']); 
+%     % saveas(Particle_trace_figure(i),[FigPath,filesep, 'Embryos_together','_single_vs_averaged_MS2_traces at ' ,num2str((i+8-1)*2.5), '%_NC',num2str(NC) , '.pdf']); 
+%     saveas(Particle_trace_figure(i),[FigPath,filesep, 'Embryos_together','Mean_MS2_traces at ' ,num2str((i+8-1)*2.5), '%_NC',num2str(NC) , '.tif']); 
+%     saveas(Particle_trace_figure(i),[FigPath,filesep, 'Embryos_together','Mean_MS2_traces at ' ,num2str((i+8-1)*2.5), '%_NC',num2str(NC) , '.pdf']); 
+%     %pause
+% end
 
 %% Make a montage of all images from a single embryo 
 % ( for all APbins in NC13, for example)
