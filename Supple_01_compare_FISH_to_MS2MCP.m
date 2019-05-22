@@ -4,7 +4,7 @@ function Supple_01_compare_FISH_to_MS2MCP
 % cytoplasmic mRNA pattern. 
 % As the first step, we will compare Jeehae's FISH data for P2P, with our
 % P2P-MS2-MCP data. Should we try MS2.V5? I think it's good to use MS2.V5.
-
+% ???
 %% Define the directory
 %gives the location of these 5 quantities.
 [SourcePath,FISHPath,DropboxFolder,MS2CodePath,PreProcPath]=...
@@ -53,7 +53,7 @@ P2P_MS2V5_data = LoadMS2Sets('P2P-MS2v5-lacZ-36uW')
 % [TotalProd,TotalProdError,TotalProdN,...
 %     MeanTotalProd,SDTotalProd,SETotalProd]=IntegratemRNA(Data,MinParticles,MinEmbryos,varargin)
 [TotalProd,TotalProdError,TotalProdN,...
-    MeanTotalProd,SDTotalProd,SETotalProd]=IntegratemRNA(P2P_MS2V5_data,2,2)
+    MeanTotalProd,SDTotalProd,SETotalProd]=IntegratemRNA(P2P_MS2V5_data,2,2);
 
 %% plot the Mean total Prod (this is total accumulated mRNA over specific NC, divided by the total number of nuclei (ON + Off)
 % Since these MeanTotalProd is divided with total # of nuclei, I will
@@ -78,24 +78,62 @@ ylabel('Accumulated mRNA (AU)')
 legend('NC12','NC13','NC14')
 
 StandardFigure(gcf,gca)
-%% Try to calculate the total mRNA over NC13 and NC14
+%% Try to calculate the total mRNA over NC12 and NC13
 
 % Scale factor : Assuming that all nuclei undergo doubling at each cycle.
 %scale_NC11 = 0.125;
-scale_NC12 = 0.25;
-scale_NC13 = 0.5;
+scale_NC12 = 0.5;
+scale_NC13 = 1;
 scale_NC14 = 0;
 
 MeanTotalProd_NC12NC14 = MeanTotalProd(:,12)*scale_NC12 +...
-                            MeanTotalProd(:,13)*scale_NC13 + MeanTotalProd(:,14) * scale_NC14; %MeanTotalProd(:,11)*scale_NC11 + 
+                            MeanTotalProd(:,13)*scale_NC13; %+ MeanTotalProd(:,14) * scale_NC14; %MeanTotalProd(:,11)*scale_NC11 + 
 SETotalProd_NC12NC14 = sqrt (SETotalProd(:,12).^2*scale_NC12 + ...
-                                SETotalProd(:,13).^2*scale_NC13 + SETotalProd(:,14)* scale_NC14);%SETotalProd(:,11).^2*scale_NC11 + 
+                                SETotalProd(:,13).^2*scale_NC13); % + SETotalProd(:,14)* scale_NC14);%SETotalProd(:,11).^2*scale_NC11 + 
 
 % Subtract the background (I should do this better)
 MeanTotalProd_NC12NC14 = MeanTotalProd_NC12NC14 - min(MeanTotalProd_NC12NC14);
                             
 MeanTotalProd_NC12NC14_Normalized = MeanTotalProd_NC12NC14 ./ max(MeanTotalProd_NC12NC14);
 SETotalProd_NC12NC14_Normalized = SETotalProd_NC12NC14./max(MeanTotalProd_NC12NC14);
+
+%% plot TotalProd from individual embryos, as well as the mean (for nc12 + nc13, for now)
+APaxis = 0:0.025:1;
+
+% Scale factor : Assuming that all nuclei undergo doubling at each cycle.
+%scale_NC11 = 0.125;
+scale_NC12 = 0.5;
+scale_NC13 = 1;
+scale_NC14 = 0;
+
+TotalmRNA_individual = nan(length(TotalProd(:,1,1)), 41);
+TotalmRNA_individual_Error = nan(length(TotalProd(:,1,1)), 41);
+
+% Calculate the TotalmRNA and error for nc12 and nc13
+for i=1:length(TotalProd(:,1,1))
+    TotalmRNA_individual(i,:) = TotalProd(i,:,12)*scale_NC12 + TotalProd(i,:,13)*scale_NC13;
+    TotalmRNA_individual_Error(i,:) = sqrt(TotalProdError(i,:,12).^2*scale_NC12 + ...
+                           TotalProdError(i,:,13).^2*scale_NC13);
+end
+
+hold on
+for i=1:length(TotalProd(:,1,1))
+    h(i) = errorbar(APaxis, TotalmRNA_individual(i,:),  TotalmRNA_Error(i,:))
+    %pause
+end
+
+h(length(TotalProd(:,1,1))+1) = errorbar(APaxis, MeanTotalProd_NC12NC14, SETotalProd_NC12NC14)
+
+title('Accumulated mRNA (nc12+nc13) : P2P-MS2.V5')
+xlabel('AP axis (EL)')
+ylabel('Accumulated mRNA (AU)')
+legend(h(length(TotalProd(:,1,1))+1),'Mean')
+StandardFigure(gcf,gca)
+
+% Save the figure
+FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\FISH_MS2_Compare_plots'
+saveas(gcf,[FigPath,filesep,'AccumulatedmRNA_MS2V5_Individual_Mean.tif'])
+saveas(gcf,[FigPath,filesep,'AccumulatedmRNA_MS2V5_Individual_Mean.pdf'])
 %% Normalize the Mean Total Prod for NC13 and NC14
 MeanTotalProd_NC13_Normalized = MeanTotalProd(:,13) ./ max(MeanTotalProd(:,13));
 SETotalProd_NC13_Normalized = SETotalProd(:,13)./ max(MeanTotalProd(:,13));

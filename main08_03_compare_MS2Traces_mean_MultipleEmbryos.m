@@ -11,6 +11,11 @@ function main_08_03_compare_MS2Traces_mean_MultipleEmbryos(DataType, varargin)
 % MS2 traces from the same Data Type. 
 % OUTPUT :
 
+
+%% Initialize the variables
+NC = 13; % 
+
+
 % OPTIONS : 
 
 % Checking Varargin 
@@ -24,6 +29,7 @@ if ~isempty(varargin)
     end
 end
 
+
 %% Load the datasets
 % Define the folder structure
 [SourcePath,FISHPath,DropboxFolder,MS2CodePath,PreProcPath]=...
@@ -33,7 +39,7 @@ Data = LoadMS2Sets(DataType);
 %Index = 1; % Default, the index of the dataset in the DataStatus.xlsx tab
 
 % Generate folder to save the data
-DataFolder=['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Figures-OpposingGradients\hbP2-r0123-AveragedMS2Traces\',DataType,'_Mean_spot_fluo_NC13_SEM'];
+DataFolder=['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Figures-OpposingGradients\hbP2-r0123-AveragedMS2Traces\',DataType,'_Mean_spot_fluo_NC',num2str(NC),'_SEM_new'];
 mkdir(DataFolder)
 FigPath = DataFolder;
 
@@ -52,8 +58,8 @@ colorDict.brown = [179,155,142]/255;
 colorDict.darkgreen = [126,157,144]/255;
 
 ColorChoice = [colorDict.blue; colorDict.red; colorDict.green; colorDict.yellow;...
-               colorDict.magenta; colorDict.cyan; colorDict.brown;...
-               colorDict.purple; colorDict.darkgreen]; % 4 embryos max. it could be extended easily
+               colorDict.purple; colorDict.brown; colorDict.magenta;...
+               colorDict.cyan; colorDict.darkgreen]; % 4 embryos max. it could be extended easily
 %lineColor = ['b', 'r', 'g', 'y','m','c','b','r','g'];
 
 % % For 4 males and 4 females, as mixed datasets
@@ -81,8 +87,7 @@ for m=1:length(Data)
     compiledParticles = load([DropboxFolder,filesep,Data_Prefix,filesep,'CompiledParticles.mat']);
     CompiledParticles = compiledParticles.CompiledParticles;%{1,1};
 
-    %% Extract useful fields
-    NC = 13; % This should be an option in future.
+%% Extract useful fields
 
     % Define nuclear cycles (beginning frame)
     try 
@@ -124,6 +129,12 @@ for m=1:length(Data)
         hold on
         
         % Only take the AP bins where there are actual values, not Nans.
+        if iscell(compiledParticles.MeanVectorAP)
+            compiledParticles.MeanVectorAP = cell2mat(compiledParticles.MeanVectorAP);
+            compiledParticles.SDVectorAP = cell2mat(compiledParticles.SDVectorAP);
+            compiledParticles.NParticlesAP = cell2mat(compiledParticles.NParticlesAP);
+        end
+        
         if sum(~isnan(compiledParticles.MeanVectorAP(:,i))) > 0 
             SEM = compiledParticles.SDVectorAP(TimeRange,i)./...
                          sqrt(compiledParticles.NParticlesAP(TimeRange,i));

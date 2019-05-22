@@ -221,14 +221,17 @@ StandardFigure(gcf,gca)
 saveas(gcf,['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Embryos for Yang Joon\r0123_averaged_intensity_InSitu_Normalized.tif'])
 saveas(gcf,['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Embryos for Yang Joon\r0123_averaged_intensity_InSitu_Normalized.pdf'])
 
-%% Let's compare this with MS2 data
+%% %%%%%%%%%%%%%%%%%% Let's compare this with MS2 data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 DataPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
-% First,
+% First, use Average_TotalmRNAProd function (custom-written), put some more
+% description later on how it works.
+
 [TotalmRNA_averaged_r0, TotalmRNA_SEM_r0] = Average_TotalmRNAProd('r0-', DataPath);
 [TotalmRNA_averaged_r1, TotalmRNA_SEM_r1] = Average_TotalmRNAProd('r1-', DataPath);
 [TotalmRNA_averaged_r2, TotalmRNA_SEM_r2] = Average_TotalmRNAProd('r2-', DataPath);
 [TotalmRNA_averaged_r3, TotalmRNA_SEM_r3] = Average_TotalmRNAProd('r3-', DataPath);
 
+% save the fields
 %% Plot AccumulatedmRNA (MS2) altogether
 APaxis = 0:0.025:1;
 hold on
@@ -246,6 +249,142 @@ StandardFigure(gcf,gca)
 % Save the result figure
 % saveas(gcf,[DataPath,filesep,'AccumulatedmRNA_r0123_MS2_averaged','.tif'])
 % saveas(gcf,[DataPath,filesep,'AccumulatedmRNA_r0123_MS2_averaged','.pdf'])
+
+%% Optional (Calculate the totalmRNA using IntegratemRNA.m script)
+% This has benefit that we can control how many embryos, particles we can
+% use as a threshold to cut out.
+r0Data = LoadMS2Sets('r0');
+r1Data = LoadMS2Sets('r1');
+r2Data = LoadMS2Sets('r2');
+r3Data = LoadMS2Sets('r3');
+r3primeData = LoadMS2Sets('r3prime');
+
+%% Calculate the TotalmRNA using IntegratemRNA script
+[TotalProd_r0,TotalProdError_r0,TotalProdN_r0,...
+    MeanTotalProd_r0,SDTotalProd_r0,SETotalProd_r0]=IntegratemRNA(r0Data,2,2)
+
+[TotalProd_r1,TotalProdError_r1,TotalProdN_r1,...
+    MeanTotalProd_r1,SDTotalProd_r1,SETotalProd_r1]=IntegratemRNA(r1Data,2,2)
+
+[TotalProd_r2,TotalProdError_r2,TotalProdN_r2,...
+    MeanTotalProd_r2,SDTotalProd_r2,SETotalProd_r2]=IntegratemRNA(r2Data,2,2)
+
+[TotalProd_r3,TotalProdError_r3,TotalProdN_r3,...
+    MeanTotalProd_r3,SDTotalProd_r3,SETotalProd_r3]=IntegratemRNA(r3Data,2,2)
+
+[TotalProd_r3prime,TotalProdError_r3prime,TotalProdN_r3prime,...
+    MeanTotalProd_r3prime,SDTotalProd_r3prime,SETotalProd_r3prime]=IntegratemRNA(r3primeData,2,2)
+
+
+%% Plot the IntegratedmRNA from all different constructs
+
+% Define the NC
+NC=13;
+
+% r0
+figure_integratedmRNA_r0 = figure;
+hold on
+for i=1:length(TotalProd_r0(:,1,1))
+    errorbar(0:0.025:1, TotalProd_r0(i,:,NC), TotalProdError_r0(i,:,NC))
+end
+
+% r1
+figure_integratedmRNA_r1 = figure;
+hold on
+for i=1:length(TotalProd_r1(:,1,1))
+    errorbar(0:0.025:1, TotalProd_r1(i,:,NC), TotalProdError_r1(i,:,NC))
+end
+
+% r2
+figure_integratedmRNA_r2 = figure;
+hold on
+for i=1:length(TotalProd_r2(:,1,1))
+    errorbar(0:0.025:1, TotalProd_r2(i,:,NC), TotalProdError_r2(i,:,NC))
+end
+
+% r3
+figure_integratedmRNA_r3 = figure;
+hold on
+for i=1:length(TotalProd_r3(:,1,1))
+    errorbar(0:0.025:1, TotalProd_r3(i,:,NC), TotalProdError_r3(i,:,NC))
+end
+
+%% Calculate the amount during NC13 to NC14
+Scale_NC13 = 0.5;
+Scale_NC14 = 1;
+
+integratedmRNA_r0 = TotalProd_r0(:,:,13)*Scale_NC13 + ...
+                    TotalProd_r0(:,:,14)*Scale_NC14;
+                
+integratedmRNA_r1 = TotalProd_r1(:,:,13)*Scale_NC13 + ...
+                    TotalProd_r1(:,:,14)*Scale_NC14;
+                
+integratedmRNA_r2 = TotalProd_r2(:,:,13)*Scale_NC13 + ...
+                    TotalProd_r2(:,:,14)*Scale_NC14;
+                
+integratedmRNA_r3 = TotalProd_r3(:,:,13)*Scale_NC13 + ...
+                    TotalProd_r3(:,:,14)*Scale_NC14;
+                
+integratedmRNA_r3prime = TotalProd_r3prime(:,:,13)*Scale_NC13 + ...
+                    TotalProd_r3prime(:,:,14)*Scale_NC14;
+                
+% Error estimation
+integratedmRNA_error_r0 = sqrt(TotalProd_r0(:,:,13).^2*Scale_NC13 + ...
+                            TotalProd_r0(:,:,14).^2*Scale_NC14);
+                        
+integratedmRNA_error_r1 = sqrt(TotalProd_r1(:,:,13).^2*Scale_NC13 + ...
+                            TotalProd_r1(:,:,14).^2*Scale_NC14);
+                        
+integratedmRNA_error_r2 = sqrt(TotalProd_r2(:,:,13).^2*Scale_NC13 + ...
+                            TotalProd_r2(:,:,14).^2*Scale_NC14);
+                        
+integratedmRNA_error_r3 = sqrt(TotalProd_r3(:,:,13).^2*Scale_NC13 + ...
+                            TotalProd_r3(:,:,14).^2*Scale_NC14);
+                        
+integratedmRNA_error_r3prime = sqrt(TotalProd_r3prime(:,:,13).^2*Scale_NC13 + ...
+                            TotalProd_r3prime(:,:,14).^2*Scale_NC14);
+
+%% Plot the IntegratedmRNA from all different constructs (NC13 + NC14)
+
+
+% r0
+figure_integratedmRNA_r0 = figure;
+hold on
+for i=1:length(integratedmRNA_r0(:,1))
+    errorbar(0:0.025:1, integratedmRNA_r0(i,:), integratedmRNA_error_r0(i,:))
+end
+
+% r1
+figure_integratedmRNA_r1 = figure;
+hold on
+for i=1:length(integratedmRNA_r1(:,1))
+    errorbar(0:0.025:1, integratedmRNA_r1(i,:), integratedmRNA_error_r1(i,:))
+end       
+
+% r2
+figure_integratedmRNA_r2 = figure;
+hold on
+for i=1:length(integratedmRNA_r2(:,1))
+    errorbar(0:0.025:1, integratedmRNA_r2(i,:), integratedmRNA_error_r2(i,:))
+end
+
+% r3
+figure_integratedmRNA_r3 = figure;
+hold on
+for i=1:length(integratedmRNA_r3(:,1))
+    errorbar(0:0.025:1, integratedmRNA_r3(i,:), integratedmRNA_error_r3(i,:))
+end
+
+% r3 prime
+figure_integratedmRNA_r3prime = figure;
+hold on
+for i=1:length(integratedmRNA_r3prime(:,1))
+    errorbar(0:0.025:1, integratedmRNA_r3prime(i,:), integratedmRNA_error_r3prime(i,:))
+end
+
+
+
+
 
 %% Compare the In Situ vs MS2 profile (Normalized)
 
