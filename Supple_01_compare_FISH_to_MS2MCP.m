@@ -4,7 +4,7 @@ function Supple_01_compare_FISH_to_MS2MCP
 % cytoplasmic mRNA pattern. 
 % As the first step, we will compare Jeehae's FISH data for P2P, with our
 % P2P-MS2-MCP data. Should we try MS2.V5? I think it's good to use MS2.V5.
-% ???
+
 %% Define the directory
 %gives the location of these 5 quantities.
 [SourcePath,FISHPath,DropboxFolder,MS2CodePath,PreProcPath]=...
