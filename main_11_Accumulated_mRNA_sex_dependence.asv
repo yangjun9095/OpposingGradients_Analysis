@@ -87,17 +87,4 @@ xlabel('AP axis (EL)')
 ylabel('Accumulated mRNA (AU)')
 legend('r0','r1','r2','r3')
 
-AccumulatedmRNA_NC14_figure = figure
-hold on
-errorbar(APaxis, AccumulatedmRNA_All_r0(end,:), AccumulatedmRNA_All_SD_r0(end,:))
-errorbar(APaxis, AccumulatedmRNA_All_r1(end,:), AccumulatedmRNA_All_SD_r1(end,:))
-errorbar(APaxis, AccumulatedmRNA_All_r2(end,:), AccumulatedmRNA_All_SD_r2(end,:))
-errorbar(APaxis, AccumulatedmRNA_All_r3(end,:), AccumulatedmRNA_All_SD_r3(end,:))
-
-title('Accumulated mRNA over AP @ NC14')
-xlabel('AP axis (EL)')
-ylabel('Accumulated mRNA (AU)')
-legend('r0','r1','r2','r3')
-
-
 end

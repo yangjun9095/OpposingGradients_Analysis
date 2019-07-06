@@ -84,25 +84,19 @@ standardizeFigure(gca,legend,[])
 %% plot Bcd and Runt over AP @ different time points.
 tPoint = 5; % minutes
 
-Bcd_tDelay = ceil(tPoint / mean(diff(BcdTime)));
-Runt_tDelay = ceil(tPoint / mean(diff(RuntTime)));
+Bcd_tDelay = tPoint / mean(diff(BcdTime)
 
-% BcdBG = min(BcdFluo(:,:)); % This needs to be measured carefully later, for the autofluorescence
-Bcd_tpoint = BcdNC13+Bcd_tDelay;
-Runt_tpoint = RuntNC13 + Runt_tDelay;
+BcdBG = min(BcdFluo(:,:)); % This needs to be measured carefully later, for the autofluorescence
+
 hold on
-errorbar(0:0.025:1,BcdFluo(Bcd_tpoint,:)/4,BcdFluoSD(Bcd_tpoint,:)/4)
-errorbar(0:0.025:1,RuntFluo(Runt_tpoint,:)-150,RuntFluoSD(Runt_tpoint,:))
+errorbar(0:0.025:1,BcdFluo(BcdNC13+3,AP)-BcdBG,BcdFluoSD(BcdNC13:3:tLength,AP))
+errorbar(0:0.025:1,RuntFluo(RuntNC13:3:tLength,AP),RuntFluoSD(RuntNC13:3:tLength,AP))
 
-title(['Transcription factor concentration',' @ T = ',num2str(tPoint),' min into NC13'])
+title(['Transcription factor concentration',' @ AP = ',num2str((AP-1)*2.5),'%'])
 xlabel('Time (min)')
 ylabel('Protein concentration (AU)')
 legend('Bcd','Runt')
-% standardizeFigure(gca,legend,[])
-StandardFigure(gcf,gca)
+standardizeFigure(gca,legend,[])
 
-FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Input dynamics';
-saveas(gcf,[FigPath,filesep,'Input_Bcd_Runt_over AP','5min_NC13_SD','.tif'])
-saveas(gcf,[FigPath,filesep,'Input_Bcd_Runt_over AP','5min_NC13_SD','.pdf'])
 
 end

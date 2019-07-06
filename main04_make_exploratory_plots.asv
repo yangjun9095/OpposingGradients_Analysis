@@ -35,8 +35,8 @@ if NC==12
     r1Duration = r1.nc12:r1.nc13;
     r2Duration = r2.nc12:r2.nc13;
     r3Duration = r3.nc12:r3.nc13;
-    %RuntDuration = Runt.nc12:Runt.nc13;
-    %BcdDuration = Bcd.nc12:Bcd.nc13;
+    RuntDuration = Runt.nc12:Runt.nc13;
+    BcdDuration = Bcd.nc12:Bcd.nc13;
 %     r0Delay = 0;
 %     r1Delay = 0;
 %     r2Delay = 0;
@@ -46,43 +46,42 @@ elseif NC==13
     r1Duration = r1.nc13:r1.nc14;
     r2Duration = r2.nc13:r2.nc14;
     r3Duration = r3.nc13:r3.nc14;
-    %RuntDuration = Runt.nc13:Runt.nc14;
-    %BcdDuration = Bcd.nc13:Bcd.nc14;
+    RuntDuration = Runt.nc13:Runt.nc14;
+    BcdDuration = Bcd.nc13:Bcd.nc14;
 end
     
 % Scaling Bicoid and Runt
 RuntScale = 15;
 BcdScale = 3;
-%BcdBG = min(BcdScale*Bcd.MeanVectorAP(BcdDuration,AP_Pos)); % Background fluo
+BcdBG = min(BcdScale*Bcd.MeanVectorAP(BcdDuration,AP_Pos)); % Background fluo
 %t=ElapsedTimeTotal;
 %p=plot(t,r0MeanVectorAP(:,AP_Pos),t,r1MeanVectorAP(:,AP_Pos),t,r2MeanVectorAP(:,AP_Pos),t,r3MeanVectorAP(:,AP_Pos),'LineWidth',1);
 hold on
 errorbar(r0.ElapsedTime(r0Duration),r0.MeanVectorAP(r0Duration,AP_Pos),...
             r0.SDVectorAP(r0Duration,AP_Pos)./sqrt(r0.NParticlesAP(r0Duration,AP_Pos)))
-errorbar(r1.ElapsedTime(r1Duration)+1,r1.MeanVectorAP(r1Duration,AP_Pos),...
+errorbar(r1.ElapsedTime(r1Duration),r1.MeanVectorAP(r1Duration,AP_Pos),...
             r1.SDVectorAP(r1Duration,AP_Pos)./sqrt(r1.NParticlesAP(r1Duration,AP_Pos)))
-errorbar(r2.ElapsedTime(r2Duration)+1,r2.MeanVectorAP(r2Duration,AP_Pos),...
+errorbar(r2.ElapsedTime(r2Duration),r2.MeanVectorAP(r2Duration,AP_Pos),...
             r2.SDVectorAP(r2Duration,AP_Pos)./sqrt(r2.NParticlesAP(r2Duration,AP_Pos)))
 errorbar(r3.ElapsedTime(r3Duration),r3.MeanVectorAP(r3Duration,AP_Pos),...
             r3.SDVectorAP(r3Duration,AP_Pos)./sqrt(r3.NParticlesAP(r3Duration,AP_Pos)))
-% % Runt
-% errorbar(Runt.ElapsedTime(RuntDuration)-Runt.ElapsedTime(RuntDuration(1)),...
-%             RuntScale*Runt.MeanVectorAP(RuntDuration,AP_Pos) - min(RuntScale*Runt.MeanVectorAP(RuntDuration,AP_Pos)),...
-%             RuntScale*Runt.SDVectorAP(RuntDuration,AP_Pos)./sqrt(Runt.NParticlesAP(RuntDuration,AP_Pos)))
-% % Bcd
-% errorbar(Bcd.ElapsedTime(BcdDuration) - Bcd.ElapsedTime(BcdDuration(1)),...
-%             BcdScale*Bcd.MeanVectorAP(BcdDuration,AP_Pos) - BcdBG,...
-%             BcdScale*Bcd.SDVectorAP(BcdDuration,AP_Pos)./sqrt(Bcd.NParticlesAP(BcdDuration,AP_Pos)))
+% Runt
+errorbar(Runt.ElapsedTime(RuntDuration)-Runt.ElapsedTime(RuntDuration(1)),...
+            RuntScale*Runt.MeanVectorAP(RuntDuration,AP_Pos) - min(RuntScale*Runt.MeanVectorAP(RuntDuration,AP_Pos)),...
+            RuntScale*Runt.SDVectorAP(RuntDuration,AP_Pos)./sqrt(Runt.NParticlesAP(RuntDuration,AP_Pos)))
+% Bcd
+errorbar(Bcd.ElapsedTime(BcdDuration) - Bcd.ElapsedTime(BcdDuration(1)),...
+            BcdScale*Bcd.MeanVectorAP(BcdDuration,AP_Pos) - BcdBG,...
+            BcdScale*Bcd.SDVectorAP(BcdDuration,AP_Pos)./sqrt(Bcd.NParticlesAP(BcdDuration,AP_Pos)))
 
 title({['Mean fluorescence during nc13'];['at AP = ',num2str((AP_Pos-1)*2.5),'%']})
 xlabel('Time (min)')
 ylabel('Mean fluorescence (AU)')
 xlim([0 20])
-%ylim([0 1400])
-legend('r0','r1','r2','r3')%,'Runt','Bcd')
+ylim([0 1400])
+legend('r0','r1','r2','r3','Runt','Bcd')
 
-StandardFigure(gcf,gca)
-%standardizeFigure(gca,legend,'purple','magenta','yellow','red','blue','green')
+standardizeFigure(gca,legend,'purple','magenta','yellow','red','blue','green')
 %saveas(['E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\Figures-OpposingGradients\Figures_for_Paper','Mean fluorescence',num2str((AP_Pos-1)*2.5),'%.fig'])
 %saveas(gcf,'AP20.tif')
 

@@ -8,12 +8,10 @@ try
     colorDict.cyan = [108,188,233]/255;
     colorDict.magenta = [208,109,171]/255;
     colorDict.lightBlue = [115,142,193]/255;
-%     colorDict.blue = [115,143,193]/255;
-%     colorDict.purple = [171,133,172]/255;
-%     colorDict.green = [122,169,116]/255;
-    
-
-%     colorDict.darkgreen = [126,157,144]/255;
+    colorDict.blue = [115,143,193]/255;
+    colorDict.purple = [171,133,172]/255;
+    colorDict.green = [122,169,116]/255;
+    colorDict.darkgreen = [126,157,144]/255;
     
     colorDictFields = fields(colorDict);
     

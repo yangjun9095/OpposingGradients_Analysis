@@ -40,23 +40,23 @@ function main02_02_plot_FractionON
 %% Calculate the Fraction ON using Average_FractionON function
 [FractionON_individual_r0,FractionON_Average_r0,...
             FractionON_Average_Error_r0,...
-                numEmbryos_r0] = Average_FractionON('r0','skipFigure');
+                numEmbryos_r0] = Average_FractionON('r0-new-female','skipFigure');
         
 [FractionON_individual_r1,FractionON_Average_r1,...
             FractionON_Average_Error_r1,...
-                numEmbryos_r1] = Average_FractionON('r1','skipFigure');
+                numEmbryos_r1] = Average_FractionON('r1-new-female','skipFigure');
         
 [FractionON_individual_r2,FractionON_Average_r2,...
             FractionON_Average_Error_r2,...
-                numEmbryos_r2] = Average_FractionON('r2','skipFigure');
+                numEmbryos_r2] = Average_FractionON('r2-new-female','skipFigure');
         
 [FractionON_individual_r3,FractionON_Average_r3,...
             FractionON_Average_Error_r3,...
-                numEmbryos_r3] = Average_FractionON('r3','skipFigure');
+                numEmbryos_r3] = Average_FractionON('r3-new-female','skipFigure');
         
-[FractionON_individual_r3prime,FractionON_Average_r3prime,...
-            FractionON_Average_Error_r3prime,...
-                numEmbryos_r3prime] = Average_FractionON('r3prime','skipFigure');
+% [FractionON_individual_r3prime,FractionON_Average_r3prime,...
+%             FractionON_Average_Error_r3prime,...
+%                 numEmbryos_r3prime] = Average_FractionON('r3prime','skipFigure');
 
 %% Put all processed Fraction ON data into a structure for easier plotting
 
@@ -65,21 +65,21 @@ FractionON_individual{1} = FractionON_individual_r0;
 FractionON_individual{2} = FractionON_individual_r1;
 FractionON_individual{3} = FractionON_individual_r2;
 FractionON_individual{4} = FractionON_individual_r3;
-FractionON_individual{5} = FractionON_individual_r3prime;
+% FractionON_individual{5} = FractionON_individual_r3prime;
 
 % 2) Fraction ON averaged over multiple embryos
 FractionON_Average{1} = FractionON_Average_r0;
 FractionON_Average{2} = FractionON_Average_r1;
 FractionON_Average{3} = FractionON_Average_r2;
 FractionON_Average{4} = FractionON_Average_r3;
-FractionON_Average{5} = FractionON_Average_r3prime;
+% FractionON_Average{5} = FractionON_Average_r3prime;
 
 % 3) Fraction ON SEM (over multiple embryos, SD / sqrt(number of embryos))
 FractionON_SEM{1} = FractionON_Average_Error_r0;
 FractionON_SEM{2} = FractionON_Average_Error_r1;
 FractionON_SEM{3} = FractionON_Average_Error_r2;
 FractionON_SEM{4} = FractionON_Average_Error_r3;
-FractionON_SEM{5} = FractionON_Average_Error_r3prime;
+% FractionON_SEM{5} = FractionON_Average_Error_r3prime;
 
 %% Color definition
 % This is defining the line color
@@ -126,14 +126,14 @@ for NC=12:14 % NC
     xlim([0.2 0.8])
     ylim([0 1.2])
     %legend(h,'r0','r1','r2','r3','r3prime')
-    legend('r0','r1','r2','r3','r3prime')
-    %StandardFigure(gcf,gca)
+    legend('r0','r1','r2','r3')%,'r3prime')
+    standardizeFigure_YJK(gca,legend,[])
 
 end
 %% Save figures
 for i=1:3 % NC
-    standardizeFigure(FractionON_figure(i),gca,[])
-    pause(10)
+    standardizeFigure_YJK(FractionON_figure(i).CurrentAxes,FractionON_figure(i).legend,[])
+
 end
 
 %% Save the calculated fields

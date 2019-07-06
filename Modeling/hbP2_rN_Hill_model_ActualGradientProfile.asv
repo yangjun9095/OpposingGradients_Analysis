@@ -1,5 +1,10 @@
-% hbP2 + 1 Runt binding site construct modeling with actual Bcd and Runt
+% hbP2 + N Runt binding sites constructs modeling with actual Bcd and Runt
 % gradient.
+
+% Assumptions : 
+% 1) Bicoid binds cooperatively, and could be desribed using Hill function.
+% 2) Runt is not known for its cooperativity, thus I'll not assume anything
+% on this.
 
 %% Step1. Think about realistic morphogen gradients
 
@@ -102,49 +107,108 @@ Runt = Runt(21:61); % getting 0.2~0.6 of EL
 BcdScale = [10^(-3) 10^(-2) 10^(-1) 1 10 10^2 10^3 ];
 RuntScale = [ 10^(-3) 10^(-2) 10^(-1) 1 10 10^2 10^3 ];
 
-%% Case0. hb P2, without any Runt binding site
-P = [0.1:0.1:1,2:10];
-wA = [1,exp(1),exp(2),exp(3),exp(4),exp(5)]; % interaction term between Bcd molecules
-wAP = [1 exp(1) exp(2) exp(3) exp(4) exp(5)];% interaction between Bcd and Pol II
+%% Case0. hb P2, without any Runt binding sites
+% free parameters : K_A, r_basal, and r
 
-l=1;
-for i=1:length(P)
-    for j=1:length(wA)
-        for k=1:length(wAP)
-            for m=1:length(BcdScale)
-                for n=1:length(RuntScale)
-                    % Define Partition function, and P_bound states
-                    PartitionFunction = 1/wA(j)*(1+BcdScale(m)*Bcd*wA(j)).^6 + (1-1/wA(j))+...
-                                        P(i)*(1+BcdScale(m)*Bcd*wA(j)*wAP(k)).^6 + P(i)*(1-1/wA(j));
-                    RNAP_bound = P(i)*(1+BcdScale(m)*Bcd*wA(j)*wAP(k)).^6 + P(i)*(1-1/wA(j));
+X = 0:0.01:1;
 
-                    P_bound_temp = RNAP_bound./PartitionFunction;
+% Real data (r0) from inital slope fitting (FitMeanAPAsymmetric)
+% compiled in main02_plot_Initial_Loading_Rates_Asymmetric.m
+% Note, here are 4 datasets that are averaged.
+nc=2; % NC13;
+%errorbar(0:0.025:1,average_fittedRate_r0(:,nc),SEM_fittedRate_r0(:,nc))
+% Fill in the values in the posterior, up to 80%
+average_fittedRate_r0(22:33,nc) = 40; %average_fittedRate_r0(21,nc)
 
-                    % Now, let's get the features of gradients, Max, Min, Dynamic
-                    % Range, Boundary position, and Slope.
-                    [Max, Min, dynamicRange, boundaryPosition, slope] = getGradientFeatures (X,P_bound_temp);
+% interpolate the averaged_fittedRate_r0
+initial_rate_r0 = interp1(0:0.025:1,average_fittedRate_r0(:,nc),0:0.01:1);
 
-        %             Maximum(i,j,k) = max;
-        %             Minimum(i,j,k) = min;
-        %             DynamicRange(i,j,k) = dynamicRange;
-        %             BoundaryPosition(i,j,k) = boundaryPosition;
-        %             Slope(i,j,k) = slope;
-                    Maximum(l) = Max;
-                    Minimum(l) = Min;
-                    DynamicRange(l) = dynamicRange;
-                    BoundaryPosition(l) = boundaryPosition;
-                    Slope(l) = -1*slope; % Making the slope positive, just to compare the amplitude.
-                    l=l+1;
-                end
-            end
-        end
-    end
-end
+% fitRange
+fitRange = 21:81;
 
-Maximum_r0 = Maximum;
-BoundaryPosition_r0 = BoundaryPosition;
-Slope_r0 = Slope;
-DynamicRange_r0 = DynamicRange;
+% fun = @(x)x(1)*ones(size(BcdData(fitRange))) + (BcdData(fitRange)./x(3)).^6 * x(2) - initial_rate_r0(fitRange);
+% Rate = r_basal + (Bcd/K_a).^6*r ;
+% nonlinear least square fitting to the model
+x0 = [40 1 0.24];%[1  0.1 0.1]; %[r_basal r K_a]
+lb = [0, 0, 0];
+ub = [60 200 200];
+options.Algorithm = 'levenberg-marquardt';
+%lsqOptions=optimset('Display','none');
+
+x = lsqnonlin(@r0_Hill_initial_rate_fit, x0, lb, ub, options, Bcd_interp_nc13(fitRange),...
+        initial_rate_r0(fitRange))%
+% x = lsqnonlin(fun,x0,[],[],[])    
+%% Plot the data and the fit
+hold on
+% data (initial fit)
+plot(X,Bcd_interp_nc13*100)
+plot(X(fitRange),initial_rate_r0(fitRange))
+% fitted 
+plot(X(fitRange), (x(1)*ones(size(Bcd_interp_nc13(fitRange))) + (Bcd_interp_nc13(fitRange)./x(3)).^6  * x(2))./(1 + (Bcd_interp_nc13(fitRange)./x(3)).^6))
+
+% save the plot
+
+%% r1
+% Use the parameters fitted from the r0, then just adjust additional
+% parameters.
+r_basal = x(1);
+r = x(2);
+K_a = x(3);
+
+
+% Real data (r0) from inital slope fitting (FitMeanAPAsymmetric)
+% compiled in main02_plot_Initial_Loading_Rates_Asymmetric.m
+% Note, here are 4 datasets that are averaged.
+nc=2; % NC13;
+%errorbar(0:0.025:1,average_fittedRate_r0(:,nc),SEM_fittedRate_r0(:,nc))
+% Fill in the values in the posterior, up to 80%
+average_fittedRate_r1(21:33,nc) = 40; %average_fittedRate_r0(21,nc)
+
+% interpolate the averaged_fittedRate_r0
+initial_rate_r1 = interp1(0:0.025:1,average_fittedRate_r1(:,nc),0:0.01:1);
+
+% fitRange
+fitRange = 21:71;
+
+% fun = @(x)x(1)*ones(size(BcdData(fitRange))) + (BcdData(fitRange)./x(3)).^6 * x(2) - initial_rate_r0(fitRange);
+% Rate = r_basal + (Bcd/K_a).^6*r ;
+% nonlinear least square fitting to the model
+x0 = [1 1];%[1  0.1 0.1]; %[r_basal r K_a]
+lb = [0, 0];
+ub = [100 100];
+options.Algorithm = 'levenberg-marquardt';
+%lsqOptions=optimset('Display','none');
+
+x1 = lsqnonlin(@r1_Hill_initial_rate_fit, x0, lb, ub, options, x, Bcd_interp_nc13(fitRange),...
+       Runt_interp_nc13_BGsubtracted(fitRange) + 10,initial_rate_r1(fitRange))%
+   
+   
+
+%% Plot the data and the fit (r1)
+hold on
+% data (initial fit)
+plot(X,Bcd_interp_nc13*100)
+plot(X(fitRange),initial_rate_r1(fitRange))
+% fitted 
+BcdData = Bcd_interp_nc13(fitRange);
+RuntData = Runt_interp_nc13_BGsubtracted(fitRange) + 10;
+
+plot(X(fitRange), (x(1)*ones(size(BcdData)) + (BcdData./x(3)).^6  * x(2) + (RuntData./x1(1)).*(BcdData./x(3)).^6*x1(2)) ./...
+                (1 + (BcdData./x(3)).^6 + (RuntData./x1(1)).*(BcdData./x(3)).^6*x1(2) + (RuntData./x1(1)) ))
+
+
+% save the plot
+
+
+
+%% Now try to predict the r2 and r3
+
+%% r2
+(x(1)*ones(size(BcdData)) + (BcdData./x(3)).^6  * x(2) + (RuntData./x1(1)).*(BcdData./x(3)).^6*x1(2)) ./...
+                (1 + (BcdData./x(3)).^6 + (RuntData./x1(1)).*(BcdData./x(3)).^6*x1(2) + (RuntData./x1(1)) )
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 %% Calculate the gradient features from the real r0 dataset
 
 % Load the initial rate of RNAP loading from the r0 datasets

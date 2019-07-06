@@ -10,32 +10,36 @@
 %% Load the datasets.
 % For each DataType, I'll use the LoadMS2Sets to load the name of the
 % datasets.
-DataTypes = {'r0-new-male'}%{'r3-new-female'} %,,'r0-new-female'}; 
+DataTypes = {'r0-new-female','r1-new-female','r2-new-female','r3-new-female'...
+                'r0-new-male','r1-new-male','r2-new-male','r3-new-male'};%
 
 %%
+
 for i=1:length(DataTypes)
-    
-    DataType = DataTypes{i};
-    Data = LoadMS2Sets(DataType);
-    
+    clear Data
+    clear f
+%     DataType = DataTypes{i};
+%     Data = LoadMS2Sets(DataType);
+    Data = Data_r0;
+    length(Data);
         
     % Waitbar
-    f = waitbar(0,[DataType,' being analyzed']);
+    %f = waitbar(0,[DataType,' being analyzed']);
     % Get the SetName using indexing. Define the Prefix here.
     
-    for j=1:length(Data)
+    for j=2:length(Data)
         clear Prefix
         Prefix = Data(j).SetName(11:end-1)
         
-        waitbar(1/length(Data)*j,f,[Prefix, ' being anlayzed']);
+        %waitbar(1/length(Data)*j,f,[Prefix, ' being anlayzed']);
 
         % Running segmentSpots
         % These options are only for specific datasets from the Opposing
         % gradients, should be adjusted as an option in the future.
-        segmentSpots(Prefix,1020,'Shadows',1,'keepProcessedData')
+        %segmentSpots(Prefix,1040,'Shadows',1,'keepProcessedData')
         
         % TrackmRNADynamics
-        TrackmRNADynamics(Prefix)
+        TrackmRNADynamics(Prefix,'noRetracking')
         
         % AddParticlePosition
         AddParticlePosition(Prefix,'yToManualAlignmentPrompt')

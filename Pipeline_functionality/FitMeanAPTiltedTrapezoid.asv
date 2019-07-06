@@ -32,7 +32,7 @@ function FitMeanAPTiltedTrapezoid(varargin)
 
 
 %Parameters:
-MinParticles=2;     %Minimum number of particles in an AP bin
+MinParticles=1;     %Minimum number of particles in an AP bin
 MinTimePoints=5;    %Minimum number of time points where we'll have at least
                     %the minimum number of particles.
 ElongationRate=1.54;    %In kb/minutes.
@@ -566,6 +566,6 @@ end
 %Save the information
 save([DropboxFolder,filesep,Prefix,filesep,'MeanFitsV3.mat'],...
     'FitResults')
-display('MeanFitsV3.mat saved')        
+display('MeanFitsV2.mat saved')        
         
 close(FitFigure)
