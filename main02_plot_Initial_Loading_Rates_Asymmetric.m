@@ -16,19 +16,24 @@ function main02_plot_Initial_Loading_Rates_Asymmetric
 % Note that I used old datasets for the r0, for nc14, thus MeanFits.mat,
 % not MeanFitsV2.mat
 
-Data_r0 = LoadMS2Sets('r0')
+Data_r0 = LoadMS2Sets('r0','dontCompare')
 
 % Edit the LoadMS2Sets for MeanFitsV2.mat
-Data_r1_female = LoadMS2Sets('r1-new-female')
-Data_r2_female = LoadMS2Sets('r2-new-female')
-Data_r3_female = LoadMS2Sets('r3-new-female')
+%Data_r0_female = LoadMS2Sets('r0-new-female','dontCompare')
+Data_r1_female = LoadMS2Sets('r1-new-female','dontCompare')
+Data_r2_female = LoadMS2Sets('r2-new-female','dontCompare')
+Data_r3_female = LoadMS2Sets('r3-new-female','dontCompare')
 
-Data_r1_male = LoadMS2Sets('r1-new-male')
-Data_r2_male = LoadMS2Sets('r2-new-male')
-Data_r3_male = LoadMS2Sets('r3-new-male')
+Data_r1_male = LoadMS2Sets('r1-new-male','dontCompare')
+Data_r2_male = LoadMS2Sets('r2-new-male','dontCompare')
+Data_r3_male = LoadMS2Sets('r3-new-male','dontCompare')
 
 %% Extract the fitted values from all of my datasets
+% Caveat : For now (7/11/2019), I'll use r0 from my old construct since I
+% don't have NC14 from the new r0 construct. Thus, I'll use MeanFits.mat
+% from old r0, and MeanFitsV2 (Asymmetric fit) from the new ones.
 [fittedRate_r0,fittedRateSD_r0,fittedTon_r0] = Extract_Fields_MeanFits(Data_r0);
+
 [fittedRate_r1_female,fittedRateSD_r1_female,fittedTon_r1_female] = Extract_Fields_MeanFits(Data_r1_female);
 [fittedRate_r2_female,fittedRateSD_r2_female,fittedTon_r2_female] = Extract_Fields_MeanFits(Data_r2_female);
 [fittedRate_r3_female,fittedRateSD_r3_female,fittedTon_r3_female] = Extract_Fields_MeanFits(Data_r3_female);
@@ -92,6 +97,22 @@ SEM_fittedRate_r3_male = nanstd(fittedRate_r3_male,0,3)/sqrt(length(Data_r3_male
 % average_fittedRate_r3_prime = nanmean(fittedRate_r3_prime,3);
 % SEM_fittedRate_r3_prime = nanstd(fittedRate_r3_prime,0,3)/sqrt(length(Data_r3_female_prime));
 
+
+%% Color definition
+% This is defining the line color
+colorDict = struct();
+colorDict.blue = [115,143,193]/255; %[115,143,170]/255;
+colorDict.red =  [213,108,85]/255; %[200,108,85]/255;
+colorDict.yellow = [234,194,100]/255;
+colorDict.cyan = [108,188,233]/255;
+colorDict.magenta = [208,109,171]/255;
+colorDict.lightBlue = [115,142,193]/255;
+colorDict.purple = [171,133,172]/255;
+colorDict.green =  [122,169,116]/255; %[122,150,116]/255;
+colorDict.brown = [179,155,142]/255;
+colorDict.darkgreen = [126,157,144]/255;
+
+ColorChoice = [colorDict.magenta; colorDict.lightBlue; colorDict.yellow; colorDict.red; colorDict.brown]; % 4 embryos max. it could be extended easily
 %% Plot the averaged fittedRate (initial rate of RNAP loading), and SEM
 
 FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Transcription-Output\InitialSlope\';
@@ -118,60 +139,65 @@ FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradien
 InitialRate_NC13_figure = figure;
 nc = 2; % NC13
 hold on
-errorbar(0:0.025:1,average_fittedRate_r0(:,nc),SEM_fittedRate_r0(:,nc))
+errorbar(0:0.025:1,average_fittedRate_r0(:,nc),SEM_fittedRate_r0(:,nc),'Color',ColorChoice(1,:))
 % Females
-errorbar(0:0.025:1,average_fittedRate_r1_female(:,nc),SEM_fittedRate_r1_female(:,nc))
-errorbar(0:0.025:1,average_fittedRate_r2_female(:,nc),SEM_fittedRate_r2_female(:,nc))
-errorbar(0:0.025:1,average_fittedRate_r3_female(:,nc),SEM_fittedRate_r3_female(:,nc))
-% Males
-errorbar(0:0.025:1,average_fittedRate_r1_male(:,nc),SEM_fittedRate_r1_male(:,nc))
-errorbar(0:0.025:1,average_fittedRate_r2_male(:,nc),SEM_fittedRate_r2_male(:,nc))
-errorbar(0:0.025:1,average_fittedRate_r3_male(:,nc),SEM_fittedRate_r3_male(:,nc))
+errorbar(0:0.025:1,average_fittedRate_r1_female(:,nc),SEM_fittedRate_r1_female(:,nc),'Color',ColorChoice(2,:))
+errorbar(0:0.025:1,average_fittedRate_r2_female(:,nc),SEM_fittedRate_r2_female(:,nc),'Color',ColorChoice(3,:))
+errorbar(0:0.025:1,average_fittedRate_r3_female(:,nc),SEM_fittedRate_r3_female(:,nc),'Color',ColorChoice(4,:))
+% % Males
+% errorbar(0:0.025:1,average_fittedRate_r1_male(:,nc),SEM_fittedRate_r1_male(:,nc))
+% errorbar(0:0.025:1,average_fittedRate_r2_male(:,nc),SEM_fittedRate_r2_male(:,nc))
+% errorbar(0:0.025:1,average_fittedRate_r3_male(:,nc),SEM_fittedRate_r3_male(:,nc))
 
 xlim([0.15 0.5])
 ylim([0 400])
 
-legend('r0','r1-female','r2-female','r3-female','r1-male','r2-male','r3-male') 
+legend('r0','r1-female','r2-female','r3-female')%,'r1-male','r2-male','r3-male') 
 xlabel('AP Position')
 ylabel('Initial rate (AU/min)')
 title('Initial rate of RNAP loading along AP axis, at NC 13')
 StandardFigure(InitialRate_NC13_figure, InitialRate_NC13_figure.CurrentAxes)
 %standardizeFigure_YJK(gca,legend)
-%saveas(InitialRate_NC13_figure,[FigPath 'InitialRate_AsymmetricFit_r0123' , '_NC13' , '.pdf']); 
+% saveas(InitialRate_NC13_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_female' , '_NC13' , '.tif']); 
+% saveas(InitialRate_NC13_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_female' , '_NC13' , '.pdf']); 
 
 % NC14
 InitialRate_NC14_figure = figure;
 nc = 3; % NC13
 hold on
-errorbar(0:0.025:1,average_fittedRate_r0(:,nc),SEM_fittedRate_r0(:,nc))
+errorbar(0:0.025:1,average_fittedRate_r0(:,nc),SEM_fittedRate_r0(:,nc),'Color',ColorChoice(1,:))
 % Female
-errorbar(0:0.025:1,average_fittedRate_r1_female(:,nc),SEM_fittedRate_r1_female(:,nc))
-errorbar(0:0.025:1,average_fittedRate_r2_female(:,nc),SEM_fittedRate_r2_female(:,nc))
-errorbar(0:0.025:1,average_fittedRate_r3_female(:,nc),SEM_fittedRate_r3_female(:,nc))
+errorbar(0:0.025:1,average_fittedRate_r1_female(:,nc),SEM_fittedRate_r1_female(:,nc),'Color',ColorChoice(2,:))
+errorbar(0:0.025:1,average_fittedRate_r2_female(:,nc),SEM_fittedRate_r2_female(:,nc),'Color',ColorChoice(3,:))
+errorbar(0:0.025:1,average_fittedRate_r3_female(:,nc),SEM_fittedRate_r3_female(:,nc),'Color',ColorChoice(4,:))
 % Male
-errorbar(0:0.025:1,average_fittedRate_r1_male(:,nc),SEM_fittedRate_r1_male(:,nc))
-errorbar(0:0.025:1,average_fittedRate_r2_male(:,nc),SEM_fittedRate_r2_male(:,nc))
-errorbar(0:0.025:1,average_fittedRate_r3_male(:,nc),SEM_fittedRate_r3_male(:,nc))
+% errorbar(0:0.025:1,average_fittedRate_r1_male(:,nc),SEM_fittedRate_r1_male(:,nc))
+% errorbar(0:0.025:1,average_fittedRate_r2_male(:,nc),SEM_fittedRate_r2_male(:,nc))
+% errorbar(0:0.025:1,average_fittedRate_r3_male(:,nc),SEM_fittedRate_r3_male(:,nc))
 
 xlim([0.15 0.5])
 ylim([0 400])
 
-legend('r0','r1-female','r2-female','r3-female','r1-male','r2-male','r3-male') 
+legend('r0','r1-female','r2-female','r3-female')%,'r1-male','r2-male','r3-male') 
 xlabel('AP Position')
 ylabel('Initial rate (AU/min)')
 title('Initial rate of RNAP loading along AP axis, at NC 14')
 StandardFigure(InitialRate_NC14_figure, InitialRate_NC14_figure.CurrentAxes)
 
 % standardizeFigure_YJK(gca,legend)
-%saveas(InitialRate_NC14_figure,[FigPath 'InitialRate_AsymmetricFit_r0123' , '_NC14' , '.pdf']); 
+% saveas(InitialRate_NC14_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_female_' , '_NC14' , '.tif']); 
+% saveas(InitialRate_NC14_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_female_' , '_NC14' , '.pdf']); 
 
 
 %% Save the fitted initial rate and SEM 
-save('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\AveragedInitialRate_trapezoidalfit.mat',...
+
+% Define the values
+
+save('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\AveragedInitialRate_AsymmetricFit.mat',...
         'average_fittedRate_r0','SEM_fittedRate_r0',...
-        'average_fittedRate_r1','SEM_fittedRate_r1',...
-        'average_fittedRate_r2','SEM_fittedRate_r2',...
-        'average_fittedRate_r0','SEM_fittedRate_r0')
+        'average_fittedRate_r1_female','SEM_fittedRate_r1_female',...
+        'average_fittedRate_r2_female','SEM_fittedRate_r2_female',...
+        'average_fittedRate_r3_female','SEM_fittedRate_r3_female')
 
 
 

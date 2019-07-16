@@ -55,7 +55,7 @@ P2P_MS2V5_data = LoadMS2Sets('P2P-MS2v5-lacZ-36uW')
 [TotalProd,TotalProdError,TotalProdN,...
     MeanTotalProd,SDTotalProd,SETotalProd]=IntegratemRNA(P2P_MS2V5_data,3,2);
 
-%% plot the Mean total Prod (this is total accumulated mRNA over specific NC, divided by the total number of nuclei (ON + Off)
+%% Plot the Mean total Prod (this is total accumulated mRNA over specific NC, divided by the total number of nuclei (ON + Off)
 % Since these MeanTotalProd is divided with total # of nuclei, I will
 % multiply with the scaling factor to account for the different numbers of
 % nuclei in different cycles.

@@ -41,6 +41,10 @@ function main02_02_plot_FractionON
 [FractionON_individual_r0,FractionON_Average_r0,...
             FractionON_Average_Error_r0,...
                 numEmbryos_r0] = Average_FractionON('r0-new-female','skipFigure');
+% Old r0, for NC14
+[FractionON_individual_r0,FractionON_Average_r0,...
+            FractionON_Average_Error_r0,...
+                numEmbryos_r0] = Average_FractionON('r0','skipFigure');
         
 [FractionON_individual_r1,FractionON_Average_r1,...
             FractionON_Average_Error_r1,...
@@ -127,12 +131,17 @@ for NC=12:14 % NC
     ylim([0 1.2])
     %legend(h,'r0','r1','r2','r3','r3prime')
     legend('r0','r1','r2','r3')%,'r3prime')
-    standardizeFigure_YJK(gca,legend,[])
+    StandardFigure(FractionON_figure(NC-11),FractionON_figure(NC-11).CurrentAxes)
+    %standardizeFigure_YJK(gca,legend,[])
 
 end
 %% Save figures
+FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data';
+
 for i=1:3 % NC
-    standardizeFigure_YJK(FractionON_figure(i).CurrentAxes,FractionON_figure(i).legend,[])
+    %standardizeFigure_YJK(FractionON_figure(i).CurrentAxes,FractionON_figure(i).legend,[])
+    saveas(FractionON_figure(i),[FigPath,filesep,'FractionON_NC',num2str(i+11),'.tif'])
+    saveas(FractionON_figure(i),[FigPath,filesep,'FractionON_NC',num2str(i+11),'.pdf'])
 
 end
 

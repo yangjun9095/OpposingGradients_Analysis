@@ -228,15 +228,15 @@ legend('Fit-Thermo','Fit-Hill','Data')
 % Save figure
 StandardFigure(gcf,gca)
 FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Fitting_InitialSlope';
-saveas(gcf,[FigPath,filesep,'r1_InitialSlope_Hill_Fits' , '_NC13' , '.tif']); 
-saveas(gcf,[FigPath,filesep,'r1_InitialSlope_Hill_Fits' , '_NC13' , '.pdf']); 
+% saveas(gcf,[FigPath,filesep,'r0_InitialSlope_Hill_Fits' , '_NC13' , '.tif']); 
+% saveas(gcf,[FigPath,filesep,'r0_InitialSlope_Hill_Fits' , '_NC13' , '.pdf']); 
 
 %% r2 - Prediction (Hill)
 % Using the previously determined parameters, plugged into the r2_Hill_initial_rate_fit
-Prediction_r2_Hill_r1param = r2_Hill_initial_rate_fit(Q_Hill, param_r0, BcdFluo,RuntFluo_extrapolated');
+Prediction_r2_Hill_QHill = r2_Hill_initial_rate_fit(Q_Hill, param_r0, BcdFluo,RuntFluo_extrapolated');
 
 hold on
-plot(APaxis, Prediction_r2_Hill_r1param)
+plot(APaxis, Prediction_r2_Hill_QHill)
 plot(APaxis, InitialRate_r2_NC13)
 
 %% r3 - Prediction (Hill)
@@ -244,7 +244,7 @@ plot(APaxis, InitialRate_r2_NC13)
 Prediction_r3_Hill_r1param = r3_Hill_initial_rate_fit(Q_Hill, param_r0, BcdFluo,RuntFluo_extrapolated');
 
 hold on
-plot(APaxis, Prediction_r3_Hill_r1param)
+plot(APaxis, Prediction_r3_Hill)
 plot(APaxis, InitialRate_r3_NC13)
 
 % r3 doesn't match that well.
@@ -281,18 +281,18 @@ Prediction_r2_Hill = r2_Hill_initial_rate_fit(Q_Hill, param_r0, BcdFluo,RuntFluo
 hold on
 
 plot(APaxis, Prediction_r2_Hill)
-plot(APaxis, Prediction_r2_Hill_r1param)
+plot(APaxis, Prediction_r2_Hill_QHill)
 plot(APaxis, InitialRate_r2_NC13,'-o')
 title('Fit r2 model to initial RNAP loading rate (NC13)')
 xlabel('AP axis (embryo length)')
 ylabel('Initial loaind rate (AU)')
-legend('Fit-Hill','Prediction_{r1 parameters}','Data')
+legend('Prediction_{r1 parameters}','Fit-Hill','Data')
 
 % Save figure
 StandardFigure(gcf,gca)
 FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Fitting_InitialSlope';
-saveas(gcf,[FigPath,filesep,'r2_InitialSlope_Hill_Fits' , '_NC13' , '.tif']); 
-saveas(gcf,[FigPath,filesep,'r2_InitialSlope_Hill_Fits' , '_NC13' , '.pdf']); 
+% saveas(gcf,[FigPath,filesep,'r0_InitialSlope_Hill_Fits' , '_NC13' , '.tif']); 
+% saveas(gcf,[FigPath,filesep,'r0_InitialSlope_Hill_Fits' , '_NC13' , '.pdf']); 
 
 %% Fit parameters for r3 (Hill)
 % r2 extrapolation in posterior bins
@@ -321,39 +321,7 @@ Q_Hill3 = lsqnonlin(fun, p0, lb, ub, options);
 
 Prediction_r3_Hill = r3_Hill_initial_rate_fit(Q_Hill3, param_r0, BcdFluo,RuntFluo_extrapolated')
 
-%% Plot to check (r3 - fitting)
 
-hold on
-
-plot(APaxis, Prediction_r3_Hill)
-plot(APaxis, Prediction_r3_Hill_r1param)
-plot(APaxis, InitialRate_r3_NC13,'-o')
-title('Fit r3 model to initial RNAP loading rate (NC13)')
-xlabel('AP axis (embryo length)')
-ylabel('Initial loaind rate (AU)')
-legend('Fit-Hill','Prediction_{r1 parameters}','Data')
-
-% Save figure
-StandardFigure(gcf,gca)
-FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Fitting_InitialSlope';
-saveas(gcf,[FigPath,filesep,'r3_InitialSlope_Hill_Fits' , '_NC13' , '.tif']); 
-saveas(gcf,[FigPath,filesep,'r3_InitialSlope_Hill_Fits' , '_NC13' , '.pdf']); 
-
-%% Plot the Hill coefficient as # of Runt binding sites
-
-% I need proper error bar from the Hill fitting... How do I get an error
-% bar from the fitting? like confidence intervals?
-plot([1,2,3], [Q_Hill,Q_Hill2,Q_Hill3],'-o')
-xlim([0 4])
-
-title('Hill Coefficient vs # of Runt sites')
-xlabel('Number of Runt binding sites')
-ylabel('K_{R} (AU)')
-xticks([0 1 2 3 4])
-
-StandardFigure(gcf,gca)
-saveas(gcf,[FigPath,filesep,'Hill_Coeff_K_R_#Runt_sites' , '_NC13' , '.tif']); 
-saveas(gcf,[FigPath,filesep,'Hill_Coeff_K_R_#Runt_sites' , '_NC13' , '.pdf']); 
 %% Exploraration : Hill effect of # of Runt sites
 hold on
 plot(APaxis(APbinstart:APbinend),1./(1+ RuntFluo_extrapolated(APbinstart:APbinend)))

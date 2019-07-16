@@ -84,6 +84,7 @@ standardizeFigure(gca,legend,[])
 %% plot Bcd and Runt over AP @ different time points.
 tPoint = 5; % minutes
 
+% To calculate the frame that matches with the tPoint from the NC13.
 Bcd_tDelay = ceil(tPoint / mean(diff(BcdTime)));
 Runt_tDelay = ceil(tPoint / mean(diff(RuntTime)));
 
@@ -104,5 +105,8 @@ StandardFigure(gcf,gca)
 FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Input dynamics';
 saveas(gcf,[FigPath,filesep,'Input_Bcd_Runt_over AP','5min_NC13_SD','.tif'])
 saveas(gcf,[FigPath,filesep,'Input_Bcd_Runt_over AP','5min_NC13_SD','.pdf'])
+
+%% Plot for figure (Runt protein dynamics)
+% First, plot Runt protein concentration over time.
 
 end

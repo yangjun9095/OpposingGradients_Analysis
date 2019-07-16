@@ -1,4 +1,4 @@
-function Prediction=r1_Hill_initial_rate_fit(x0, x, BcdData, RuntData)
+function Prediction=r2_Hill_initial_rate_fit(x0, x, BcdData, RuntData)
 
 %Gives the Prediction in order to do a fit with
 %lsqnonlin

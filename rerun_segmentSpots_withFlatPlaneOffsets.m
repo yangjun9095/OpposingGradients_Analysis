@@ -10,18 +10,19 @@
 %% Load the datasets.
 % For each DataType, I'll use the LoadMS2Sets to load the name of the
 % datasets.
-DataTypes = {'r0-new-female','r1-new-female','r2-new-female','r3-new-female'...
-                'r0-new-male','r1-new-male','r2-new-male','r3-new-male'};%
+DataTypes = {'r3-new-female','r3-new-male'}%{'r0-new-female','r1-new-female','r2-new-female','r3-new-female'...
+                %'r0-new-male','r1-new-male','r2-new-male','r3-new-male'};%
 
 %%
 
 for i=1:length(DataTypes)
     clear Data
     clear f
-%     DataType = DataTypes{i};
-%     Data = LoadMS2Sets(DataType);
-    Data = Data_r0;
-    length(Data);
+    
+    DataType = DataTypes{i};
+    Data = LoadMS2Sets(DataType);
+    
+    %length(Data);
         
     % Waitbar
     %f = waitbar(0,[DataType,' being analyzed']);
@@ -36,7 +37,7 @@ for i=1:length(DataTypes)
         % Running segmentSpots
         % These options are only for specific datasets from the Opposing
         % gradients, should be adjusted as an option in the future.
-        %segmentSpots(Prefix,1040,'Shadows',1,'keepProcessedData')
+        segmentSpots(Prefix,1040,'Shadows',1,'keepProcessedData')
         
         % TrackmRNADynamics
         TrackmRNADynamics(Prefix,'noRetracking')

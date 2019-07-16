@@ -1,4 +1,4 @@
-function Prediction=r1_Hill_initial_rate_fit(x0, x, BcdData, RuntData)
+function Prediction=r3_Hill_initial_rate_fit(x0, x, BcdData, RuntData)
 
 %Gives the Prediction in order to do a fit with
 %lsqnonlin
@@ -13,7 +13,7 @@ K_r = x0(1);
 %r_R = x0(2);
 
 Rate_r0 = (r_basal*ones(size(BcdData)) + (BcdData./K_a).^N  * r) ./ (1 + (BcdData./K_a).^N);
-Prediction = Rate_r0 ./ (1 + RuntData./K_r)
+Prediction = Rate_r0 ./ (1 + (RuntData./K_r).^3)
 
 % chi2 = (Prediction - InitialRateData).^2;
 

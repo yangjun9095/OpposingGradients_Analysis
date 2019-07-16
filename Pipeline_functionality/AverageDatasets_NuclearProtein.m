@@ -6,9 +6,9 @@ function AverageDatasets_NuclearProtein(DataType,varargin)
 % DESCRIPTION
 % This function has input of datatype in DataStatus.xls, grabs all datasets
 % in that tab,and calculates 
-% 1) Averaged  Nuclear fluorescence (weighted sum) ,Standard
-% Deviation, and the total number of MS2 spots from multiple embryos in
-% nc12, nc13 and nc14.
+% 1) Averaged  Nuclear fluorescence (weighted sum), Standard
+% Deviation, and the total number of nuclei from multiple embryos in
+% (nc12), nc13 and nc14.
 
 
 % Note. This is assuming that you're interested in nc12, nc13 and nc14.
@@ -24,11 +24,11 @@ function AverageDatasets_NuclearProtein(DataType,varargin)
 % dataStatus.xlsx that you wish to analyze.
 %
 % OUTPUT
-% Variables for plotting, or more detailed analysis with the Averaged spot
-% fluorescence over time. Save as 'Name of the DataType'.mat file
+% Variables for plotting, or more detailed analysis with 
+% 1) the Averaged nuclear fluorescence over time. Save as 'Name of the DataType'.mat file
 % (nc12, nc13, nc14, NParticlesAP,MeanVectorsAP, SDVectorAP, ElapsedTime,
 %  AccumulatedmRNA, FractionON, AccumulatedmRNA_FractionON  ) 
-% corresponding to the embryos combined
+
 
 [SourcePath,FISHPath,DropboxFolder,MS2CodePath,PreProcPath]=...
     DetermineLocalFolders;
@@ -62,13 +62,13 @@ for i = 1:numEmbryos
         numFrames(i) = size(Data(i).ElapsedTime, 2);
         nc13(i) = Data(i).nc13;
         length_total_NC(i) = numFrames(i) - nc13(i)+1; % length of frames from nc13 to the last frame
-        maxAPIndex(i) = Data(i).MaxAPIndex; % Usually 41, in 2.5% binning
+        maxAPIndex(i) = length(Data(i).APbinID);  %Data(i).MaxAPIndex; % Usually 41, in 2.5% binning
         maxTime(i) = Data(i).ElapsedTime(numFrames(i));
     elseif NC==12
         numFrames(i) = size(Data(i).ElapsedTime, 2);
         nc12(i) = Data(i).nc12;
         length_total_NC(i) = numFrames(i) - nc12(i)+1; % length of frames from nc13 to the last frame
-        maxAPIndex(i) = Data(i).MaxAPIndex; % Usually 41, in 2.5% binning
+        maxAPIndex(i) = length(Data(i).APbinID); %Data(i).MaxAPIndex; % Usually 41, in 2.5% binning
         maxTime(i) = Data(i).ElapsedTime(numFrames(i));
     end
 end
@@ -145,21 +145,23 @@ end
 L13 = max(max(Length13));
 L14 = max(max(Length14)); % Get the minimum for now, we can fix this better later.
 
+% NC12 (Optional)
 if NC==12
     MeanVectorAP_12 = NaN(L12,numAPBins,numEmbryos);
     SDVectorAP_12 = NaN(L12,numAPBins,numEmbryos);
     NParticlesAP_12 = NaN(L12,numAPBins,numEmbryos);
-    FractionON_Instant_12 = NaN(L12,numAPBins,numEmbryos);
 end
+
+% NC13
 MeanVectorAP_13 = NaN(L13,numAPBins,numEmbryos);
 SDVectorAP_13 = NaN(L13,numAPBins,numEmbryos);
 NParticlesAP_13 = NaN(L13,numAPBins,numEmbryos);
-FractionON_Instant_13 = NaN(L13,numAPBins,numEmbryos);
 
+% NC14
 MeanVectorAP_14 = NaN(L14,numAPBins,numEmbryos);
 SDVectorAP_14 = NaN(L14,numAPBins,numEmbryos);
 NParticlesAP_14 = NaN(L14,numAPBins,numEmbryos);
-FractionON_Instant_14 = NaN(L14,numAPBins,numEmbryos);
+
 
 % Total matrices
 NewFrameLength = L12+L13+L14;
@@ -167,7 +169,7 @@ NewFrameLength = L12+L13+L14;
 MeanVectorAP = NaN(NewFrameLength,numAPBins,numEmbryos);
 SDVectorAP = NaN(NewFrameLength,numAPBins,numEmbryos);
 NParticlesAP = NaN(NewFrameLength,numAPBins,numEmbryos);
-FractionON_Instant = NaN(NewFrameLength,numAPBins,numEmbryos);
+
 
 % Synchornize all fields as all of them starts from nc 13 (or 12)
 % This synchronization should be done for each AP bin, since they might
@@ -254,10 +256,28 @@ end
 % for i=1:numEmbryos
 %     errorbar(ElapsedTime,MeanVectorAP(:,AP,i),SDVectorAP(:,AP,i))
 % end
-MeanVectorAP_forPlot = MeanVectorAP;
-SDVectorAP_forPlot = SDVectorAP;
-NParticlesAP_forPlot = NParticlesAP;
+MeanVectorAP_individual= MeanVectorAP;
+SDVectorAP_individual = SDVectorAP;
+NParticlesAP_individual = NParticlesAP;
 
+%% Plot to check individual embryos - over time (optional)
+%  APbin = 17;
+% % 
+% hold on
+% for i=1:length(Data)
+%     errorbar(ElapsedTime, MeanVectorAP(:,APbin,i), SDVectorAP(:,APbin,i))
+%     pause
+% end
+
+%% Plot to check individual embryos - over AP (optional)
+% APaxis = 0:0.025:1;
+% Tpoint = 7;
+% 
+% hold on
+% for i=1:length(Data)
+%     errorbar(APaxis, MeanVectorAP(Tpoint,:,i), SDVectorAP(Tpoint,:,i))
+%     pause
+% end
 %% Averaging
 sumMean = zeros(NewFrameLength,numAPBins);
 sumSD = zeros(NewFrameLength,numAPBins);
@@ -307,6 +327,15 @@ ElapsedTime = ElapsedTime;
 %             DataType,'AveragedTraces_IndividualEmbryos-AP=',num2str(APbin),'%'],'tif');
 % end
 
+%% Convert Zeros to NaNs
+MeanVectorAP_individual(MeanVectorAP_individual==0) = nan;
+SDVectorAP_individual(SDVectorAP_individual==0) = nan;
+NParticlesAP_individual(NParticlesAP_individual==0) = nan;
+
+MeanVectorAP(MeanVectorAP==0) = nan;
+SDVectorAP(SDVectorAP==0) = nan;
+SEVectorAP(SEVectorAP==0) = nan;
+NParticlesAP(NParticlesAP==0) = nan;
 %% Define the fields that needs to be saved
 % 1) Nuclear cycle (all AP bins are synchronized)
 if NC==12
@@ -324,6 +353,7 @@ end
     if ~isempty(savePath)
         save([savePath,filesep,DataType,'-Averaged.mat'],...
             'MeanVectorAP','SDVectorAP','SEVectorAP','NParticlesAP','ElapsedTime',...
+            'MeanVectorAP_individual','SDVectorAP_individual','NParticlesAP_individual',...
             'nc12', 'nc13', 'nc14')
     else
         warning('Define the File Path in the argument above')

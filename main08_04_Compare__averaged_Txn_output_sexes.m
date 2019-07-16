@@ -7,7 +7,7 @@ function main08_04_Compare_averaged_Txn_output_sexes(DataType,varargin)
 DataType_male = [DataType,'-male'];
 DataType_female = [DataType,'-female'];
 
-filePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Data_Processed\TxnOutput_sexed';
+filePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\TxnOutput_sexed';
 
 Data_male = load([filePath,filesep,DataType_male,'.mat']);
 Data_female = load([filePath,filesep,DataType_female,'.mat']);

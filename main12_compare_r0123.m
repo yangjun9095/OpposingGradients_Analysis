@@ -11,10 +11,11 @@ function main12_compare_r0123(varargin)
 % This assumes that the DataType is the name of the constructs in the
 % DataStatus.xlsx tab, for example, r3-new-female
 
-FilePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Data_Processed\TxnOutput_sexed';
+FilePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\TxnOutput_sexed';
 
 % This is because our new datasets(r0-new-male, r0-new-female lack NC14)
-r0Data = load([FilePath, filesep, 'r0']);
+
+r0Data = load([FilePath, filesep, 'r0-new-female']);
 %r0Data = load([FilePath, filesep, 'r0']);
 %r0Data = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r0.mat')
 r1Data = load([FilePath, filesep, 'r1-new-female']);
@@ -31,8 +32,8 @@ MeanVectorAP_r0 = r0Data.MeanVectorAP;
 SDVectorAP_r0 = r0Data.SDVectorAP;
 SEVectorAP_r0 = r0Data.SEVectorAP;
 NParticlesAP_r0 = r0Data.NParticlesAP;
-AccumulatedmRNA_All_r0 = r0Data.AccumulatedmRNA_FractionON;
-AccumulatedmRNA_All_SD_r0 = r0Data.AccumulatedmRNA_FractionON_SD;
+% AccumulatedmRNA_All_r0 = r0Data.AccumulatedmRNA_FractionON;
+% AccumulatedmRNA_All_SD_r0 = r0Data.AccumulatedmRNA_FractionON_SD;
 
 % r1
 Time_r1 = r1Data.ElapsedTime;
@@ -67,8 +68,109 @@ NParticlesAP_r3 = r3Data.NParticlesAP;
 AccumulatedmRNA_All_r3 = r3Data.AccumulatedmRNA_FractionON;
 AccumulatedmRNA_All_SD_r3 = r3Data.AccumulatedmRNA_FractionON_SD;
 
+%% Optional (Do synchronization more carefully, then average the mean spot fluo)
+%% r0
+Time_r0 = r0Data.ElapsedTime;
+NC13_r0 = r0Data.nc13;
+NC14_r0 = r0Data.nc14;
+MeanVectorAP_individual_r0 = r0Data.MeanVectorAP_individual;
+SDVectorAP_individual_r0 = r0Data.SDVectorAP_individual;
+NParticlesAP_individual_r0 = r0Data.NParticlesAP_individual;
+numEmbryos_r0 = length(r0Data.MeanVectorAP_individual(1,1,:));
+
+APbin = 12;
+for APbin = 10:21
+    clf
+    hold on
+    for i=1:numEmbryos_r0
+        errorbar(Time_r0, MeanVectorAP_individual_r0(:,APbin,i), SDVectorAP_individual_r0(:,APbin,i))
+    end
+    pause
+end
+
+%% r1
+Time_r1 = r1Data.ElapsedTime;
+NC13_r1 = r1Data.nc13;
+NC14_r1 = r1Data.nc14;
+MeanVectorAP_individual_r1 = r1Data.MeanVectorAP_individual;
+SDVectorAP_individual_r1 = r1Data.SDVectorAP_individual;
+NParticlesAP_individual_r1 = r1Data.NParticlesAP_individual;
+numEmbryos_r1 = length(r1Data.MeanVectorAP_individual(1,1,:));
+
+APbin = 12;
+for APbin = 10:21
+    clf
+    hold on
+    for i=1:numEmbryos_r1
+        errorbar(Time_r1, MeanVectorAP_individual_r1(:,APbin,i), SDVectorAP_individual_r1(:,APbin,i))
+    end
+    pause
+end
+%% r2
+Time_r2 = r2Data.ElapsedTime;
+NC13_r2 = r2Data.nc13;
+NC14_r2 = r2Data.nc14;
+MeanVectorAP_individual_r2 = r2Data.MeanVectorAP_individual;
+SDVectorAP_individual_r2 = r2Data.SDVectorAP_individual;
+NParticlesAP_individual_r2 = r2Data.NParticlesAP_individual;
+numEmbryos_r2 = length(r2Data.MeanVectorAP_individual(1,1,:));
+
+APbin = 12;
+for APbin = 10:21
+    clf
+    hold on
+    for i=1:numEmbryos_r2
+        errorbar(Time_r2, MeanVectorAP_individual_r2(:,APbin,i), SDVectorAP_individual_r2(:,APbin,i))
+    end
+    pause
+end
+
+%% r3
+Time_r3 = r3Data.ElapsedTime;
+NC13_r3 = r3Data.nc13;
+NC14_r3 = r3Data.nc14;
+MeanVectorAP_individual_r3 = r3Data.MeanVectorAP_individual;
+SDVectorAP_individual_r3 = r3Data.SDVectorAP_individual;
+NParticlesAP_individual_r3 = r3Data.NParticlesAP_individual;
+numEmbryos_r3 = length(r3Data.MeanVectorAP_individual(1,1,:));
+
+APbin = 12;
+for APbin = 10:21
+    clf
+    hold on
+    for i=1:numEmbryos_r3
+        errorbar(Time_r3, MeanVectorAP_individual_r3(:,APbin,i), SDVectorAP_individual_r3(:,APbin,i))
+    end
+    pause
+end
+
+%% Re-sync the MeanVectorAP if needed (fine-tuning)
+
+%% Averaging over multiple embryos
+% Caveat : How should I calculate the SEM of mean spot fluo?
+% Should I use the "number of embryos", or "the total number of spots"?
+
+% r0
+MeanVectorAP_r0 = nanmean(MeanVectorAP_individual_r0,3);
+SDVectorAP_r0 = nanstd(MeanVectorAP_individual_r0,0,3);
+SEVEctorAP_r0 = SDVectorAP_r0./sqrt(numEmbryos_r0);
+
+% r1
+MeanVectorAP_r1 = nanmean(MeanVectorAP_individual_r1,3);
+SDVectorAP_r1 = nanstd(MeanVectorAP_individual_r1,0,3);
+SEVEctorAP_r1 = SDVectorAP_r1./sqrt(numEmbryos_r1);
+
+% r2
+MeanVectorAP_r2 = nanmean(MeanVectorAP_individual_r2,3);
+SDVectorAP_r2 = nanstd(MeanVectorAP_individual_r2,0,3);
+SEVEctorAP_r2 = SDVectorAP_r2./sqrt(numEmbryos_r2);
+
+% r3
+MeanVectorAP_r3 = nanmean(MeanVectorAP_individual_r3,3);
+SDVectorAP_r3 = nanstd(MeanVectorAP_individual_r3,0,3);
+SEVEctorAP_r3 = SDVectorAP_r3./sqrt(numEmbryos_r3);
 %% Plot the MeanVectorAP
-APbin = 10; % APbin position
+APbin = 15; % APbin position
 
 % NC13
 Range_r0 = NC13_r0:NC14_r0;
@@ -105,40 +207,44 @@ ylabel('Mean spot fluorescence (AU)')
 legend('r0','r1','r2','r3')
 StandardFigure(gcf,gca)
 % standardizeFigure_YJK(gca,legend,[])
+%% 
+%% Section 1. Mean Spot fluo
+%% Mean spot fluorescence between constructs
 
-%% Plot the Accumulated mRNA
-APaxis = 0:0.025:1;
-
-
-AccumulatedmRNA_All_r0(isnan(AccumulatedmRNA_All_SD_r0)) = nan;
-AccumulatedmRNA_All_r1(isnan(AccumulatedmRNA_All_SD_r1)) = nan;
-AccumulatedmRNA_All_r2(isnan(AccumulatedmRNA_All_SD_r2)) = nan;
-AccumulatedmRNA_All_r3(isnan(AccumulatedmRNA_All_SD_r3)) = nan;
-
-% NC13
-AccumulatedmRNA_NC13_figure = figure
-hold on
-errorbar(APaxis, AccumulatedmRNA_All_r0(NC14_r0,:), AccumulatedmRNA_All_SD_r0(NC14_r0,:))
-errorbar(APaxis, AccumulatedmRNA_All_r1(NC14_r1,:), AccumulatedmRNA_All_SD_r1(NC14_r1,:))
-errorbar(APaxis, AccumulatedmRNA_All_r2(NC14_r2,:), AccumulatedmRNA_All_SD_r2(NC14_r2,:))
-errorbar(APaxis, AccumulatedmRNA_All_r3(NC14_r3,:), AccumulatedmRNA_All_SD_r3(NC14_r3,:))
-
-title('Accumulated mRNA over AP @ NC13')
-xlabel('AP axis (EL)')
-ylabel('Accumulated mRNA (AU)')
-legend('r0','r1','r2','r3')
-
-AccumulatedmRNA_NC14_figure = figure
-hold on
-errorbar(APaxis, AccumulatedmRNA_All_r0(end,:), AccumulatedmRNA_All_SD_r0(end,:))
-errorbar(APaxis, AccumulatedmRNA_All_r1(end,:), AccumulatedmRNA_All_SD_r1(end,:))
-errorbar(APaxis, AccumulatedmRNA_All_r2(end,:), AccumulatedmRNA_All_SD_r2(end,:))
-errorbar(APaxis, AccumulatedmRNA_All_r3(end,:), AccumulatedmRNA_All_SD_r3(end,:))
-
-title('Accumulated mRNA over AP @ NC14')
-xlabel('AP axis (EL)')
-ylabel('Accumulated mRNA (AU)')
-legend('r0','r1','r2','r3')
+%% Section 2. Accumulated mRNA
+ %%  Plot the Accumulated mRNA
+% APaxis = 0:0.025:1;
+% 
+% 
+% AccumulatedmRNA_All_r0(isnan(AccumulatedmRNA_All_SD_r0)) = nan;
+% AccumulatedmRNA_All_r1(isnan(AccumulatedmRNA_All_SD_r1)) = nan;
+% AccumulatedmRNA_All_r2(isnan(AccumulatedmRNA_All_SD_r2)) = nan;
+% AccumulatedmRNA_All_r3(isnan(AccumulatedmRNA_All_SD_r3)) = nan;
+% 
+% % NC13
+% AccumulatedmRNA_NC13_figure = figure
+% hold on
+% errorbar(APaxis, AccumulatedmRNA_All_r0(NC14_r0,:), AccumulatedmRNA_All_SD_r0(NC14_r0,:))
+% errorbar(APaxis, AccumulatedmRNA_All_r1(NC14_r1,:), AccumulatedmRNA_All_SD_r1(NC14_r1,:))
+% errorbar(APaxis, AccumulatedmRNA_All_r2(NC14_r2,:), AccumulatedmRNA_All_SD_r2(NC14_r2,:))
+% errorbar(APaxis, AccumulatedmRNA_All_r3(NC14_r3,:), AccumulatedmRNA_All_SD_r3(NC14_r3,:))
+% 
+% title('Accumulated mRNA over AP @ NC13')
+% xlabel('AP axis (EL)')
+% ylabel('Accumulated mRNA (AU)')
+% legend('r0','r1','r2','r3')
+% 
+% AccumulatedmRNA_NC14_figure = figure
+% hold on
+% errorbar(APaxis, AccumulatedmRNA_All_r0(end,:), AccumulatedmRNA_All_SD_r0(end,:))
+% errorbar(APaxis, AccumulatedmRNA_All_r1(end,:), AccumulatedmRNA_All_SD_r1(end,:))
+% errorbar(APaxis, AccumulatedmRNA_All_r2(end,:), AccumulatedmRNA_All_SD_r2(end,:))
+% errorbar(APaxis, AccumulatedmRNA_All_r3(end,:), AccumulatedmRNA_All_SD_r3(end,:))
+% 
+% title('Accumulated mRNA over AP @ NC14')
+% xlabel('AP axis (EL)')
+% ylabel('Accumulated mRNA (AU)')
+% legend('r0','r1','r2','r3')
 
 %% Alternative calculation for the Accumulated mRNA
 % Since my script, AverageDatasets didn't take into account of the
@@ -251,7 +357,9 @@ title('Accumulated mRNA over AP @ NC13')
 xlabel('AP axis (EL)')
 ylabel('Accumulated mRNA (AU)')
 legend('r0','r1','r2','r3','r1-male','r2-male','r3-male')
-%% Section 2. Mean Spot fluo
-%% Mean spot fluorescence between constructs
 
+%% Calculate the 
+%% Section 3. Fraction ON
+
+%% 
 end

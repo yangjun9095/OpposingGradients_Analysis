@@ -47,7 +47,7 @@ if ~isempty(varargin)
     end
 end
 %% Load the datasets
-Data = LoadMS2Sets(DataType);
+Data = LoadMS2Sets(DataType,'dontCompare');
 
 %% Fraction ON 
 

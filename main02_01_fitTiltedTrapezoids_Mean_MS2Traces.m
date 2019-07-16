@@ -1,6 +1,6 @@
 function main02_01_fitTiltedTrapezoids_Mean_MS2Traces
 %% Part3. Rates of RNAP loading for trapezium
-% added by Yang Joon Kim, 9/1/2018
+% by Yang Joon Kim, 9/1/2018
 % The goal is to plot two different RNAP loading rates for trapezium.
 % The fitting is done by FitTiltedTrapezoid_Mean.m script
 
