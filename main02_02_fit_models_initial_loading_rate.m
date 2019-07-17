@@ -42,7 +42,7 @@ FilePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients
 BcdNC13 = BcdAnt.DataBcd.nc13;
 % Take temporal average over 3-5 minutes into NC13.
 BcdFluo = nanmean(BcdAnt.DataBcd.MeanVectorAP(BcdNC13 + 6: BcdNC13 + 10,:));
-
+BcdFluoSD = nanmean(BcdAnt.DataBcd.SDVectorAP(BcdNC13 + 6: BcdNC13 + 10,:));
 
 Runt = load([FilePath, filesep, 'Runt_time_averaged_female.mat']);
 % Runt is already time-averaged. For 3-5 minutes, it's in the 1st cell.
@@ -64,7 +64,7 @@ RuntScale = 5; % Scaling for plot
 
 hold on
 yyaxis left
-errorbar(APaxis, BcdFluo, BcdFluoSE)
+errorbar(APaxis, BcdFluo, BcdFluoSD)
 ylabel('Bicoid concentration (AU)')
 
 yyaxis right
@@ -77,6 +77,10 @@ xlabel('AP (Embryo Length)')
 legend('Bcd','Runt')
 StandardFigure(gcf,gca)
 
+% Save figures
+FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Fitting_InitialSlope';
+saveas(gcf,[FigPath,filesep,'InputTF_Time_Averaged_NC13_3-5min_BcdRunt' , '_NC13' , '.tif']); 
+saveas(gcf,[FigPath,filesep,'InputTF_Time_Averaged_NC13_3-5min_BcdRunt' , '_NC13' , '.pdf']); 
 %% Save the extrapolated Runt profile
 Runt.Extrapolated_Fluo_3_5min_NC13 = RuntFluo_extrapolated;
 
@@ -355,10 +359,10 @@ StandardFigure(gcf,gca)
 saveas(gcf,[FigPath,filesep,'Hill_Coeff_K_R_#Runt_sites' , '_NC13' , '.tif']); 
 saveas(gcf,[FigPath,filesep,'Hill_Coeff_K_R_#Runt_sites' , '_NC13' , '.pdf']); 
 %% Exploraration : Hill effect of # of Runt sites
-hold on
-plot(APaxis(APbinstart:APbinend),1./(1+ RuntFluo_extrapolated(APbinstart:APbinend)))
-plot(APaxis(APbinstart:APbinend),1./(1+ RuntFluo_extrapolated(APbinstart:APbinend).^2))
-plot(APaxis(APbinstart:APbinend),1./(1+ RuntFluo_extrapolated(APbinstart:APbinend).^3))
-%set(gca, 'YScale', 'log')
-legend('1','2','3')
+% hold on
+% plot(APaxis(APbinstart:APbinend),1./(1+ RuntFluo_extrapolated(APbinstart:APbinend)))
+% plot(APaxis(APbinstart:APbinend),1./(1+ RuntFluo_extrapolated(APbinstart:APbinend).^2))
+% plot(APaxis(APbinstart:APbinend),1./(1+ RuntFluo_extrapolated(APbinstart:APbinend).^3))
+% %set(gca, 'YScale', 'log')
+% legend('1','2','3')
 end

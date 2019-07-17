@@ -15,7 +15,7 @@ function [AccumulatedmRNA, AccumulatedmRNA_SD, AccumulatedmRNA_SE,...
 %% Load the processed data
 % Define the file path. This should be fed into the function as an optional
 % input. Edit later.
-FilePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\TxnOutput_sexed'; 
+FilePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData'; 
 Data = load([FilePath, filesep, DataType,'.mat']);
 
 %% Extract useful fields
@@ -35,6 +35,7 @@ NParticlesAP = Data.NParticlesAP_individual;
 MeanVectorAP(isnan(MeanVectorAP)) = 0;
 SDVectorAP(isnan(SDVectorAP)) = 0;
 NParticlesAP(isnan(NParticlesAP)) = 0;
+
 %% Calculate the accumulated mRNA
 
 NFrames = length(ElapsedTime);

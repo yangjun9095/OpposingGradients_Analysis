@@ -19,7 +19,7 @@ function main02_plot_Initial_Loading_Rates_Asymmetric
 Data_r0 = LoadMS2Sets('r0','dontCompare')
 
 % Edit the LoadMS2Sets for MeanFitsV2.mat
-%Data_r0_female = LoadMS2Sets('r0-new-female','dontCompare')
+Data_r0_female = LoadMS2Sets('r0-new-female','dontCompare')
 Data_r1_female = LoadMS2Sets('r1-new-female','dontCompare')
 Data_r2_female = LoadMS2Sets('r2-new-female','dontCompare')
 Data_r3_female = LoadMS2Sets('r3-new-female','dontCompare')

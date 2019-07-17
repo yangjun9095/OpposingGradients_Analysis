@@ -10,7 +10,7 @@
 %% Load the datasets.
 % For each DataType, I'll use the LoadMS2Sets to load the name of the
 % datasets.
-DataTypes = {'r3-new-female','r3-new-male'}%{'r0-new-female','r1-new-female','r2-new-female','r3-new-female'...
+DataTypes = {'r0-new-female'}%'r3-new-female','r3-new-male'}%{'r0-new-female','r1-new-female','r2-new-female','r3-new-female'...
                 %'r0-new-male','r1-new-male','r2-new-male','r3-new-male'};%
 
 %%
@@ -20,7 +20,7 @@ for i=1:length(DataTypes)
     clear f
     
     DataType = DataTypes{i};
-    Data = LoadMS2Sets(DataType);
+    Data = LoadMS2Sets(DataType,'dontCompare');
     
     %length(Data);
         
