@@ -29,8 +29,8 @@ FilePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients
 % This is because our new datasets(r0-new-male, r0-new-female lack NC14)
 
 %r0Data = load([FilePath, filesep, 'r0-new-female']);
-%r0Data = load([FilePath, filesep, 'r0']);
-r0Data = load([FilePath, filesep, 'r0-new-mixed']);
+r0Data = load([FilePath, filesep, 'r0']);
+%r0Data = load([FilePath, filesep, 'r0-new-mixed']);
 %r0Data = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r0.mat')
 r1Data = load([FilePath, filesep, 'r1-new-female']);
 r2Data = load([FilePath, filesep, 'r2-new-female']);
@@ -192,21 +192,21 @@ colorDict.darkgreen = [126,157,144]/255;
 
 ColorChoice = [colorDict.magenta; colorDict.lightBlue; colorDict.yellow; colorDict.red; colorDict.brown]; % 4 embryos max. it could be extended easily
 %% Plot the MeanVectorAP
-APbin = 17; % APbin position
+APbin = 9; % APbin position
 
-% NC13
-Range_r0 = NC13_r0:NC14_r0;
-Range_r1 = NC13_r1:NC14_r1;
-Range_r2 = NC13_r2:NC14_r2;
-Range_r3 = NC13_r3:NC14_r3;
-tDelay = zeros(1,4);
+% % NC13
+% Range_r0 = NC13_r0:NC14_r0;
+% Range_r1 = NC13_r1:NC14_r1;
+% Range_r2 = NC13_r2:NC14_r2;
+% Range_r3 = NC13_r3:NC14_r3;
+% tDelay = zeros(1,4);
 
 % NC14
-% Range_r0 = NC14_r0:length(Time_r0);
-% Range_r1 = NC14_r1:length(Time_r1);
-% Range_r2 = NC14_r2:length(Time_r2);
-% Range_r3 = NC14_r3:length(Time_r3);
-%tDelay = [Time_r0(NC14_r0), Time_r1(NC14_r1), Time_r2(NC14_r2), Time_r3(NC14_r3)];
+Range_r0 = NC14_r0:length(Time_r0);
+Range_r1 = NC14_r1:length(Time_r1);
+Range_r2 = NC14_r2:length(Time_r2);
+Range_r3 = NC14_r3:length(Time_r3);
+tDelay = [Time_r0(NC14_r0), Time_r1(NC14_r1), Time_r2(NC14_r2), Time_r3(NC14_r3)];
 
 MS2TraceFig = figure;
 hold on
@@ -222,7 +222,7 @@ errorbar(Time_r2(Range_r2)-tDelay(3), MeanVectorAP_r2(Range_r2,APbin),...
 errorbar(Time_r3(Range_r3)-tDelay(4), MeanVectorAP_r3(Range_r3,APbin),...
             SEVectorAP_r3(Range_r3,APbin),'Color',ColorChoice(4,:))
 % xlim, ylim
-xlim([0 20])
+%xlim([0 20])
 ylim([0 max(MeanVectorAP_r0(Range_r0,APbin)) + 100])
 title(['Mean spot fluorescence over time @ AP = ',num2str((APbin-1)*2.5),'%'])
 xlabel('Time into NC14 (min)')
@@ -232,9 +232,9 @@ StandardFigure(MS2TraceFig,MS2TraceFig.CurrentAxes)
 % standardizeFigure_YJK(gca,legend,[])
 
 % Save Figure
-% FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\hbP2-r0123-Averaged_MS2_traces_multipleEmbryos';
-% saveas(MS2TraceFig,[FigPath,filesep, 'Mean_MS2_traces at AP=', num2str((APbin-1)*2.5),'%' , '_NC13' , '.tif']); 
-% saveas(MS2TraceFig,[FigPath,filesep, 'Mean_MS2_traces at AP=', num2str((APbin-1)*2.5),'%' , '_NC13' , '.pdf']); 
+FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\hbP2-r0123-Averaged_MS2_traces_multipleEmbryos';
+saveas(MS2TraceFig,[FigPath,filesep, 'Mean_MS2_traces at AP=', num2str((APbin-1)*2.5),'%' , '_NC14' , '.tif']); 
+saveas(MS2TraceFig,[FigPath,filesep, 'Mean_MS2_traces at AP=', num2str((APbin-1)*2.5),'%' , '_NC14' , '.pdf']); 
 
 %% 
 %% Section 1. Mean Spot fluo
@@ -275,7 +275,7 @@ StandardFigure(MS2TraceFig,MS2TraceFig.CurrentAxes)
 % % ylabel('Accumulated mRNA (AU)')
 % % legend('r0','r1','r2','r3')
 % 
-% %% Alternative calculation for the Accumulated mRNA
+ %% Alternative calculation for the Accumulated mRNA
 % % Since my script, AverageDatasets didn't take into account of the
 % % APbinArea for calculating the total mRNA
 % % I'll try IntegratemRNA.m script for this.
@@ -348,7 +348,7 @@ StandardFigure(MS2TraceFig,MS2TraceFig.CurrentAxes)
 % %saveas(AccumulatedmRNA_NC14_figure,[FigPath,filesep,'AccumulatedmRNA_r0123',DataType(1:end-1),'_NC14','_SE','.tif'])
 % %saveas(AccumulatedmRNA_NC14_figure,[FigPath,filesep,'AccumulatedmRNA_r0123',DataType(1:end-1),'_NC14','_SE','.pdf'])
 % 
-% %% Side thing (males)
+ %% Side thing (males)
 % % Compare the total mRNA profile for diffrent sex
 % % 1) Load the datasets
 % 
@@ -390,15 +390,17 @@ StandardFigure(MS2TraceFig,MS2TraceFig.CurrentAxes)
 %% Section 2. Accumulated mRNA (using AccumulatedmRNA.m script)
 %% Accumulate mRNA for individual embryos, then average with proper SEM
 % (SD/sqrt(number of embryos))
+% MinParticles = 2;
 AccumulatedmRNA('r0',2);
 AccumulatedmRNA('r1-new-female',2);
 AccumulatedmRNA('r2-new-female',2);
 AccumulatedmRNA('r3-new-female',2);
 
 %% load the Accumulated mRNA
+FilePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
 
 %% Calculate the 
 %% Section 3. Fraction ON
-
+% Use the 
 %% 
 end

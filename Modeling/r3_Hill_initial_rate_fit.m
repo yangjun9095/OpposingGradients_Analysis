@@ -13,7 +13,7 @@ K_r = x0(1);
 %r_R = x0(2);
 
 Rate_r0 = (r_basal*ones(size(BcdData)) + (BcdData./K_a).^N  * r) ./ (1 + (BcdData./K_a).^N);
-Prediction = Rate_r0 ./ (1 + (RuntData./K_r).^3)
+Prediction = Rate_r0 ./ (1 + (RuntData./K_r).^3);
 
 % chi2 = (Prediction - InitialRateData).^2;
 
