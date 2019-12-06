@@ -6,94 +6,68 @@
 function [Result] = RuntConcentrationVariability
 
 %% Different datasets (1024x256, 200Hz, 0.85 zoom, etc., better signal to noise than above)
+RuntFemale = LoadMS2Sets('Runt-1min-200Hz-Female');
+RuntMale = LoadMS2Sets('Runt-1min-200Hz-Male');
 
-RuntMale1 = load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-12-03-RuntJB3-vasa-eGFP-Pos7\CompiledNuclei.mat')
-RuntMale2 = load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-12-03-RuntJB3-vasa-eGFP-Pos22\CompiledNuclei.mat')
-RuntMale3 = load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-12-03-RuntJB3-vasa-eGFP-Pos23\CompiledNuclei.mat')
-RuntMale4 = load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-12-02-RuntJB3-vasa-eGFP-Pos18\CompiledNuclei.mat')
+%% Sanity check for AP registration
+Sample = load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-12-03-RuntJB3-vasa-eGFP-Pos8\CompiledNuclei.mat')
 
-RuntFemale1 = load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-12-03-RuntJB3-vasa-eGFP-Pos4\CompiledNuclei.mat')
-RuntFemale2 = load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-12-03-RuntJB3-vasa-eGFP-Pos8\CompiledNuclei.mat')
-RuntFemale3 = load('E:\YangJoon\LivemRNA\Data\Dropbox;\DynamicsResults\2018-12-04-RuntJB3-vasa-eGFP-Pos13\CompiledNuclei.mat')
-
-%% Define varialbles to use
-Time_Male1   =  RuntMale1.nc13:RuntMale1.nc14+10;
-Time_Male2   =  RuntMale2.nc13:RuntMale2.nc14+10;
-Time_Male3   =  RuntMale3.nc13:RuntMale3.nc14+10;
-Time_Male4   =  RuntMale4.nc13:RuntMale4.nc14+10;
-
-Time_Female1 =  RuntFemale1.nc13:RuntFemale1.nc14+10;
-Time_Female2 =  RuntFemale2.nc13:RuntFemale2.nc14+10;
-Time_Female3 =  RuntFemale3.nc13:RuntFemale3.nc14+2;
-
-%% Plot Runt nuclear fluo over Time (for one AP bin)
-AP = 17;
-hold on
-%errorbar(RuntUnknownSex1.ElapsedTime(Time_Unknown1)+5,RuntUnknownSex1.MeanVectorAP(Time_Unknown1,AP),RuntUnknownSex1.SDVectorAP(Time_Unknown1,AP))
-%errorbar(RuntUnknownSex2.ElapsedTime(Time_Unknown2)-15,RuntUnknownSex2.MeanVectorAP(Time_Unknown2,AP),RuntUnknownSex2.SDVectorAP(Time_Unknown2,AP))
-
-%RuntMale1 dataset has some weird spike in the dataset (original movie), so
-%I interpolated the value.
-RuntMale1.MeanVectorAP(26,:) = nanmean([RuntMale1.MeanVectorAP(25,:),RuntMale1.MeanVectorAP(27,:)]);
-
-errorbar(RuntMale1.ElapsedTime(Time_Male1) - RuntMale1.ElapsedTime(RuntMale1.nc13),...
-            RuntMale1.MeanVectorAP(Time_Male1,AP),RuntMale1.SDVectorAP(Time_Male1,AP))
-errorbar(RuntMale2.ElapsedTime(Time_Male2) - RuntMale2.ElapsedTime(RuntMale2.nc13),...
-            RuntMale2.MeanVectorAP(Time_Male2,AP),RuntMale2.SDVectorAP(Time_Male2,AP))
-errorbar(RuntMale3.ElapsedTime(Time_Male3) - RuntMale3.ElapsedTime(RuntMale3.nc13),...
-            RuntMale3.MeanVectorAP(Time_Male3,AP),RuntMale3.SDVectorAP(Time_Male3,AP))
-errorbar(RuntMale4.ElapsedTime(Time_Male4) - RuntMale4.ElapsedTime(RuntMale4.nc13),...
-            RuntMale4.MeanVectorAP(Time_Male4,AP),RuntMale4.SDVectorAP(Time_Male4,AP))
-
-errorbar(RuntFemale1.ElapsedTime(Time_Female1) - RuntFemale1.ElapsedTime(RuntFemale1.nc13),...
-            RuntFemale1.MeanVectorAP(Time_Female1,AP),RuntFemale1.SDVectorAP(Time_Female1,AP))
-errorbar(RuntFemale2.ElapsedTime(Time_Female2) - RuntFemale2.ElapsedTime(RuntFemale2.nc13),...
-            RuntFemale2.MeanVectorAP(Time_Female2,AP),RuntFemale2.SDVectorAP(Time_Female2,AP))
-% errorbar(RuntFemale3.ElapsedTime(Time_Female3) - RuntFemale3.ElapsedTime(RuntFemale3.nc13),...
-%             RuntFemale3.MeanVectorAP(Time_Female3,AP),RuntFemale3.SDVectorAP(Time_Female3,AP))
-% errorbar(RuntFemale4.ElapsedTime(Time_Female4) - RuntFemale4.ElapsedTime(RuntFemale4.nc13),...
-%             RuntFemale4.MeanVectorAP(Time_Female4,AP),RuntFemale4.SDVectorAP(Time_Female4,AP))
-
-%ylim([0 400])
-
-title(['Runt nuclear concentration over Time',' @ ',num2str((AP-1)*2.5),'%'])
-xlabel('Time (min)')
-ylabel('Runt nuclear fluorescence (AU)')
-legend('Male1','Male2','Male3','Male4','Female1','Female2','Female3','Location','southeast')
-standardizeFigure(gca,legend,[])
-%saveas(gcf,'E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\Personalcodes-YangJoon')
+plot(0:0.025:1, Sample.MeanVectorAP)
 %% Find the peak tpoint in nc13
-Data = RuntFemale3;
-hold on
-for i=Data.nc13:Data.nc14
-    errorbar(0:0.025:1,Data.MeanVectorAP(i,:),Data.SDVectorAP(i,:))
-    i
-    pause
+Data = RuntMale;
+for j=1:length(Data)
+    clf
+    hold on
+    for i=Data(j).nc14:length(Data(j).ElapsedTime)%Data(j).nc13:Data(j).nc14
+        errorbar(0:0.025:1,Data(j).MeanVectorAP(i,:),Data(j).SDVectorAP(i,:))
+        i
+        pause
+    end
 end
-%% Plot over AP axis
-tPoint(1) = RuntMale1.nc13+10;
-tPoint(2) = RuntMale2.nc13+10;
-tPoint(3) = RuntMale3.nc13+10;
-tPoint(4) = RuntMale4.nc13+11;
-tPoint(5) = RuntFemale1.nc13+11;
-tPoint(6) = RuntFemale2.nc13+10;
-%tPoint(7) = RuntFemale3.nc13+10;
+%% Plot over AP axis - Female
+Data = RuntFemale;
+% % NC13
+% tPoint(1) = 24; %22:25;
+% tPoint(2) = 19; %17:20;
+% tPoint(3) = 13; %12:14;
+% tPoint(4) = 25; %24:27;
+
+% Beginning of NC14 (kinda static)
+tPoint(1) = 35;
+tPoint(2) = 35;
+tPoint(3) = 30;
+tPoint(4) = 50;
 
 hold on
-errorbar(0:0.025:1, RuntMale1.MeanVectorAP(tPoint(1),:), RuntMale1.SDVectorAP(tPoint(1),:))
-errorbar(0:0.025:1, RuntMale2.MeanVectorAP(tPoint(2),:), RuntMale2.SDVectorAP(tPoint(2),:))
-errorbar(0:0.025:1, RuntMale3.MeanVectorAP(tPoint(3),:), RuntMale3.SDVectorAP(tPoint(3),:))
-errorbar(0:0.025:1, RuntMale3.MeanVectorAP(tPoint(4),:), RuntMale3.SDVectorAP(tPoint(4),:))
-
-errorbar(0:0.025:1, RuntFemale1.MeanVectorAP(tPoint(5),:), RuntFemale1.SDVectorAP(tPoint(5),:))
-errorbar(0:0.025:1, RuntFemale2.MeanVectorAP(tPoint(6),:), RuntFemale2.SDVectorAP(tPoint(6),:))
-%errorbar(0.2:0.025:1.2, RuntFemale3.MeanVectorAP(tPoint(7),:), RuntFemale3.SDVectorAP(tPoint(7),:))
-
-title(['Runt nuclear concentration over AP','@ peak of nc13'])
+for j=1:length(Data)
+    errorbar(0:0.025:1, Data(j).MeanVectorAP(tPoint(j),:), Data(j).SDVectorAP(tPoint(j),:))
+end
+title(['Runt nuclear concentration over AP','@ beginning of NC14'])
 xlabel('AP axis (EL)')
 ylabel('Runt nuclear fluorescence (AU)')
-legend('Male1','Male2','Male3','Male4','Female1','Female2','Location','northwest')
-standardizeFigure(gca,legend,[])
+legend('1','2','3','4','Location','northwest')
+StandardFigure(gcf,gca)
+
+%% Plot over AP axis - Male
+Data = RuntMale;
+
+% Beginning of NC14 (kinda static)
+tPoint(1) = 40;
+tPoint(2) = 40;
+tPoint(3) = 32;
+tPoint(4) = 40;
+tPoint(5) = 32;
+
+hold on
+for j=1:length(Data)
+    errorbar(0:0.025:1, Data(j).MeanVectorAP(tPoint(j),:), Data(j).SDVectorAP(tPoint(j),:))
+end
+title(['Runt nuclear concentration over AP','@ beginning of NC14'])
+xlabel('AP axis (EL)')
+ylabel('Runt nuclear fluorescence (AU)')
+legend('1','2','3','4','5','Location','northwest')
+StandardFigure(gcf,gca)
+
 
 %% Part2 :  Let's plot the male/female data using the LoadDataSets.m
 % Load the datasets

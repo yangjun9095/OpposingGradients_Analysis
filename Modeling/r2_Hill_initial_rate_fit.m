@@ -7,14 +7,21 @@ function Prediction=r2_Hill_initial_rate_fit(x0, x, BcdData, RuntData)
 r_basal = x(1);
 r = x(2);
 K_a = x(3);
-N=6;
+N = x(4);
 
 K_r = x0(1);
-%r_R = x0(2);
+r_R1 = x0(2);
+r_R2 = x0(3);
+w_R = x0(4);
 
-Rate_r0 = (r_basal*ones(size(BcdData)) + (BcdData./K_a).^N  * r) ./ (1 + (BcdData./K_a).^N);
-Prediction = Rate_r0 ./ (1 + (RuntData./K_r).^2);
+Numerator = (r_basal*ones(size(BcdData)) + r*(BcdData./K_a).^N + ...
+                2*r_R1*(BcdData./K_a).^N.*RuntData./K_r + r_R2*(BcdData./K_a).^N.*(RuntData./K_r)^2*w_R);
+            
+Denominator = (1 + (BcdData./K_a).^N + 2*RuntData./K_r + (RuntData./K_r)^2*w_R +...
+                2*(BcdData./K_a).^N.*RuntData./K_r + (BcdData./K_a).^N.*(RuntData./K_r)^2*w_R);
 
-% chi2 = (Prediction - InitialRateData).^2;
+Prediction = Numerator ./ Denominator;
+%Prediction = Rate_r0 ./ (1 + RuntData./K_r)
+
 
 end

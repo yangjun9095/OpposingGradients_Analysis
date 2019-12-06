@@ -53,7 +53,6 @@ end
 hold on
 for i=1:length(Data_r2_female)
     errorbar(0:0.025:1,fittedRate_r2_female(:,NC,i),fittedRateSD_r2_female(:,NC,i))
-    pause
 end
 
 hold on
@@ -62,11 +61,11 @@ for i=1:length(Data_r3_female)
     %pause
 end
 
-hold on
-for i=1:length(Data_r3_female_prime)
-    errorbar(0:0.025:1,fittedRate_r3_prime(:,NC,i),fittedRateSD_r3_prime(:,NC,i))
-    %pause
-end
+% hold on
+% for i=1:length(Data_r3_female_prime)
+%     errorbar(0:0.025:1,fittedRate_r3_prime(:,NC,i),fittedRateSD_r3_prime(:,NC,i))
+%     %pause
+% end
 
 %% Calculate the average using nanmean, nanstd
 average_fittedRate_r0 = nanmean(fittedRate_r0,3);
@@ -110,7 +109,7 @@ colorDict.darkgreen = [126,157,144]/255;
 ColorChoice = [colorDict.magenta; colorDict.lightBlue; colorDict.yellow; colorDict.red; colorDict.brown]; % 4 embryos max. it could be extended easily
 %% Plot the averaged fittedRate (initial rate of RNAP loading), and SEM
 
-FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Transcription-Output\InitialSlope\';
+FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\InitialSlope_linear\';
 
 % % NC12
 % InitialRate_NC12_figure = figure;
@@ -153,8 +152,8 @@ ylabel('Initial rate (AU/min)')
 title('Initial rate of RNAP loading along AP axis, at NC 13')
 StandardFigure(InitialRate_NC13_figure, InitialRate_NC13_figure.CurrentAxes)
 %standardizeFigure_YJK(gca,legend)
-% saveas(InitialRate_NC13_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_female' , '_NC13' , '.tif']); 
-% saveas(InitialRate_NC13_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_female' , '_NC13' , '.pdf']); 
+saveas(InitialRate_NC13_figure,[FigPath 'InitialRate_LinearFit_r0123_female' , '_NC13' , '.tif']); 
+saveas(InitialRate_NC13_figure,[FigPath 'InitialRate_LinearFit_r0123_female' , '_NC13' , '.pdf']); 
 
 % NC14
 InitialRate_NC14_figure = figure;
@@ -180,8 +179,8 @@ title('Initial rate of RNAP loading along AP axis, at NC 14')
 StandardFigure(InitialRate_NC14_figure, InitialRate_NC14_figure.CurrentAxes)
 
 % standardizeFigure_YJK(gca,legend)
-% saveas(InitialRate_NC14_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_female_' , '_NC14' , '.tif']); 
-% saveas(InitialRate_NC14_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_female_' , '_NC14' , '.pdf']); 
+saveas(InitialRate_NC14_figure,[FigPath 'InitialRate_LinearFit_r0123_female_' , '_NC14' , '.tif']); 
+saveas(InitialRate_NC14_figure,[FigPath 'InitialRate_LinearFit_r0123_female_' , '_NC14' , '.pdf']); 
 
 
 %% Save the fitted initial rate and SEM 

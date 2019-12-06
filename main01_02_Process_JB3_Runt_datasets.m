@@ -13,7 +13,7 @@ AverageDatasets_NuclearProtein('Runt-1min-200Hz-Female','savePath','E:\YangJoon\
 % Male
 AverageDatasets_NuclearProtein('Runt-1min-200Hz-Male','savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData')
 % NoNB
-AverageDatasets_NuclearProtein('NoNB','savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData')
+% AverageDatasets_NuclearProtein('NoNB','savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData')
 
 %% Step2. Background-subtraction.
 %% Load the datasets that are synchronized above.
@@ -58,7 +58,30 @@ NC13_NoNB = NoNB.nc13;
 NC14_NoNB = NoNB.nc14;
 
 %% Plot for checking
-APbin = 15;
+% As of 11/15/2019, I don't have any anterior data point.
+% So, I'll process more embryos for this, but for now, I'll average the
+% data points across AP bins as an approximation of anterior points.
+
+APaxis = 0:0.025:1;
+EmbryoIndex = 4;
+
+hold on
+for i=1:length(MeanFluo_female(:,1,EmbryoIndex))
+    errorbar(0:0.025:1, MeanFluo_female(i,:,EmbryoIndex), SEFluo_female(i,:,EmbryoIndex))
+end
+
+%% Process the No NB embryos data
+MeanFluo_NoNB_APaveraged = nanmean(MeanFluo_NoNB,2);
+SDFluo_NoNB_APaveraged = nanmean(SDFluo_NoNB,2);
+
+for i=1:length(MeanFluo_NoNB(:,1)) % frames (time)
+    for j=1:41 % AP bins
+        if isnan(MeanFluo_NoNB(i,j))
+            MeanFluo_NoNB(i,j) = MeanFluo_NoNB_APaveraged(i);
+            SDFluo_NoNB(i,j) = SDFluo_NoNB_APaveraged(i);
+        end
+    end
+end
 %% Subtract the background from Mean nuc fluo, for each embryo.
 % Determine the length for the subtraction
 tLength = min([length(Time_female), length(Time_male), length(Time_NoNB)]);
@@ -76,12 +99,13 @@ for i=1:length(MeanFluo_male(1,1,:))
 end
 
 %% Plot for checking
-APbin = 18;
+APbin = 11;
 hold on
 % female
-% for i=1:length(MeanFluo_female(1,1,:))
-%     errorbar(Time_female(1:tLength), MeanFluo_female_BGsubtracted(:,APbin,i), SDFluo_female_BGsubtracted(:,APbin,i),'r')
-% end
+for i=1:length(MeanFluo_female(1,1,:))
+    errorbar(Time_female(1:tLength), MeanFluo_female_BGsubtracted(:,APbin,i), SDFluo_female_BGsubtracted(:,APbin,i),'r')
+    pause
+end
 
 % male
 for i=1:length(MeanFluo_male(1,1,:))
@@ -113,16 +137,47 @@ SD_Fluo_male = nanstd(MeanFluo_male_BGsubtracted, 0 , 3);
 SE_Fluo_male = SD_Fluo_male./sqrt(numEmbryos_male); % # of embryos
 Time_male = Time_male(1:tLength); % New time
 %% Plot to check (Runt over Time - male vs female)
-APbin = 20;
+APbin = 17;
+APpos = (APbin - 1) * 2.5;
 
 hold on
-errorbar(Time_male, Averaged_Fluo_male(:,APbin), SE_Fluo_male(:,APbin))
-errorbar(Time_female, Averaged_Fluo_female(:,APbin), SE_Fluo_female(:,APbin))
-title('')
-xlabel('')
-ylabel('')
+errorbar(Time_male,...
+        Averaged_Fluo_male(:,APbin), SE_Fluo_male(:,APbin))
+errorbar(Time_female,...
+        Averaged_Fluo_female(:,APbin), SE_Fluo_female(:,APbin))
+
+%ylim([0 max(Averaged_Fluo_female(:,APbin)) + 30])
+title('Runt protein concentration over Time')
+xlabel('Time (min)')
+ylabel('Runt protein conc. (AU)')
+legend('male','female','Location','NorthWest')
+StandardFigure(gcf,gca)
+
+% Save the plots
+FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Input dynamics\Finalized';
+saveas(gcf,[FigPath,filesep,'Runt_Time_NC13-14_MaleFemale @ AP =',num2str(APpos),'%','.tif']); 
+saveas(gcf,[FigPath,filesep,'Runt_Time_NC13-14_MaleFemale @ AP =',num2str(APpos),'%','.pdf']); 
+%% Runt conc. over Time (male & female) - NC14 only
+% Pick one AP bin
+APbin = 14;
+APpos = (APbin - 1) * 2.5;
+
+hold on
+errorbar(Time_male(NC14_male:end) - Time_male(NC14_male),...
+        Averaged_Fluo_male(NC14_male:end,APbin), SE_Fluo_male(NC14_male:end,APbin))
+errorbar(Time_female(NC14_female:end)- Time_female(NC14_female),...
+        Averaged_Fluo_female(NC14_female:end,APbin), SE_Fluo_female(NC14_female:end,APbin))
+
+xlim([0 35])
+%ylim([0 300])
+title('Runt protein concentration over Time')
+xlabel('Time (min)')
+ylabel('Runt protein conc. (AU)')
 legend('male','female')
 StandardFigure(gcf,gca)
+
+% Save the figures
+% 
 %% Save the pre-processed fields (before averaging, but after the background subtraction
 BGsubtracted = true;
 Averaged = false;
@@ -270,7 +325,6 @@ FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradien
 saveas(gcf,[FigPath,filesep,'Runt_BGsubtracted_over_Time','_Averaged_Male_Female',' AP = ',num2str((APbin-1)*2.5),'%','.tif'])
 saveas(gcf,[FigPath,filesep,'Runt_BGsubtracted_over_Time','_Averaged_Male_Female',' AP = ',num2str((APbin-1)*2.5),'%','.pdf'])
 
-
 %% (3) Runt conc. over AP axis (@ different time points)
 APaxis = 0:0.025:1;
 
@@ -288,11 +342,11 @@ for tPoint = 1:30%length(Time_male)
     ylabel('Nuclear concentration (AU)')
     legend('male','female','Location','northwest')
     StandardFigure(gcf,gca)
-    
+    pause
     % Save figure
-    FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Input dynamics\Runt_background_subtracted_07082019';
-    saveas(gcf,[FigPath,filesep,'Runt_BGsubtracted_AP','_Averaged_Male_Female',' Time = ',num2str(tPoint),'min','.tif'])
-    saveas(gcf,[FigPath,filesep,'Runt_BGsubtracted_AP','_Averaged_Male_Female',' Time = ',num2str(tPoint),'min','.pdf'])
+%     FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Input dynamics\Runt_background_subtracted_07082019';
+%     saveas(gcf,[FigPath,filesep,'Runt_BGsubtracted_AP','_Averaged_Male_Female',' Time = ',num2str(tPoint),'min','.tif'])
+%     saveas(gcf,[FigPath,filesep,'Runt_BGsubtracted_AP','_Averaged_Male_Female',' Time = ',num2str(tPoint),'min','.pdf'])
 
 end
 
@@ -327,6 +381,7 @@ hold on
 
 for i=1:3%length(tWindow)
     errorbar(APaxis, time_averaged_Fluo_female(i,:), time_averaged_SE_Fluo_female(i,:))
+    errorbar(APaxis, time_averaged_Fluo_male(i,:), time_averaged_SE_Fluo_male(i,:))
 end
 
 % Formatting
@@ -368,9 +423,9 @@ saveas(gcf,[FigPath,filesep,'Runt_AP_@timepoints','_female_','NC13','.pdf'])
 % tWindow1
 tWindow4 = 19:24; % 1-6 minutes of NC14.
 % tWindow2
-tWindow5 = 19:30; % 0-10 minutes, when the Runt keeps increasing.
+tWindow5 = 19:30; % 1-10 minutes, when the Runt keeps increasing.
 % tWindow3
-tWindow6 = 19:40; % 0-15 minutes, whole NC13.
+tWindow6 = 19:40; % 1-15 minutes, whole NC13.
 
 tWindow{4} = tWindow4;
 tWindow{5} = tWindow5;

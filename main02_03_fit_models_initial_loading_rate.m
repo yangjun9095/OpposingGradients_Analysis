@@ -1,4 +1,4 @@
-function main02_02_fit_models_initial_loading_rate
+function main02_02_fit_models_initial_loading_rate_NC13
 %% Part2. Fitting the initial loading rates (mean) with theoretical models
 % Here, I will use Mean12, Mean13, and Mean14 for fitting with some
 % expression for different constructs with different numbers of binding
@@ -12,7 +12,7 @@ function main02_02_fit_models_initial_loading_rate
 % profile at one time point. The K_a will scale things properly anyway.
 FilePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
 
-%Bicoid = load([FilePath, filesep, 'Bcd-Averaged.mat']);
+% Bicoid = load([FilePath, filesep, 'Bcd-Averaged.mat']);
 
 % First, we should build a prediction matrix using handful of parameters.
 % Use Rate_r0.m for optimizing the parameters, r_max, r_basal, and K_d
@@ -39,6 +39,8 @@ FilePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients
 
 % Optional : Take the Bicoid data from Liz&Jonathan
 % time resolution : 30 sec.
+BcdAnt = load([FilePath, filesep, 'BcdGFPAnt.mat']);
+
 BcdNC13 = BcdAnt.DataBcd.nc13;
 % Take temporal average over 3-5 minutes into NC13.
 BcdFluo = nanmean(BcdAnt.DataBcd.MeanVectorAP(BcdNC13 + 6: BcdNC13 + 10,:));
@@ -78,9 +80,9 @@ legend('Bcd','Runt')
 StandardFigure(gcf,gca)
 
 % Save figures
-FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Fitting_InitialSlope';
-saveas(gcf,[FigPath,filesep,'InputTF_Time_Averaged_NC13_3-5min_BcdRunt' , '_NC13' , '.tif']); 
-saveas(gcf,[FigPath,filesep,'InputTF_Time_Averaged_NC13_3-5min_BcdRunt' , '_NC13' , '.pdf']); 
+% FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Fitting_InitialSlope';
+% saveas(gcf,[FigPath,filesep,'InputTF_Time_Averaged_NC13_3-5min_BcdRunt' , '_NC13' , '.tif']); 
+% saveas(gcf,[FigPath,filesep,'InputTF_Time_Averaged_NC13_3-5min_BcdRunt' , '_NC13' , '.pdf']); 
 %% Save the extrapolated Runt profile
 Runt.Extrapolated_Fluo_3_5min_NC13 = RuntFluo_extrapolated;
 
@@ -232,8 +234,8 @@ legend('Fit-Thermo','Fit-Hill','Data')
 % Save figure
 StandardFigure(gcf,gca)
 FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Fitting_InitialSlope';
-saveas(gcf,[FigPath,filesep,'r1_InitialSlope_Hill_Fits' , '_NC13' , '.tif']); 
-saveas(gcf,[FigPath,filesep,'r1_InitialSlope_Hill_Fits' , '_NC13' , '.pdf']); 
+% saveas(gcf,[FigPath,filesep,'r1_InitialSlope_Hill_Fits' , '_NC13' , '.tif']); 
+% saveas(gcf,[FigPath,filesep,'r1_InitialSlope_Hill_Fits' , '_NC13' , '.pdf']); 
 
 %% r2 - Prediction (Hill)
 % Using the previously determined parameters, plugged into the r2_Hill_initial_rate_fit
@@ -276,9 +278,9 @@ options = optimset('Display','iter');
 
 fun= @(q)r2_Hill_initial_rate_fit(q,param_r0,BcdFluo(APbinstart:APbinend),RuntFluo_extrapolated(APbinstart:APbinend)') - InitialRate_r2_NC13(APbinstart:APbinend)';
 
-Q_Hill = lsqnonlin(fun, p0, lb, ub, options);
+Q_Hill2 = lsqnonlin(fun, p0, lb, ub, options);
 
-Prediction_r2_Hill = r2_Hill_initial_rate_fit(Q_Hill, param_r0, BcdFluo,RuntFluo_extrapolated')
+Prediction_r2_Hill = r2_Hill_initial_rate_fit(Q_Hill2, param_r0, BcdFluo,RuntFluo_extrapolated')
 
 %% Plot to check (r2 - fitting)
 
@@ -294,9 +296,9 @@ legend('Fit-Hill','Prediction_{r1 parameters}','Data')
 
 % Save figure
 StandardFigure(gcf,gca)
-FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Fitting_InitialSlope';
-saveas(gcf,[FigPath,filesep,'r2_InitialSlope_Hill_Fits' , '_NC13' , '.tif']); 
-saveas(gcf,[FigPath,filesep,'r2_InitialSlope_Hill_Fits' , '_NC13' , '.pdf']); 
+% FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Fitting_InitialSlope';
+% saveas(gcf,[FigPath,filesep,'r2_InitialSlope_Hill_Fits' , '_NC13' , '.tif']); 
+% saveas(gcf,[FigPath,filesep,'r2_InitialSlope_Hill_Fits' , '_NC13' , '.pdf']); 
 
 %% Fit parameters for r3 (Hill)
 % r2 extrapolation in posterior bins
@@ -339,9 +341,9 @@ legend('Fit-Hill','Prediction_{r1 parameters}','Data')
 
 % Save figure
 StandardFigure(gcf,gca)
-FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Fitting_InitialSlope';
-saveas(gcf,[FigPath,filesep,'r3_InitialSlope_Hill_Fits' , '_NC13' , '.tif']); 
-saveas(gcf,[FigPath,filesep,'r3_InitialSlope_Hill_Fits' , '_NC13' , '.pdf']); 
+% FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Fitting_InitialSlope';
+% saveas(gcf,[FigPath,filesep,'r3_InitialSlope_Hill_Fits' , '_NC13' , '.tif']); 
+% saveas(gcf,[FigPath,filesep,'r3_InitialSlope_Hill_Fits' , '_NC13' , '.pdf']); 
 
 %% Plot the Hill coefficient as # of Runt binding sites
 
@@ -356,8 +358,8 @@ ylabel('K_{R} (AU)')
 xticks([0 1 2 3 4])
 
 StandardFigure(gcf,gca)
-saveas(gcf,[FigPath,filesep,'Hill_Coeff_K_R_#Runt_sites' , '_NC13' , '.tif']); 
-saveas(gcf,[FigPath,filesep,'Hill_Coeff_K_R_#Runt_sites' , '_NC13' , '.pdf']); 
+% saveas(gcf,[FigPath,filesep,'Hill_Coeff_K_R_#Runt_sites' , '_NC13' , '.tif']); 
+% saveas(gcf,[FigPath,filesep,'Hill_Coeff_K_R_#Runt_sites' , '_NC13' , '.pdf']); 
 %% Exploraration : Hill effect of # of Runt sites
 % hold on
 % plot(APaxis(APbinstart:APbinend),1./(1+ RuntFluo_extrapolated(APbinstart:APbinend)))

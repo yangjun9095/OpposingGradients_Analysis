@@ -8,6 +8,9 @@ function Useful_Modules_collection
 % From Meghan, we now have more linear, and color-blind friendly color
 % maps, such as viridis, inferno, magma, and plasma, etc. They are all in
 % our mRNADynamics folder, and we can call them easily.
+
+jStart = 1;
+jEnd = 255;
 colormap(jet(256)); % or viridis, inferno, magma, or plasma
 cmap=colormap;
 Color=cmap(round(((jStart:jEnd)-jStart)/(jEnd-jStart)*255)+1,:);
@@ -24,7 +27,7 @@ colorDict = struct();
 colorDict.blue = [115,143,193]/255; %[115,143,170]/255;
 colorDict.red =  [213,108,85]/255; %[200,108,85]/255;
 colorDict.yellow = [234,194,100]/255;
-colorDict.cyan = [108,188,233]/255;
+colorDict.cyan = [108,188,233]/255;AzzzzZXXxxxxxx
 colorDict.magenta = [208,109,171]/255;
 colorDict.lightBlue = [115,142,193]/255;
 colorDict.purple = [171,133,172]/255;

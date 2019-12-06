@@ -351,18 +351,32 @@ Repressibility_r1 = 1 - logistic_fitted_r1./logistic_fitted_r0;
 Repressibility_r2 = 1 - logistic_fitted_r2./logistic_fitted_r0;
 Repressibility_r3 = 1 - logistic_fitted_r3./logistic_fitted_r0;
 
+% Fold-change
+Fold_change_r1 = logistic_fitted_r1./logistic_fitted_r0;
+Fold_change_r2 = logistic_fitted_r2./logistic_fitted_r0;
+Fold_change_r3 = logistic_fitted_r3./logistic_fitted_r0;
 % Let's plot for 20-40% of the embryo only (since these fits are reasonable
 % for only this window).
 AP1 = find(X1==0.15);
 AP2 = find(X1==0.6);
 
+% hold on 
+% plot(X1(AP1:AP2),Repressibility_r1(AP1:AP2))
+% plot(X1(AP1:AP2),Repressibility_r2(AP1:AP2))
+% plot(X1(AP1:AP2),Repressibility_r3(AP1:AP2))
+% title('Repressibility : 1 - Rate(N_{R}) / Rate(N_{R} = 0) @ NC 14')
+% xlabel('AP axis (EL)')
+% ylabel('Repressibility')
+% legend('r1','r2','r3','Location','NW')
+% ylim([0 1])
+
 hold on 
-plot(X1(AP1:AP2),Repressibility_r1(AP1:AP2))
-plot(X1(AP1:AP2),Repressibility_r2(AP1:AP2))
-plot(X1(AP1:AP2),Repressibility_r3(AP1:AP2))
-title('Repressibility : 1 - Rate(N_{R}) / Rate(N_{R} = 0) @ NC 14')
+plot(X1(AP1:AP2),Fold_change_r1(AP1:AP2))
+plot(X1(AP1:AP2),Fold_change_r2(AP1:AP2))
+plot(X1(AP1:AP2),Fold_change_r3(AP1:AP2))
+title('Fold-change : Rate(N_{R}) / Rate(N_{R} = 0) @ NC 14')
 xlabel('AP axis (EL)')
-ylabel('Repressibility')
+ylabel('Fold-change')
 legend('r1','r2','r3','Location','NW')
 ylim([0 1])
 %% Basal level (with raw data)

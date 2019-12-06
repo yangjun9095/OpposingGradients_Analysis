@@ -185,7 +185,12 @@ save('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Embryos for Yang Joon\P
             'Averaged_Intensity_r2','SEM_Intensity_r2',...
             'Averaged_Intensity_r3','SEM_Intensity_r3')
 
+%% Part2. Start from here in case I already processed the raw data
+%% Load the datasets
+load ('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Embryos for Yang Joon\ProcessedProfile_averaged.mat')
 %% Plot the averaged In Situ intensity profile for r0,1,2,3
+
+AP = 0:0.01:0.99;
 
 hold on
 errorbar(AP, Averaged_Intensity_r0, SEM_Intensity_r0)
@@ -203,7 +208,7 @@ StandardFigure(gcf,gca)
 % saveas(gcf,['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Embryos for Yang Joon\r0123_averaged_intensity_InSitu.tif'])
 % saveas(gcf,['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Embryos for Yang Joon\r0123_averaged_intensity_InSitu.pdf'])
 
-%% Plot the averaged In Situ intensity profile for r0,1,2,3
+%% Plot the averaged In Situ intensity profile for r0,1,2,3 (normalized)
 
 hold on
 errorbar(AP, Averaged_Intensity_r0./max(Averaged_Intensity_r0), SEM_Intensity_r0./max(Averaged_Intensity_r0))
@@ -222,9 +227,9 @@ saveas(gcf,['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Embryos for Yang
 saveas(gcf,['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Embryos for Yang Joon\r0123_averaged_intensity_InSitu_Normalized.pdf'])
 
 %% %%%%%%%%%%%%%%%%%% Let's compare this with MS2 data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-DataPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
-% First, use Average_TotalmRNAProd function (custom-written), put some more
-% description later on how it works.
+DataPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\AccumulatedmRNA_mixed_sex';
+% First, use Average_TotalmRNAProd function (custom-written). 
+% Put some more description later on how it works.
 
 [TotalmRNA_averaged_r0, TotalmRNA_SEM_r0] = Average_TotalmRNAProd('r0-', DataPath);
 [TotalmRNA_averaged_r1, TotalmRNA_SEM_r1] = Average_TotalmRNAProd('r1-', DataPath);
@@ -387,6 +392,7 @@ end
 
 
 %% Compare the In Situ vs MS2 profile (Normalized)
+% Caveat : I'm using the MS2-integrated mRNA calculated by AverageDatasets.m
 
 AP = 0.005:0.01:0.995;
 APaxis = 0:0.025:1;
@@ -588,6 +594,245 @@ saveas(figure_compare_r2_CutOff, [FigPath,filesep,'Comparison_TotlamRNA_InSitu_M
 
 saveas(figure_compare_r3_CutOff, [FigPath,filesep,'Comparison_TotlamRNA_InSitu_MS2_r3.tif'])
 saveas(figure_compare_r3_CutOff, [FigPath,filesep,'Comparison_TotlamRNA_InSitu_MS2_r3.pdf'])
+
+%% CutOff value : Finding the optimal value for each construct
+% Added by YJK on 9/24/2019
+%% step1. Find the optimal CutOff value for each construct
+% The idea is to move the cutoff bar from 0 to maximum of MS2 to find the
+% one that minimizes the squared sum of (in situ - adjusted MS2), basically
+% lsqnonlin (least square)
+% Caveat : Let's only compare the region of 0.2 to 0.6
+
+% r0
+CapRange = 0:100:10000;
+
+CapIntensity_r0 = nan(1,length(CapRange));
+SquaredSum_r0 = nan(1,length(CapRange));
+Capped_intensity_profile_r0 = nan(41,1,length(CapRange));
+
+for i=1:length(CapRange)
+    % Cap the MS2 intensity with the value
+    CapIntensity_r0(i) = CapRange(i);
+    TotalmRNA_averaged_r0_Capped = TotalmRNA_averaged_r0;
+    TotalmRNA_averaged_r0_Capped(TotalmRNA_averaged_r0 >= CapIntensity_r0(i)) = CapIntensity_r0(i);
+    
+    % Save the capped intensity profiles for a sanity check
+     Capped_intensity_profile_r0(:,:,i) = TotalmRNA_averaged_r0_Capped;
+     
+    % Get the least square between in situ and MS2
+    r0_insitu_norm = Averaged_Intensity_r0./max(Averaged_Intensity_r0);
+    r0_MS2_norm = TotalmRNA_averaged_r0_Capped./ CapIntensity_r0(i);
+    r0_MS2_norm(isnan(r0_MS2_norm)) = 0;
+    
+    % Get the squared sum for 20-60% of the embryo
+    SquaredSum_r0(i) = sum((r0_insitu_norm(21:2.5:61) - r0_MS2_norm(9:25)').^2);
+end
+
+SquaredSum_r0(isnan(SquaredSum_r0)) = inf;
+minIndex_r0 = find(SquaredSum_r0 == min(SquaredSum_r0));
+cutOff_r0 = CapIntensity_r0(minIndex_r0);
+
+% Sanity check
+% hold on
+% errorbar(AP, Averaged_Intensity_r0./max(Averaged_Intensity_r0), SEM_Intensity_r0./max(Averaged_Intensity_r0))
+% for i=1:length(CapRange)
+%     plot(0:0.025:1, Capped_intensity_profile(:,:,i)./max(Capped_intensity_profile(:,:,i)))
+%     pause
+% end
+
+% r1
+CapRange = 0:100:10000;
+
+CapIntensity_r1 = nan(1,length(CapRange));
+SquaredSum_r1 = nan(1,length(CapRange));
+Capped_intensity_profile_r1 = nan(41,1,length(CapRange));
+
+for i=1:length(CapRange)
+    % Cap the MS2 intensity with the value
+    CapIntensity_r1(i) = CapRange(i);
+    TotalmRNA_averaged_r1_Capped = TotalmRNA_averaged_r1;
+    TotalmRNA_averaged_r1_Capped(TotalmRNA_averaged_r1 >= CapIntensity_r1(i)) = CapIntensity_r1(i);
+    
+    % Save the capped intensity profiles for a sanity check
+     Capped_intensity_profile_r1(:,:,i) = TotalmRNA_averaged_r1_Capped;
+     
+    % Get the least square between in situ and MS2
+    r1_insitu_norm = Averaged_Intensity_r1./max(Averaged_Intensity_r1);
+    r1_MS2_norm = TotalmRNA_averaged_r1_Capped./ CapIntensity_r1(i);
+    r1_MS2_norm(isnan(r1_MS2_norm)) = 0;
+    
+    % Get the squared sum for 20-60% of the embryo
+    SquaredSum_r1(i) = sum((r1_insitu_norm(21:2.5:61) - r1_MS2_norm(9:25)').^2);
+end
+
+SquaredSum_r1(isnan(SquaredSum_r1)) = inf;
+minIndex_r1 = find(SquaredSum_r1 == min(SquaredSum_r1));
+cutOff_r1 = CapIntensity_r1(minIndex_r1);
+
+% r2
+CapRange = 0:100:10000;
+
+CapIntensity_r2 = nan(1,length(CapRange));
+SquaredSum_r2 = nan(1,length(CapRange));
+Capped_intensity_profile_r2 = nan(41,1,length(CapRange));
+
+for i=1:length(CapRange)
+    % Cap the MS2 intensity with the value
+    CapIntensity_r2(i) = CapRange(i);
+    TotalmRNA_averaged_r2_Capped = TotalmRNA_averaged_r2;
+    TotalmRNA_averaged_r2_Capped(TotalmRNA_averaged_r2 >= CapIntensity_r2(i)) = CapIntensity_r2(i);
+    
+    % Save the capped intensity profiles for a sanity check
+     Capped_intensity_profile_r2(:,:,i) = TotalmRNA_averaged_r2_Capped;
+     
+    % Get the least square between in situ and MS2
+    r2_insitu_norm = Averaged_Intensity_r2./max(Averaged_Intensity_r2);
+    r2_MS2_norm = TotalmRNA_averaged_r2_Capped./ CapIntensity_r2(i);
+    r2_MS2_norm(isnan(r2_MS2_norm)) = 0;
+    
+    % Get the squared sum for 20-60% of the embryo
+    SquaredSum_r2(i) = sum((r2_insitu_norm(21:2.5:61) - r2_MS2_norm(9:25)').^2);
+end
+
+SquaredSum_r2(isnan(SquaredSum_r2)) = inf;
+minIndex_r2 = find(SquaredSum_r2 == min(SquaredSum_r2));
+cutOff_r2 = CapIntensity_r2(minIndex_r2);
+
+% r3
+CapRange = 0:100:10000;
+
+CapIntensity_r3 = nan(1,length(CapRange));
+SquaredSum_r3 = nan(1,length(CapRange));
+Capped_intensity_profile_r3 = nan(41,1,length(CapRange));
+
+for i=1:length(CapRange)
+    % Cap the MS2 intensity with the value
+    CapIntensity_r3(i) = CapRange(i);
+    TotalmRNA_averaged_r3_Capped = TotalmRNA_averaged_r3;
+    TotalmRNA_averaged_r3_Capped(TotalmRNA_averaged_r3 >= CapIntensity_r3(i)) = CapIntensity_r3(i);
+    
+    % Save the capped intensity profiles for a sanity check
+     Capped_intensity_profile_r3(:,:,i) = TotalmRNA_averaged_r3_Capped;
+     
+    % Get the least square between in situ and MS2
+    r3_insitu_norm = Averaged_Intensity_r3./max(Averaged_Intensity_r3);
+    r3_MS2_norm = TotalmRNA_averaged_r3_Capped./ CapIntensity_r3(i);
+    r3_MS2_norm(isnan(r3_MS2_norm)) = 0;
+    
+    % Get the squared sum for 20-60% of the embryo
+    SquaredSum_r3(i) = sum((r3_insitu_norm(21:2.5:61) - r3_MS2_norm(9:25)').^2);
+end
+
+SquaredSum_r3(isnan(SquaredSum_r3)) = inf;
+minIndex_r3 = find(SquaredSum_r3 == min(SquaredSum_r3));
+cutOff_r3 = CapIntensity_r3(minIndex_r3);
+
+%% step2. Cap the amplitude of TotalmRNA using the CutOff value.
+% First, define the values to be modified.
+
+% Re-calculate the re-normalized r0,1,2,3 for MS2
+TotalmRNA_averaged_r0_Capped(TotalmRNA_averaged_r0 >= cutOff_r0) = cutOff_r0;
+TotalmRNA_averaged_r1_Capped(TotalmRNA_averaged_r1 >= cutOff_r1) = cutOff_r1;
+TotalmRNA_averaged_r2_Capped(TotalmRNA_averaged_r2 >= cutOff_r2) = cutOff_r2;
+TotalmRNA_averaged_r3_Capped(TotalmRNA_averaged_r3 >= cutOff_r3) = cutOff_r3;
+
+TotalmRNA_SEM_r0_Capped = TotalmRNA_SEM_r0;
+TotalmRNA_SEM_r1_Capped = TotalmRNA_SEM_r1;
+TotalmRNA_SEM_r2_Capped = TotalmRNA_SEM_r2;
+TotalmRNA_SEM_r3_Capped = TotalmRNA_SEM_r3;
+
+TotalmRNA_SEM_r0_Capped(TotalmRNA_averaged_r0_Capped >= cutOff_r0) = 0;
+TotalmRNA_SEM_r1_Capped(TotalmRNA_averaged_r1_Capped >= cutOff_r1) = 0;
+TotalmRNA_SEM_r2_Capped(TotalmRNA_averaged_r2_Capped >= cutOff_r2) = 0;
+TotalmRNA_SEM_r3_Capped(TotalmRNA_averaged_r3_Capped >= cutOff_r3) = 0;
+
+%% step3. Plotting the re-normalized curves together
+
+AP = 0.005:0.01:0.995;
+APaxis = 0:0.025:1;
+
+% r0
+figure_compare_r0_CutOff = figure(1)
+hold on
+% In Situ
+errorbar(AP, Averaged_Intensity_r0./max(Averaged_Intensity_r0), SEM_Intensity_r0./max(Averaged_Intensity_r0))
+% MS2-MCP
+errorbar(APaxis, TotalmRNA_averaged_r0_Capped./cutOff_r0, TotalmRNA_SEM_r0_Capped./cutOff_r0)
+
+title('Accumulated mRNA over AP - r0')
+xlabel('AP axis (EL)')
+ylabel('Accumulated mRNA (Normalized)')
+legend('In Situ','MS2')
+StandardFigure(gcf,gca)
+
+% r1
+figure_compare_r1_CutOff = figure(2)
+hold on
+% In Situ
+errorbar(AP, Averaged_Intensity_r1./max(Averaged_Intensity_r1), SEM_Intensity_r1./max(Averaged_Intensity_r1))
+% MS2-MCP
+errorbar(APaxis, TotalmRNA_averaged_r1_Capped./cutOff_r1, TotalmRNA_SEM_r1_Capped./cutOff_r1)
+title('Accumulated mRNA over AP - r1')
+xlabel('AP axis (EL)')
+ylabel('Accumulated mRNA (Normalized)')
+legend('In Situ','MS2')
+StandardFigure(gcf,gca)
+
+% r2
+figure_compare_r2_CutOff = figure(3)
+hold on
+% In Situ
+errorbar(AP, Averaged_Intensity_r2./max(Averaged_Intensity_r2), SEM_Intensity_r2./max(Averaged_Intensity_r2))
+% MS2-MCP
+errorbar(APaxis, TotalmRNA_averaged_r2_Capped./cutOff_r2, TotalmRNA_SEM_r2_Capped./cutOff_r2)
+title('Accumulated mRNA over AP - r2')
+xlabel('AP axis (EL)')
+ylabel('Accumulated mRNA (Normalized)')
+legend('In Situ','MS2')
+StandardFigure(gcf,gca)
+
+% r3
+figure_compare_r3_CutOff = figure(4)
+hold on
+% In Situ
+errorbar(AP, Averaged_Intensity_r3./max(Averaged_Intensity_r3), SEM_Intensity_r3./max(Averaged_Intensity_r3))
+% MS2-MCP
+errorbar(APaxis, TotalmRNA_averaged_r3_Capped./cutOff_r3, TotalmRNA_SEM_r3_Capped./cutOff_r3)
+title('Accumulated mRNA over AP - r3')
+xlabel('AP axis (EL)')
+ylabel('Accumulated mRNA (Normalized)')
+legend('In Situ','MS2')
+StandardFigure(gcf,gca)
+
+%% Plot CutOff values
+cutOff_figure = figure;
+plot([0 1 2 3], [cutOff_r0, cutOff_r1, cutOff_r2, cutOff_r3],'o')
+xlim([-1 4])
+ylim([0 10000])
+title('Saturation values - optimized')
+xlabel('Constructs')
+ylabel('Saturation value')
+
+StandardFigure(cutOff_figure, cutOff_figure.CurrentAxes)
+
+%% Save plots
+FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\InSitu_MS2_compare_plots\CutOff_Normalzied_profile_comparison_OptimizedCutOffs';
+
+saveas(figure_compare_r0_CutOff, [FigPath,filesep,'Comparison_TotlamRNA_InSitu_MS2_r0.tif'])
+saveas(figure_compare_r0_CutOff, [FigPath,filesep,'Comparison_TotlamRNA_InSitu_MS2_r0.pdf'])
+
+saveas(figure_compare_r1_CutOff, [FigPath,filesep,'Comparison_TotlamRNA_InSitu_MS2_r1.tif'])
+saveas(figure_compare_r1_CutOff, [FigPath,filesep,'Comparison_TotlamRNA_InSitu_MS2_r1.pdf'])
+
+saveas(figure_compare_r2_CutOff, [FigPath,filesep,'Comparison_TotlamRNA_InSitu_MS2_r2.tif'])
+saveas(figure_compare_r2_CutOff, [FigPath,filesep,'Comparison_TotlamRNA_InSitu_MS2_r2.pdf'])
+
+saveas(figure_compare_r3_CutOff, [FigPath,filesep,'Comparison_TotlamRNA_InSitu_MS2_r3.tif'])
+saveas(figure_compare_r3_CutOff, [FigPath,filesep,'Comparison_TotlamRNA_InSitu_MS2_r3.pdf'])
+
+saveas(cutOff_figure, [FigPath,filesep,'Comparison_SaturationPoints.tif'])
+saveas(cutOff_figure, [FigPath,filesep,'Comparison_SaturationPoints.pdf'])
+
 
 %% %%%%%%%%%%%%%%%%% Part2 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Get Statistics for the boundary features

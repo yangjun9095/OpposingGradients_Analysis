@@ -1,6 +1,7 @@
 function [TotalmRNA_averaged, TotalmRNA_SEM] = Average_TotalmRNAProd(DataType, DataPath)
 % DESCRIPTION
 % Let's use AccumulatedmRNA_FractionON (from AverageDatasets.m)
+% stored for each embryo calculated by AverageDatasets.m
 
 D = dir(DataPath);
 

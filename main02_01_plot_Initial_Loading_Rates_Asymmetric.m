@@ -16,31 +16,31 @@ function main02_plot_Initial_Loading_Rates_Asymmetric
 % Note that I used old datasets for the r0, for nc14, thus MeanFits.mat,
 % not MeanFitsV2.mat
 
-%Data_r0 = LoadMS2Sets('r0','dontCompare')
+Data_r0 = LoadMS2Sets('r0','dontCompare')
 
 % Edit the LoadMS2Sets for MeanFitsV2.mat
-Data_r0 = LoadMS2Sets('r0-new-female','dontCompare')
+%Data_r0 = LoadMS2Sets('r0-new-female','dontCompare')
 Data_r1_female = LoadMS2Sets('r1-new-female','dontCompare')
 Data_r2_female = LoadMS2Sets('r2-new-female','dontCompare')
 Data_r3_female = LoadMS2Sets('r3-new-female','dontCompare')
 
-Data_r1_male = LoadMS2Sets('r1-new-male','dontCompare')
-Data_r2_male = LoadMS2Sets('r2-new-male','dontCompare')
-Data_r3_male = LoadMS2Sets('r3-new-male','dontCompare')
+% Data_r1_male = LoadMS2Sets('r1-new-male','dontCompare')
+% Data_r2_male = LoadMS2Sets('r2-new-male','dontCompare')
+% Data_r3_male = LoadMS2Sets('r3-new-male','dontCompare')
 
 %% Extract the fitted values from all of my datasets
 % Caveat : For now (7/11/2019), I'll use r0 from my old construct since I
 % don't have NC14 from the new r0 construct. Thus, I'll use MeanFits.mat
 % from old r0, and MeanFitsV2 (Asymmetric fit) from the new ones.
-[fittedRate_r0,fittedRateSD_r0,fittedTon_r0] = Extract_Fields_MeanFits(Data_r0,'Symmetric');
+[fittedRate_r0,fittedRateSD_r0,fittedTon_r0] = Extract_Fields_MeanFits(Data_r0,'Asymmetric');
 
 [fittedRate_r1_female,fittedRateSD_r1_female,fittedTon_r1_female] = Extract_Fields_MeanFits(Data_r1_female,'Asymmetric');
 [fittedRate_r2_female,fittedRateSD_r2_female,fittedTon_r2_female] = Extract_Fields_MeanFits(Data_r2_female,'Asymmetric');
 [fittedRate_r3_female,fittedRateSD_r3_female,fittedTon_r3_female] = Extract_Fields_MeanFits(Data_r3_female,'Asymmetric');
 
-[fittedRate_r1_male,fittedRateSD_r1_male,fittedTon_r1_male] = Extract_Fields_MeanFits(Data_r1_male,'Asymmetric');
-[fittedRate_r2_male,fittedRateSD_r2_male,fittedTon_r2_male] = Extract_Fields_MeanFits(Data_r2_male,'Asymmetric');
-[fittedRate_r3_male,fittedRateSD_r3_male,fittedTon_r3_male] = Extract_Fields_MeanFits(Data_r3_male,'Asymmetric');
+% [fittedRate_r1_male,fittedRateSD_r1_male,fittedTon_r1_male] = Extract_Fields_MeanFits(Data_r1_male,'Asymmetric');
+% [fittedRate_r2_male,fittedRateSD_r2_male,fittedTon_r2_male] = Extract_Fields_MeanFits(Data_r2_male,'Asymmetric');
+% [fittedRate_r3_male,fittedRateSD_r3_male,fittedTon_r3_male] = Extract_Fields_MeanFits(Data_r3_male,'Asymmetric');
 % [fittedRate_r3_prime,fittedRateSD_r3_prime,fittedTon_r3_prime] = Extract_Fields_MeanFits(Data_r3_female_prime);
 
 %% plot individual fitted curves to check
@@ -86,14 +86,14 @@ SEM_fittedRate_r2_female = nanstd(fittedRate_r2_female,0,3)/sqrt(length(Data_r2_
 average_fittedRate_r3_female = nanmean(fittedRate_r3_female,3);
 SEM_fittedRate_r3_female = nanstd(fittedRate_r3_female,0,3)/sqrt(length(Data_r3_female));
 
-average_fittedRate_r1_male = nanmean(fittedRate_r1_male,3);
-SEM_fittedRate_r1_male = nanstd(fittedRate_r1_male,0,3)/sqrt(length(Data_r1_male));
-
-average_fittedRate_r2_male = nanmean(fittedRate_r2_male,3);
-SEM_fittedRate_r2_male = nanstd(fittedRate_r2_male,0,3)/sqrt(length(Data_r2_male));
-
-average_fittedRate_r3_male = nanmean(fittedRate_r3_male,3);
-SEM_fittedRate_r3_male = nanstd(fittedRate_r3_male,0,3)/sqrt(length(Data_r3_male));
+% average_fittedRate_r1_male = nanmean(fittedRate_r1_male,3);
+% SEM_fittedRate_r1_male = nanstd(fittedRate_r1_male,0,3)/sqrt(length(Data_r1_male));
+% 
+% average_fittedRate_r2_male = nanmean(fittedRate_r2_male,3);
+% SEM_fittedRate_r2_male = nanstd(fittedRate_r2_male,0,3)/sqrt(length(Data_r2_male));
+% 
+% average_fittedRate_r3_male = nanmean(fittedRate_r3_male,3);
+% SEM_fittedRate_r3_male = nanstd(fittedRate_r3_male,0,3)/sqrt(length(Data_r3_male));
 % average_fittedRate_r3_prime = nanmean(fittedRate_r3_prime,3);
 % SEM_fittedRate_r3_prime = nanstd(fittedRate_r3_prime,0,3)/sqrt(length(Data_r3_female_prime));
 
@@ -115,7 +115,7 @@ colorDict.darkgreen = [126,157,144]/255;
 ColorChoice = [colorDict.magenta; colorDict.lightBlue; colorDict.yellow; colorDict.red; colorDict.brown]; % 4 embryos max. it could be extended easily
 %% Plot the averaged fittedRate (initial rate of RNAP loading), and SEM
 
-FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Transcription-Output\InitialSlope\';
+FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\InitialSlope_Asymmetric\';
 
 % % NC12
 % InitialRate_NC12_figure = figure;
@@ -158,8 +158,8 @@ ylabel('Initial rate (AU/min)')
 title('Initial rate of RNAP loading along AP axis, at NC 13')
 StandardFigure(InitialRate_NC13_figure, InitialRate_NC13_figure.CurrentAxes)
 %standardizeFigure_YJK(gca,legend)
-% saveas(InitialRate_NC13_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_female' , '_NC13' , '.tif']); 
-% saveas(InitialRate_NC13_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_female' , '_NC13' , '.pdf']); 
+saveas(InitialRate_NC13_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_female' , '_NC13' , '.tif']); 
+saveas(InitialRate_NC13_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_female' , '_NC13' , '.pdf']); 
 
 % NC14
 InitialRate_NC14_figure = figure;
@@ -185,8 +185,8 @@ title('Initial rate of RNAP loading along AP axis, at NC 14')
 StandardFigure(InitialRate_NC14_figure, InitialRate_NC14_figure.CurrentAxes)
 
 % standardizeFigure_YJK(gca,legend)
-% saveas(InitialRate_NC14_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_female_' , '_NC14' , '.tif']); 
-% saveas(InitialRate_NC14_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_female_' , '_NC14' , '.pdf']); 
+saveas(InitialRate_NC14_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_female_' , '_NC14' , '.tif']); 
+saveas(InitialRate_NC14_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_female_' , '_NC14' , '.pdf']); 
 
 
 %% Save the fitted initial rate and SEM 
@@ -199,354 +199,38 @@ save('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_Proce
         'average_fittedRate_r2_female','SEM_fittedRate_r2_female',...
         'average_fittedRate_r3_female','SEM_fittedRate_r3_female')
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Part 2. Generating plots from saved data.
+% First, load the datasets from above.
+%% Load the fitted initial slope (Data)
+% Data calculated from the script :
+% main02_plot_Initial_Loading_Rates_Asymmetric.m
+% 
+InitialSlope = load([FilePath, filesep, 'AveragedInitialRate_AsymmetricFit.mat']);
 
+%% Extract useful fields 
+% Extract the initial slope from the saved structure.
+nc = 14;% NC14
+NC= nc - 11;
+InitialRate_r0_NC14 = InitialSlope.average_fittedRate_r0(:,NC);
+InitialRate_r1_NC14 = InitialSlope.average_fittedRate_r1_female(:,NC);
+InitialRate_r2_NC14 = InitialSlope.average_fittedRate_r2_female(:,NC);
+InitialRate_r3_NC14 = InitialSlope.average_fittedRate_r3_female(:,NC);
 
+InitialRate_SEM_r0_NC14 = InitialSlope.SEM_fittedRate_r0(:,NC);
+InitialRate_SEM_r1_NC14 = InitialSlope.SEM_fittedRate_r1_female(:,NC);
+InitialRate_SEM_r2_NC14 = InitialSlope.SEM_fittedRate_r2_female(:,NC);
+InitialRate_SEM_r3_NC14 = InitialSlope.SEM_fittedRate_r3_female(:,NC);
 
-
-
-
-%% %%%%%%%%%%%%%%%%%%%%%Old script by Paul begins%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
-%  %% Load the datasets
-% 
-% %Data for r0 on Data(1,:). Change the N value, number of datasets
-% Data(1,1)=load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-03-23-hbP2-r0-MS2V5-lacZ\MeanFits.mat');
-% Data(1,2)=load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-04-23-hbP2-r0-MS2V5-lacZ\MeanFits.mat');
-% Data(1,3)=load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-04-24-hbP2-r0-MS2V5-lacZ\MeanFits.mat');
-% Data(1,4)=load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-04-25-hbP2-r0-MS2V5-lacZ\MeanFits.mat');
-% N(1)=4;
-% 
-% %Data for r1
-% Data(2,1)=load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-04-30-hbP2-r1-MS2V5-lacZ\MeanFits.mat');
-% Data(2,2)=load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-05-01-hbP2-r1-MS2V5-lacZ\MeanFits.mat');
-% Data(2,3)=load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-05-04-hbP2-r1-MS2V5-lacZ\MeanFits.mat');
-% N(2)=3;
-% 
-% %Data for r2
-% Data(3,1)=load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-04-08-hbP2-r2-MS2V5-lacZ\MeanFits.mat');
-% Data(3,2)=load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-05-09-hbP2-r2-MS2V5-lacZ\MeanFits.mat');
-% Data(3,3)=load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-05-09-hbP2-r2-MS2V5-lacZ-2\MeanFits.mat');
-% N(3)=3;
-% 
-% %Data for r3
-% Data(4,1)=load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-03-23-hbP2-r3-MS2V5-lacZ\MeanFits.mat');
-% Data(4,2)=load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-03-25-hbP2-r3-MS2V5-lacZ\MeanFits.mat');
-% Data(4,3)=load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-04-13-hbP2-r3-MS2V5-lacZ\MeanFits.mat');
-% N(4)=3;
-% 
-% %Data for r3_prime
-% Data(5,1)=load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-07-18-hbP2-r3prime-MS2V5-lacZ\MeanFits.mat');
-% Data(5,2)=load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-07-20-hbP2-r3prime-MS2V5-lacZ\MeanFits.mat');
-% Data(5,3)=load('E:\YangJoon\LivemRNA\Data\Dropbox\DynamicsResults\2018-07-20-hbP2-r3prime-MS2V5-lacZ2\MeanFits.mat');
-% N(5)=3;
-% 
-% 
-% 
-% %% Fill the variables to plot
-% 
-% % T0(Construct, DataSet, AP, NC), same for the others
-% T0=nan(5,4,41,3);
-% Rate=nan(5,4,41,3);
-% SD_rate=nan(5,4,41,3);
-% 
-% 
-% Nb_Approved_Rate=zeros(5,41,3);
-% 
-% 
-% for i = 1:5 %Construct r0,1,2,3,3' loop
-%     for j = 1:N(i) % Different number of dataSets for each construct
-%         for NC= 12:14
-%             for AP = 1:41
-%                 if Data(i,j).FitResults(AP,NC-11).Approved == 1
-%                     
-%                     T0(i,j,AP,NC-11)=Data(i,j).FitResults(AP,NC-11).TimeStart;
-%                     Rate(i,j,AP,NC-11)=Data(i,j).FitResults(AP,NC-11).RateFit; % RateFit1 for manually fitted values
-%                     SD_rate(i,j,AP,NC-11)=Data(i,j).FitResults(AP,NC-11).SDRateFit;
-%                     
-%                     Nb_Approved_Rate(i,AP,NC-11)=Nb_Approved_Rate(i,AP,NC-11)+1;
-%                 end
-%             end
-%         end
-%     end
-% end
-% 
-% %% Plotting ! - for Rate of Txn initiation
-% 
-% %NC 12
-% 
-% 
-% X=0:0.025:1;
-% 
-% NC=1
-% figure(1)
-% 
-% % for i=1:N(1)
-% %     Y=squeeze(Rate(1,i,:,NC));
-% %     Z=squeeze(SD_rate(1,i,:,NC));
-% %     p(i)=errorbar(X,Y,Z);
-% %     p(i).Marker='*';
-% %     p(i).LineStyle='none';
-% %     p(i).Color='red';%[1,i/(1.5*N0),0]
-% %     %p(i).legend ='r0';
-% %     hold on
-% % end
-% % for i=1:N(2)
-% %     Y=squeeze(Rate(2,i,:,NC));
-% %     Z=squeeze(SD_rate(2,i,:,NC));
-% %     q(i)=errorbar(X,Y,Z);
-% %     q(i).Marker='+';
-% %     q(i).LineStyle='none';
-% %     q(i).Color='magenta';%[1,i/(1.5*N0),0]
-% %     %q(i).legend ='r0';
-% %     hold on
-% % end
-% % for i=1:N(3)
-% %     Y=squeeze(Rate(3,i,:,NC));
-% %     Z=squeeze(SD_rate(3,i,:,NC));
-% %     r(i)=errorbar(X,Y,Z);
-% %     r(i).Marker='.';
-% %     r(i).LineStyle='none';
-% %     r(i).Color='blue';%[1,i/(1.5*N0),0]
-% %     %r(i).legend ='r0';
-% %     %hold on
-% % end
-% % for i=1:N(4)
-% %     Y=squeeze(Rate(4,i,:,NC));
-% %     Z=squeeze(SD_rate(4,i,:,NC));
-% %     s(i)=errorbar(X,Y,Z);
-% %     s(i).Marker='s';
-% %     s(i).LineStyle='none';
-% %     s(i).Color='cyan';%[0,i/N3,1]
-% %     s(i).legend ='r3';
-% % end
-% 
-% for i=1:5
-%     Y=(nanmean(squeeze((Rate(i,:,:,NC)))));
-%     Z=(nanstd(squeeze((Rate(i,:,:,NC)))));
-%     Mean12(i,1:41)=(Y);
-%     STD12(i,1:41)=(Z); 
-%     SEM12(i,1:41) = STD12(i,1:41) / sqrt(N(i));
-% end
-% 
-% % for i=1:4
-% %     for j=1:41
-% %         Mean12(i,j)=Mean(i,j)./Nb_Approved_Rate(i,j,NC);
-% %     end
-% % end
-% 
-% %t=plot(X,Mean12(1,:),'-r',X,Mean12(2,:),'-m',X,Mean12(3,:),'-b',X,Mean12(4,:),'-c','LineWidth',2);
-% InitialRate_NC12_figure = figure;
-% hold on
-% errorbar(X,Mean12(1,:),SEM12(1,:))
-% errorbar(X,Mean12(2,:),SEM12(2,:))
-% errorbar(X,Mean12(3,:),SEM12(3,:))
-% errorbar(X,Mean12(4,:),SEM12(4,:))
-% errorbar(X,Mean12(5,:),SEM12(5,:))
-% ylim([0 400])
-% %legend(t,{'r0, mean','r1, mean','r2, mean','r3, mean'})
-% legend('r0','r1','r2','r3','r3-mutated')
-% xlabel('AP Position (%)')
-% ylabel('Initial rate')
-% title('Initial rate of r0, r1, r2, r3, and r3(mutated) along AP axis, at NC 12')
-% standardizeFigure(gca,legend,[])
-% 
-% %FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Figures-OpposingGradients\InitialLoadingRates_r0123_fitted\';
-% %saveas(InitialRate_NC12_figure,[FigPath 'InitialRate' , '_NC12' , '.pdf']); 
-% %save('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Data_Processed\AveragedInitialRate_NC12.mat','Mean12','STD12')
-% 
-% %% NC13
-% 
-% 
-% NC=2
-% %figure(2)
-% 
-% % for i=1:N(1)
-% %     Y=squeeze(Rate(1,i,:,NC));
-% %     Z=squeeze(SD_rate(1,i,:,NC));
-% %     p(i)=errorbar(X,Y,Z);
-% %     p(i).Marker='*';
-% %     p(i).LineStyle='none';
-% %     p(i).Color='red';%[1,i/(1.5*N0),0]
-% %     %p(i).legend ='r0';
-% %     hold on
-% % end
-% % for i=1:N(2)
-% %     Y=squeeze(Rate(2,i,:,NC));
-% %     Z=squeeze(SD_rate(2,i,:,NC));
-% %     q(i)=errorbar(X,Y,Z);
-% %     q(i).Marker='+';
-% %     q(i).LineStyle='none';
-% %     q(i).Color='magenta';%[1,i/(1.5*N0),0]
-% %     %q(i).legend ='r0';
-% %     hold on
-% % end
-% % for i=1:N(3)
-% %     Y=squeeze(Rate(3,i,:,NC));
-% %     Z=squeeze(SD_rate(3,i,:,NC));
-% %     r(i)=errorbar(X,Y,Z);
-% %     r(i).Marker='.';
-% %     r(i).LineStyle='none';
-% %     r(i).Color='blue';%[1,i/(1.5*N0),0]
-% %     %r(i).legend ='r0';
-% %     hold on
-% % end
-% % for i=1:N(4)
-% %     Y=squeeze(Rate(4,i,:,NC));
-% %     Z=squeeze(SD_rate(4,i,:,NC));
-% %     s(i)=errorbar(X,Y,Z);
-% %     s(i).Marker='s';
-% %     s(i).LineStyle='none';
-% %     s(i).Color='cyan';%[0,i/N3,1]
-% %     %s(i).legend ='r3';
-% % end
-% % 
-% % for i=1:4
-% %     Y=(nansum(squeeze((Rate(i,:,:,NC)))));
-% %     Mean(i,1:41)=(Y);
-% % end
-% % 
-% % for i=1:4
-% %     for j=1:41
-% %         Mean13(i,j)=Mean(i,j)./Nb_Approved_Rate(i,j,NC);
-% %     end
-% % end
-% % 
-% % 
-% % %save('E:\Paul-J\LivemRNA\Data\Dropbox\OpposingGradient\Paul_codes\Fitting initial rate/Mean13.mat','Mean')
-% % t=plot(X,Mean13(1,:),'-r',X,Mean13(2,:),'-m',X,Mean13(3,:),'-b',X,Mean13(4,:),'-c','LineWidth',2);
-% % ylim([0 400])
-% % legend(t,{'r0, mean','r1, mean','r2, mean','r3, mean'})
-% % xlabel('AP Position (%)')
-% % ylabel('Initial rate')
-% % title('Initial rate of r0, r1, r2 and r3 along AP axis, at NC 13')
-% 
-% 
-% %standardizeFigure_YJK(gca,legend,'blue')
-% %saveas(gcf,'E:\Paul-J\LivemRNA\Data\Dropbox\OpposingGradient\Plots-PaulJ\Initial_rate/NC13.tif')
-% for i=1:5
-%     Y=(nanmean(squeeze((Rate(i,:,:,NC)))));
-%     Z=(nanstd(squeeze((Rate(i,:,:,NC)))));
-%     Mean13(i,1:41)=(Y);
-%     STD13(i,1:41)=(Z); 
-%     SEM13(i,1:41) = STD13(i,1:41) / sqrt(N(i));
-% end
-% 
-% % fix the artefact?
-% Mean13(4,19) = 30;
-% 
-% InitialRate_NC13_figure = figure;
-% hold on
-% errorbar(X,Mean13(1,:),SEM13(1,:))
-% errorbar(X,Mean13(2,:),SEM13(2,:))
-% errorbar(X,Mean13(3,:),SEM13(3,:))
-% errorbar(X,Mean13(4,:),SEM13(4,:))
-% errorbar(X,Mean13(5,:),SEM13(5,:))
-% ylim([0 400])
-% 
-% legend('r0','r1','r2','r3','r3(mutated)')
-% xlabel('AP Position (%)')
-% ylabel('Initial rate')
-% title('Initial rate of r0, r1, r2,r3 and r3(mutated) along AP axis, at NC 13')
-% standardizeFigure(gca,legend,[])
-% 
-% FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Figures-OpposingGradients\InitialLoadingRates_r0123_fitted\';
-% saveas(InitialRate_NC13_figure,[FigPath 'InitialRate' , '_NC13' , '.pdf']); 
-% save('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Data_Processed\AveragedInitialRate_NC13.mat','Mean13','STD13')
-% 
-% %% NC14
-% NC=3
-% %figure(3)
-% 
-% % for i=1:N(1)
-% %     Y=squeeze(Rate(1,i,:,NC));
-% %     Z=squeeze(SD_rate(1,i,:,NC));
-% %     p(i)=errorbar(X,Y,Z);
-% %     p(i).Marker='*';
-% %     p(i).LineStyle='none';
-% %     p(i).Color='red';%[1,i/(1.5*N0),0]
-% %     %p(i).legend ='r0';
-% %     hold on
-% % end
-% % for i=1:N(2)
-% %     Y=squeeze(Rate(2,i,:,NC));
-% %     Z=squeeze(SD_rate(2,i,:,NC));
-% %     q(i)=errorbar(X,Y,Z);
-% %     q(i).Marker='+';
-% %     q(i).LineStyle='none';
-% %     q(i).Color='magenta';%[1,i/(1.5*N0),0]
-% %     %q(i).legend ='r0';
-% %     hold on
-% % end
-% % for i=1:N(3)
-% %     Y=squeeze(Rate(3,i,:,NC));
-% %     Z=squeeze(SD_rate(3,i,:,NC));
-% %     r(i)=errorbar(X,Y,Z);
-% %     r(i).Marker='.';
-% %     r(i).LineStyle='none';
-% %     r(i).Color='blue';%[1,i/(1.5*N0),0]
-% %     %r(i).legend ='r0';
-% %     hold on
-% % end
-% % 
-% % for i=1:N(4)
-% %     Y=squeeze(Rate(4,i,:,NC));
-% %     Z=squeeze(SD_rate(4,i,:,NC));
-% %     s(i)=errorbar(X,Y,Z);
-% %     s(i).Marker='s';
-% %     s(i).LineStyle='none';
-% %     s(i).Color='cyan';%[0,i/N3,1]
-% %     %s(i).legend ='r3';
-% % end
-% % 
-% % for i=1:4
-% %     Y=(nansum(squeeze((Rate(i,:,:,NC)))));
-% %     Mean(i,1:41)=(Y);
-% % end
-% % 
-% % for i=1:4
-% %     for j=1:41
-% %         Mean14(i,j)=Mean(i,j)./Nb_Approved_Rate(i,j,NC);
-% %     end
-% % end
-% % 
-% % t=plot(X,Mean14(1,:),'-r',X,Mean14(2,:),'-m',X,Mean14(3,:),'-b',X,Mean14(4,:),'-c','LineWidth',2);
-% % ylim([0 400])
-% % legend(t,{'r0, mean','r1, mean','r2, mean','r3, mean'})
-% % xlabel('AP Position (%)')
-% % ylabel('Initial rate')
-% % title('Initial rate of r0, r1, r2 and r3 along AP axis, at NC 14')
-% 
-% 
-% %standardizeFigure_YJK(gca,legend,'blue')
-% %saveas(gcf,'E:\Paul-J\LivemRNA\Data\Dropbox\OpposingGradient\Plots-PaulJ\Initial_rate/NC14.tif')
-% 
-% 
-% for i=1:5
-%     Y=(nanmean(squeeze((Rate(i,:,:,NC)))));
-%     Z=(nanstd(squeeze((Rate(i,:,:,NC)))));
-%     Mean14(i,1:41)=(Y);
-%     STD14(i,1:41)=(Z); 
-%     SEM14(i,1:41) = STD14(i,1:41) / sqrt(N(i));
-% end
-% 
-% InitialRate_NC14_figure = figure;
-% hold on
-% errorbar(X,Mean14(1,:),SEM14(1,:))
-% errorbar(X,Mean14(2,:),SEM14(2,:))
-% errorbar(X,Mean14(3,:),SEM14(3,:))
-% errorbar(X,Mean14(4,:),SEM14(4,:))
-% errorbar(X,Mean14(5,:),SEM14(5,:))
-% ylim([0 400])
-% 
-% legend('r0','r1','r2','r3','r3(mutated)')
-% xlabel('AP Position (%)')
-% ylabel('Initial rate')
-% title('Initial rate of r0, r1, r2,r3, and r3(mutated) along AP axis, at NC 14')
-% standardizeFigure(gca,legend,[])
-% 
-%  FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Figures-OpposingGradients\InitialLoadingRates_r0123_fitted\';
-%  saveas(InitialRate_NC14_figure,[FigPath 'InitialRate' , '_NC14' , '.pdf']); 
-%  save('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Data_Processed\AveragedInitialRate_NC14.mat','Mean14','STD14')
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Paul old script ends %%%%%%%%%%%%%%%%%%%%%
-%% save
+%% plot
+% NC14
+InitialRate_NC14_figure = figure;
+nc = 3; % NC13
+hold on
+errorbar(0:0.025:1,InitialRate_r0_NC14,InitialRate_SEM_r0_NC14,'Color',ColorChoice(1,:))
+% Female
+errorbar(0:0.025:1,InitialRate_r1_NC14,InitialRate_SEM_r1_NC14,'Color',ColorChoice(2,:))
+errorbar(0:0.025:1,InitialRate_r2_NC14,InitialRate_SEM_r2_NC14,'Color',ColorChoice(3,:))
+errorbar(0:0.025:1,InitialRate_r3_NC14,InitialRate_SEM_r3_NC14,'Color',ColorChoice(4,:))
 
 end

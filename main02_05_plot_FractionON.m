@@ -152,5 +152,5 @@ end
     DetermineLocalFolders;
 DataPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
 
-save([DataPath,filesep,'FractionON_r01233prime_20190406_Preliminary.mat'],...
+save([DataPath,filesep,'FractionON_r0123_Preliminary.mat'],...
     'FractionON_Average','FractionON_SEM','FractionON_individual');
