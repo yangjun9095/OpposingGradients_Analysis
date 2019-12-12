@@ -16,4 +16,7 @@ function main01_04_Process_eGFP_Bcd_datasets_time_average
 % same condition as 
 BcdData = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\Bcd-Averaged.mat')
 
+%% Extract useful fields
+%% Time-average for different time-windows
+
 end

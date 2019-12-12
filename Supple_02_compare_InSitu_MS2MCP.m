@@ -191,6 +191,7 @@ load ('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Embryos for Yang Joon\
 %% Plot the averaged In Situ intensity profile for r0,1,2,3
 
 AP = 0:0.01:0.99;
+AP = 0.005:0.01:0.995;
 
 hold on
 errorbar(AP, Averaged_Intensity_r0, SEM_Intensity_r0)
@@ -228,28 +229,29 @@ saveas(gcf,['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Embryos for Yang
 
 %% %%%%%%%%%%%%%%%%%% Let's compare this with MS2 data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 DataPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\AccumulatedmRNA_mixed_sex';
-% First, use Average_TotalmRNAProd function (custom-written). 
-% Put some more description later on how it works.
-
-[TotalmRNA_averaged_r0, TotalmRNA_SEM_r0] = Average_TotalmRNAProd('r0-', DataPath);
-[TotalmRNA_averaged_r1, TotalmRNA_SEM_r1] = Average_TotalmRNAProd('r1-', DataPath);
-[TotalmRNA_averaged_r2, TotalmRNA_SEM_r2] = Average_TotalmRNAProd('r2-', DataPath);
-[TotalmRNA_averaged_r3, TotalmRNA_SEM_r3] = Average_TotalmRNAProd('r3-', DataPath);
-
-% save the fields
-%% Plot AccumulatedmRNA (MS2) altogether
-APaxis = 0:0.025:1;
-hold on
-errorbar(APaxis, TotalmRNA_averaged_r0, TotalmRNA_SEM_r0)
-errorbar(APaxis, TotalmRNA_averaged_r1, TotalmRNA_SEM_r1)
-errorbar(APaxis, TotalmRNA_averaged_r2, TotalmRNA_SEM_r2)
-errorbar(APaxis, TotalmRNA_averaged_r3, TotalmRNA_SEM_r3)
-
-title('Accumulated mRNA (MS2, averaged) over AP')
-xlabel('AP axis (EL)')
-ylabel('Accumulated mRNA (AU)')
-legend('r0','r1','r2','r3')
-StandardFigure(gcf,gca)
+% % First, use Average_TotalmRNAProd function (custom-written). 
+% % Put some more description later on how it works.
+% % This 'Average_TotalmRNAProd' uses the mat file produced by
+% % 'AverageDatasets.m'. 
+% [TotalmRNA_averaged_r0, TotalmRNA_SEM_r0] = Average_TotalmRNAProd('r0-', DataPath);
+% [TotalmRNA_averaged_r1, TotalmRNA_SEM_r1] = Average_TotalmRNAProd('r1-', DataPath);
+% [TotalmRNA_averaged_r2, TotalmRNA_SEM_r2] = Average_TotalmRNAProd('r2-', DataPath);
+% [TotalmRNA_averaged_r3, TotalmRNA_SEM_r3] = Average_TotalmRNAProd('r3-', DataPath);
+% 
+% % save the fields
+% %% Plot AccumulatedmRNA (MS2) altogether
+% APaxis = 0:0.025:1;
+% hold on
+% errorbar(APaxis, TotalmRNA_averaged_r0, TotalmRNA_SEM_r0)
+% errorbar(APaxis, TotalmRNA_averaged_r1, TotalmRNA_SEM_r1)
+% errorbar(APaxis, TotalmRNA_averaged_r2, TotalmRNA_SEM_r2)
+% errorbar(APaxis, TotalmRNA_averaged_r3, TotalmRNA_SEM_r3)
+% 
+% title('Accumulated mRNA (MS2, averaged) over AP')
+% xlabel('AP axis (EL)')
+% ylabel('Accumulated mRNA (AU)')
+% legend('r0','r1','r2','r3')
+% StandardFigure(gcf,gca)
 
 % Save the result figure
 % saveas(gcf,[DataPath,filesep,'AccumulatedmRNA_r0123_MS2_averaged','.tif'])
@@ -387,9 +389,70 @@ for i=1:length(integratedmRNA_r3prime(:,1))
     errorbar(0:0.025:1, integratedmRNA_r3prime(i,:), integratedmRNA_error_r3prime(i,:))
 end
 
+%% Optional 
+%% Averaging over multiple embryos
+Averaged_integratedmRNA_r0 = nanmean(integratedmRNA_r0);
+Averaged_integratedmRNA_r1 = nanmean(integratedmRNA_r1);
+Averaged_integratedmRNA_r2 = nanmean(integratedmRNA_r2);
+Averaged_integratedmRNA_r3 = nanmean(integratedmRNA_r3);
+Averaged_integratedmRNA_r3prime = nanmean(integratedmRNA_r3prime);
+
+SEM_integratedmRNA_r0 = nanstd(integratedmRNA_r0,[],1)./sqrt(length(integratedmRNA_r0(:,1)));
+SEM_integratedmRNA_r1 = nanstd(integratedmRNA_r1,[],1)./sqrt(length(integratedmRNA_r1(:,1)));
+SEM_integratedmRNA_r2 = nanstd(integratedmRNA_r2,[],1)./sqrt(length(integratedmRNA_r2(:,1)));
+SEM_integratedmRNA_r3 = nanstd(integratedmRNA_r3,[],1)./sqrt(length(integratedmRNA_r3(:,1)));
+SEM_integratedmRNA_r3prime = nanstd(integratedmRNA_r3prime,[],1)./sqrt(length(integratedmRNA_r3prime(:,1)));
+
+%% Plot to check (averaged accumulated mRNA profile)
+APaxis = 0:0.025:1;
+
+hold on
+errorbar(APaxis, Averaged_integratedmRNA_r0, SEM_integratedmRNA_r0)
+errorbar(APaxis, Averaged_integratedmRNA_r1, SEM_integratedmRNA_r1)
+errorbar(APaxis, Averaged_integratedmRNA_r2, SEM_integratedmRNA_r2)
+errorbar(APaxis, Averaged_integratedmRNA_r3, SEM_integratedmRNA_r3)
+errorbar(APaxis, Averaged_integratedmRNA_r3prime, SEM_integratedmRNA_r3prime)
+
+title('Accumulated mRNA')
+xlabel('AP axis (EL)')
+ylabel('Accumulated mRNA (AU)')
+legend('0','1','2','3','3(mutated)')
+
+StandardFigure(gcf,gca)
+
+% Save the plots
+% File path
+FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\AccumulatedmRNA'
+saveas(gcf,[FigPath,filesep,'AccumulatedmRNA_AllConstructs(SmallLab)-MS2MCP-Averaged.tif'])
+saveas(gcf,[FigPath,filesep,'AccumulatedmRNA_AllConstructs(SmallLab)-MS2MCP-Averaged.pdf'])
 
 
+%% Plot after normalization
+scale_r0 = max(Averaged_integratedmRNA_r0);
+scale_r1 = max(Averaged_integratedmRNA_r1);
+scale_r2 = max(Averaged_integratedmRNA_r2);
+scale_r3 = max(Averaged_integratedmRNA_r3);
+scale_r3prime = max(Averaged_integratedmRNA_r3prime);
 
+hold on
+errorbar(APaxis, Averaged_integratedmRNA_r0./scale_r0, SEM_integratedmRNA_r0./scale_r0)
+errorbar(APaxis, Averaged_integratedmRNA_r1./scale_r1, SEM_integratedmRNA_r1./scale_r1)
+errorbar(APaxis, Averaged_integratedmRNA_r2./scale_r2, SEM_integratedmRNA_r2./scale_r2)
+errorbar(APaxis, Averaged_integratedmRNA_r3./scale_r3, SEM_integratedmRNA_r3./scale_r3)
+errorbar(APaxis, Averaged_integratedmRNA_r3prime./scale_r3prime, SEM_integratedmRNA_r3prime./scale_r3prime)
+
+title('Accumulated mRNA')
+xlabel('AP axis (EL)')
+ylabel('Accumulated mRNA (Normalized)')
+legend('0','1','2','3','3(mutated)')
+
+StandardFigure(gcf,gca)
+
+% Save the plots
+% File path
+FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\AccumulatedmRNA'
+saveas(gcf,[FigPath,filesep,'AccumulatedmRNA_AllConstructs(SmallLab)-MS2MCP-Normalized.tif'])
+saveas(gcf,[FigPath,filesep,'AccumulatedmRNA_AllConstructs(SmallLab)-MS2MCP-Normalized.pdf'])
 
 %% Compare the In Situ vs MS2 profile (Normalized)
 % Caveat : I'm using the MS2-integrated mRNA calculated by AverageDatasets.m
