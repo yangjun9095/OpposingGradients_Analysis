@@ -12,10 +12,12 @@ r1Path = [InSituPath,filesep,'hbP2+1Run\NC14'];
 r2Path = [InSituPath,filesep,'hbP2+2Run\NC14'];
 r3Path = [InSituPath,filesep,'hbP2+3Run\NC14'];
 
+% Optional
+r0Path_earlyNC14 = [InSituPath,filesep,'hbP2\earlyNC14'];
 %% Load specific embryos
 % Use dir function to read out all names in the directory.
-D = dir(r3Path);
-DataPath = r3Path
+D = dir(r0Path_earlyNC14);
+DataPath = r0Path_earlyNC14;
 
 %% Loop through all images (embryos)
 %k=1; % Count the number of imagesath;
@@ -159,7 +161,7 @@ StandardFigure(gcf,gca)
 saveas(gcf,[DataPath,filesep,'ProcessedResults',filesep,DataPath(end-8:end-5),'AllEmbryos_BGsubtracted.tif'])
 saveas(gcf,[DataPath,filesep,'ProcessedResults',filesep,DataPath(end-8:end-5),'AllEmbryos_BGsubtracted.pdf'])
 
-save([DataPath,filesep,'ProcessedInSituData',DataPath(end-8:end-5),'.mat'],'ProcessedInSituData')
+%save([DataPath,filesep,'ProcessedInSituData',DataPath(end-8:end-5),'.mat'],'ProcessedInSituData')
 %% Average the BG subtracted Intensity profile (of all embryos)
 Averaged_Intensity_BGsubtracted = nanmean(Intensity_mean_smooth_BGsubtracted);
 SEM_Intensity_BGsubtracted = nanstd(Intensity_mean_smooth_BGsubtracted)./sqrt(length(ProcessedInSituData));
@@ -173,6 +175,12 @@ StandardFigure(gcf,gca)
 % Save the result figure
 saveas(gcf,[DataPath,filesep,'ProcessedResults',filesep,DataPath(end-8:end-5),'_averaged.tif'])
 saveas(gcf,[DataPath,filesep,'ProcessedResults',filesep,DataPath(end-8:end-5),'_averaged.pdf'])
+
+%% Save the averaged fields
+Averaged_insitu_profile.Averaged_Intensity_BGsubtracted = Averaged_Intensity_BGsubtracted;
+Averaged_insitu_profile.SEM_Intensity_BGsubtracted = SEM_Intensity_BGsubtracted;
+
+save([DataPath,filesep,'Averaged_InSitu_profile','_earlyNC14','.mat'],'Averaged_insitu_profile')
 
 %% Save the values for further comparison with other constructs
 Averaged_Intensity_r3 = Averaged_Intensity_BGsubtracted;
