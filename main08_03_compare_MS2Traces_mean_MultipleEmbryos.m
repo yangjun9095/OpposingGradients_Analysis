@@ -13,7 +13,7 @@ function main_08_03_compare_MS2Traces_mean_MultipleEmbryos(DataType, varargin)
 
 
 %% Initialize the variables
-NC = 13; % 
+NC = 14; % 
 
 
 % OPTIONS : 

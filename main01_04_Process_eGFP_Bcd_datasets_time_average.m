@@ -17,6 +17,20 @@ function main01_04_Process_eGFP_Bcd_datasets_time_average
 BcdData = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\Bcd-Averaged.mat')
 
 %% Extract useful fields
+BcdTime = BcdData.ElapsedTime;
+BcdNC13 = BcdData.nc13;
+BcdNC14 = BcdData.nc14;
+
+BcdFluo = BcdData.MeanVectorAP;
+BcdFluoSD = BcdData.SDVectorAP;
+
 %% Time-average for different time-windows
+% First, let's define different time windows for averaging
+% 0-5min, 0-10min, 0-20 min into NC14 as the first round.
+
+tWindows{1} = 0:5; % min
+tWindows{2} = 0:10; % min
+tWindows{3} = 0:20; % min
+
 
 end

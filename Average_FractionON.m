@@ -64,8 +64,8 @@ for i=1:numEmbryos
     clear N_TotalNuclei
     clear N_filter
     N_filter(:,1) = Data(i).TotalEllipsesAP(:,1) > 2;%N_nuclei_thresh;
-    N_filter(:,2) = Data(i).TotalEllipsesAP(:,2) > 5;%N_nuclei_thresh;
-    N_filter(:,3) = Data(i).TotalEllipsesAP(:,3) > 5;%N_nuclei_thresh;
+    N_filter(:,2) = Data(i).TotalEllipsesAP(:,2) > 4;%N_nuclei_thresh;
+    N_filter(:,3) = Data(i).TotalEllipsesAP(:,3) > 6;%N_nuclei_thresh;
     
     N_TotalNuclei = Data(i).TotalEllipsesAP.*N_filter;
     FractionON_individual(:,:,i) = Data(i).EllipsesOnAP{1,1}./N_TotalNuclei;

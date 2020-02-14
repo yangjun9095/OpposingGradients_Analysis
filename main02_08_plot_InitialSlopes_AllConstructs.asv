@@ -283,7 +283,7 @@ initialSlopes_ONnuclei{5,5} = average_fittedRate_r3;
 initialSlopes_ONnuclei{5,6} = SEM_fittedRate_r3;
 
 % r1_close
-initialSlopes_ONnuclei{6,1} = 'r1-close';
+initialSlopes_ONnuclei{6,1} = 'r1_close';
 initialSlopes_ONnuclei{6,2} = fittedRate_r1_close;
 initialSlopes_ONnuclei{6,3} = fittedRateSD_r1_close;
 initialSlopes_ONnuclei{6,4} = fittedTon_r1_close;
@@ -291,7 +291,7 @@ initialSlopes_ONnuclei{6,5} = average_fittedRate_r1_close;
 initialSlopes_ONnuclei{6,6} = SEM_fittedRate_r1_close;
 
 % r1_mid
-initialSlopes_ONnuclei{7,1} = 'r1-mid';
+initialSlopes_ONnuclei{7,1} = 'r1_mid';
 initialSlopes_ONnuclei{7,2} = fittedRate_r1_mid;
 initialSlopes_ONnuclei{7,3} = fittedRateSD_r1_mid;
 initialSlopes_ONnuclei{7,4} = fittedTon_r1_mid;
@@ -299,7 +299,7 @@ initialSlopes_ONnuclei{7,5} = average_fittedRate_r1_mid;
 initialSlopes_ONnuclei{7,6} = SEM_fittedRate_r1_mid;
 
 % r2_close
-initialSlopes_ONnuclei{8,1} = 'r2-close';
+initialSlopes_ONnuclei{8,1} = 'r2_close';
 initialSlopes_ONnuclei{8,2} = fittedRate_r2_close;
 initialSlopes_ONnuclei{8,3} = fittedRateSD_r2_close;
 initialSlopes_ONnuclei{8,4} = fittedTon_r2_close;
@@ -307,7 +307,7 @@ initialSlopes_ONnuclei{8,5} = average_fittedRate_r2_close;
 initialSlopes_ONnuclei{8,6} = SEM_fittedRate_r2_close;
 
 % r2_far
-initialSlopes_ONnuclei{9,1} = 'r2-far';
+initialSlopes_ONnuclei{9,1} = 'r2_far';
 initialSlopes_ONnuclei{9,2} = fittedRate_r2_far;
 initialSlopes_ONnuclei{9,3} = fittedRateSD_r2_far;
 initialSlopes_ONnuclei{9,4} = fittedTon_r2_far;
@@ -315,8 +315,7 @@ initialSlopes_ONnuclei{9,5} = average_fittedRate_r2_far;
 initialSlopes_ONnuclei{9,6} = SEM_fittedRate_r2_far;
 
 %% Save this variable
-save(['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData',filesep,'InitialSlopes_ONnuclei_AllConstructs.mat'],...
-    'initialSlopes_ONnuclei','-v7.3');
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Part 2. Generating plots from saved data.
 % First, load the datasets from above.

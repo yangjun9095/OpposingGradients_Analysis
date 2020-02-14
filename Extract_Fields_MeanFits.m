@@ -33,10 +33,10 @@ function [fittedRate,fittedRateSD,fittedTon] = Extract_Fields_MeanFits(Data,vara
         if Symmetric && isfield(Data(i),'MeanFits')
             MeanFits = Data(i).MeanFits;
         elseif Asymmetric && (isfield(Data(i),'MeanFitsV2') ||isfield(Data(i),'MeanFitsAsymmetric'))
-            if isfield(Data(i),'MeanFitsV2')
-                MeanFits = Data(i).MeanFitsV2;
-            elseif isfield(Data(i),'MeanFitsAsymmetric')
+            if isfield(Data(i),'MeanFitsAsymmetric')
                 MeanFits = Data(i).MeanFitsAsymmetric;
+            elseif isfield(Data(i),'MeanFitsV2')
+                MeanFits = Data(i).MeanFitsV2;
             else
                 error('No MeanFits.mat found. Check the DynamicsResults folder')
             end

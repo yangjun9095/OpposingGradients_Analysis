@@ -167,4 +167,6 @@ DataPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients
 save([DataPath,filesep,'FractionON_r0123.mat'],...
     'FractionON_Average','FractionON_SEM','FractionON_individual');
 
+%% Part 2. Instantaneous Fraction ON (For this, I'll use heatmaps, time x AP bins)
+% First, let's sync all the datasets 
 end

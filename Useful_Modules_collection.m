@@ -27,14 +27,16 @@ colorDict = struct();
 colorDict.blue = [115,143,193]/255; %[115,143,170]/255;
 colorDict.red =  [213,108,85]/255; %[200,108,85]/255;
 colorDict.yellow = [234,194,100]/255;
-colorDict.cyan = [108,188,233]/255;AzzzzZXXxxxxxx
+colorDict.cyan = [108,188,233]/255;
 colorDict.magenta = [208,109,171]/255;
 colorDict.lightBlue = [115,142,193]/255;
 colorDict.purple = [171,133,172]/255;
 colorDict.green =  [122,169,116]/255; %[122,150,116]/255;
-colorDict.brown = [179.155,142]/255;
+colorDict.brown = [179,155,142]/255;
 colorDict.darkgreen = [126,157,144]/255;
-
-ColorChoice = [colorDict.blue; colorDict.red; colorDict.green; colorDict.purple]; % 4 embryos max. it could be extended easily
-lineColor = ['b', 'r', 'g', 'p'];
+colorDict.lightgreen = [205,214,209]/255;
+% Define a color matrix, 8 colors right now.
+ColorChoice = [colorDict.magenta; colorDict.green;...
+                colorDict.yellow; colorDict.red; colorDict.brown;...
+                colorDict.blue; colorDict.purple; colorDict.lightgreen]; 
 end

@@ -13,28 +13,28 @@ function main02_06_Overlay_FractionOn_Initial_loading_rates
 % Load the Fraction ON
 DataPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
 
-FractionON = load([DataPath,filesep,'FractionON_r0123_Preliminary.mat']);
+FractionON = load([DataPath,filesep,'FractionON_r0123.mat']);
 
 FractionON_Average = FractionON.FractionON_Average;
 FractionON_SEM = FractionON.FractionON_SEM;
 FractionON_individual = FractionON.FractionON_individual;
 
 
-%% Load the initial loading rate (Asymmetric fit)
-InitialRate_Asymmetric = load([DataPath,filesep,'AveragedInitialRate_AsymmetricFit.mat']);
+%% Load the initial loading rate (Asymmetric fit over ON nuclei)
+InitialRate_Asymmetric = load([DataPath,filesep,'AveragedInitialRate_AsymmetricFit_FixedFittingScript.mat']);
 
 % Assign the fields from the loaded (processed) data
 InitialRate_r0 = InitialRate_Asymmetric.average_fittedRate_r0;
 InitialRate_SEM_r0 = InitialRate_Asymmetric.SEM_fittedRate_r0;
 
-InitialRate_r1 = InitialRate_Asymmetric.average_fittedRate_r1_female;
-InitialRate_SEM_r1 = InitialRate_Asymmetric.SEM_fittedRate_r1_female;
+InitialRate_r1 = InitialRate_Asymmetric.average_fittedRate_r1;
+InitialRate_SEM_r1 = InitialRate_Asymmetric.SEM_fittedRate_r1;
 
-InitialRate_r2 = InitialRate_Asymmetric.average_fittedRate_r2_female;
-InitialRate_SEM_r2 = InitialRate_Asymmetric.SEM_fittedRate_r2_female;
+InitialRate_r2 = InitialRate_Asymmetric.average_fittedRate_r2;
+InitialRate_SEM_r2 = InitialRate_Asymmetric.SEM_fittedRate_r2;
 
-InitialRate_r3 = InitialRate_Asymmetric.average_fittedRate_r3_female;
-InitialRate_SEM_r3 = InitialRate_Asymmetric.SEM_fittedRate_r3_female;
+InitialRate_r3 = InitialRate_Asymmetric.average_fittedRate_r3;
+InitialRate_SEM_r3 = InitialRate_Asymmetric.SEM_fittedRate_r3;
 
 %% Optional : Normalization of the Initial rate
 % What's the maximum value to divide with? I'll pick up the maximum of the
