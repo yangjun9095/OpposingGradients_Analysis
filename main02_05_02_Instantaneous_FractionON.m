@@ -19,15 +19,21 @@ for i=4:length(dataTypes)
 end
 
 %% Step2. Load the processed datasets
+filePath = '/Users/yangjoonkim/Dropbox/OpposingGradient/OpposingGradients_ProcessedData/AveragedDatasets_Feb2020';
 r0Data = load([filePath, filesep,dataTypes{1},'.mat']);
 
 r3Data = load([filePath, filesep,dataTypes{4},'.mat']);
 
-% Extract the instantaneous Fraction ON (for individual embryos)
-FractionON_individual = r0Data.FractionON_individual;
+r1mid_Data = load([filePath, filesep,dataTypes{6},'.mat']);
 
-tempVar = r0Data.MeanVectorAP_individual;
+Data = r1mid_Data;
+
+% Extract the instantaneous Fraction ON (for individual embryos)
+FractionON_individual = Data.FractionON_individual;
+
+tempVar = Data.MeanVectorAP_individual;
 numEmbryos = length(tempVar(1,1,:));
+ElapsedTime = Data.ElapsedTime;
 
 % Average using nanmean
 FractionON_average = nanmean(FractionON_individual,3);
@@ -44,7 +50,18 @@ for j=1:length(ElapsedTime)
     yLabels{j} = num2str(ElapsedTime(j));
 end
 figure(2)
-heatmap(FractionON_average,'Colormap',viridis)
+h = heatmap(FractionON_average,'Colormap',viridis)
 xlabel('AP axis (EL)')
 ylabel('time(min)')
+
+%% Sanity check for the r1-mid
+MaxFractionON_individual = squeeze(nanmax(FractionON_individual(Data.nc14+3:end,:,:),[],1));
+
+hold on
+for i=1:numEmbryos
+    plot(0:0.025:1, MaxFractionON_individual(:,i))
+    pause
+end
+
+% embryo #3,4,5,6 seem to have reasonable fraction on
 end

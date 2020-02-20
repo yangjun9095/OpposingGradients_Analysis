@@ -36,6 +36,7 @@ function  [FractionON_individual,FractionON_Average,...
 
 %[CODE]
 %% Checking Options
+skipFigure = 0; % default
 % Checking Varargin 
 if ~isempty(varargin)
     for i=1:length(varargin)
@@ -96,7 +97,7 @@ end
 %% Save plots
 
 %% Save useful fields
-savePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
-save([savePath,filesep,DataType,'_FractionON.mat'],...
-    'FractionON_individual','FractionON_Average','FractionON_Average_Error','numEmbryos','N_nuclei_thresh')
+% savePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
+% save([savePath,filesep,DataType,'_FractionON.mat'],...
+%     'FractionON_individual','FractionON_Average','FractionON_Average_Error','numEmbryos','N_nuclei_thresh')
 end

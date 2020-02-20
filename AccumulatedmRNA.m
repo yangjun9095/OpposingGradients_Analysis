@@ -15,7 +15,9 @@ function [AccumulatedmRNA, AccumulatedmRNA_SD, AccumulatedmRNA_SE,...
 %% Load the processed data
 % Define the file path. This should be fed into the function as an optional
 % input. Edit later.
-FilePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData'; 
+% FilePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData'; 
+% YangJoon's MacBook Pro filepath
+FilePath = '/Users/yangjoonkim/Dropbox/OpposingGradient/OpposingGradients_ProcessedData/AveragedDatasets_Feb2020';
 Data = load([FilePath, filesep, DataType,'.mat']);
 
 %% Extract useful fields
@@ -94,7 +96,7 @@ AccumulatedmRNA_SE = AccumulatedmRNA_SD./sqrt(numEmbryos);
 % end
 
 %% Save fields
-FilePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
+FilePath = '/Users/yangjoonkim/Dropbox/OpposingGradient/OpposingGradients_ProcessedData/AveragedDatasets_Feb2020';
 savedVariables = {};
 savedVariables = [savedVariables, 'AccumulatedmRNA', 'AccumulatedmRNA_SD',...
                 'AccumulatedmRNA_SE','AccumulatedmRNA_individual', 'AccumulatedmRNA_SD_individual'];
