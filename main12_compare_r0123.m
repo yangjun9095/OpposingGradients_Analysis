@@ -11,31 +11,30 @@ function main12_compare_r0123(varargin)
 % 7/17/2019
 % Old construct, r0, with 1 bp mutation in the eve promoter. I'm using this
 % since I have more anterior data point, as well as NC14.
-% AverageDatasets('r0','NC',13,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
+AverageDatasets('r0','NC',13,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
 
 % New datasets, mixed sex
 %AverageDatasets('r0-new-mixed','NC',13,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
 % New datasets, with all females
-AverageDatasets('r0-new','NC',13,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
-AverageDatasets('r1-new','NC',13,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
-AverageDatasets('r2-new','NC',13,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
-AverageDatasets('r3-new','NC',13,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
+AverageDatasets('r0-new-female','NC',13,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
+AverageDatasets('r1-new-female','NC',13,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
+AverageDatasets('r2-new-female','NC',13,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
+AverageDatasets('r3-new-female','NC',13,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
 %% Load datasets
 % This assumes that the DataType is the name of the constructs in the
-% DataStatus.xlsx tab, for example, r3-new
+% DataStatus.xlsx tab, for example, r3-new-female
 
-% FilePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
- FilePath = '/Users/yangjoonkim/Dropbox/OpposingGradient/OpposingGradients_ProcessedData/AveragedDatasets_Feb2020'
+FilePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
+
 % This is because our new datasets(r0-new-male, r0-new-female lack NC14)
 
 %r0Data = load([FilePath, filesep, 'r0-new-female']);
-r0Data = load([FilePath, filesep, 'r0-new.mat']);
-r1Data = load([FilePath, filesep, 'r1-new.mat']);
-r2Data = load([FilePath, filesep, 'r2-new']);
-r3Data = load([FilePath, filesep, 'r3-new']);
-
-r1closeData = load([FilePath, filesep, 'r1-close.mat']);
-r1midData = load([FilePath, filesep, 'r1-mid.mat']);
+r0Data = load([FilePath, filesep, 'r0']);
+%r0Data = load([FilePath, filesep, 'r0-new-mixed']);
+%r0Data = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\r0.mat')
+r1Data = load([FilePath, filesep, 'r1-new-female']);
+r2Data = load([FilePath, filesep, 'r2-new-female']);
+r3Data = load([FilePath, filesep, 'r3-new-female']);
 
 %% Assign fields to variables
 

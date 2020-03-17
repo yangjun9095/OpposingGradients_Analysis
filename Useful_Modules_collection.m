@@ -36,7 +36,7 @@ colorDict.brown = [179,155,142]/255;
 colorDict.darkgreen = [126,157,144]/255;
 colorDict.lightgreen = [205,214,209]/255;
 % Define a color matrix, 8 colors right now.
-ColorChoice = [colorDict.magenta; colorDict.green;...
+ColorChoice = [colorDict.blue; colorDict.green;...
                 colorDict.yellow; colorDict.red; colorDict.brown;...
-                colorDict.blue; colorDict.purple; colorDict.lightgreen]; 
+                colorDict.purple; colorDict.magenta; colorDict.lightgreen]; 
 end

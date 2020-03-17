@@ -1,3 +1,4 @@
+function 
 % hbP2 + N Runt binding sites constructs modeling with actual Bcd and Runt
 % gradient.
 
@@ -8,94 +9,7 @@
 
 %% Step1. Think about realistic morphogen gradients
 
-% Here, I will just think about from 20~80% (or 20~60%) of the embryo, since 
-% 1) all boundary features are determined in this regime
-% 2) we don't have to think about terminal system
-% 3) this is usually the region we're imaging
 
-X = 0.2:0.01:0.7; % AP axis
-
-% (1) Bcd gradient, note that the length constant is 0.2
-% Bcd0 = 60; % 60nM in the most anterior from Gregor 2007a
-% Bcd = Bcd0*exp(-5*X);
-% Kb = 6; % Bcd dissociation constant. This is for scaling, should change
-
-% or we can just use actual Bcd data
-% The Bcd data below is interpolated(temporally) using pchip, I recall that
-% it's from Jonathan.
-Bcd = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\Bicoid.mat')
-
-Bcd_averaged_nc13 = nanmean(Bcd.pchbcd(1:120,:));
-% Spatial interpolation 
-Bcd_interp_nc13 = interp1(0:0.025:1,Bcd_averaged_nc13,0:0.01:1);
-
-plot(0:0.01:1,Bcd_interp_nc13)
-BcdScale = 60; % This shoud change...
-
-% (2) Runt gradient, this should come from actual data
-% For now, let's take an average over time, for nc13 and nc14.
-% The dataset below is from averaging 3~4 embryos, with 1min of frame rate.
-% Also, APbin of 2.5%, thus I need to smooth, and interpolate
-Runt = load('E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\Runt-1min-200Hz-Female-Averaged.mat');
-%Runt = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\Runt-1min-200Hz-Female-Averaged.mat');
-
-% Runt profile (averaged over nc13)
-timeRange_nc13 = Runt.nc13:Runt.nc14-3;
-
-Runt_averaged_nc13 = nanmean(Runt.MeanVectorAP(timeRange_nc13,:));
-Runt_averaged_nc13_error = sqrt(nansum(Runt.SDVectorAP(timeRange_nc13,:).^2)./length(Runt.SDVectorAP(timeRange_nc13,:)));
-
-% Runt profile (averaged over the beginning of 20 minutes of nc14)
-timeRange_nc14 = Runt.nc14:Runt.nc14+20; % for the first 20 minutes
-Runt_averaged_nc14 = nanmean(Runt.MeanVectorAP(timeRange_nc14,:));
-Runt_averaged_nc14_error = sqrt(nansum(Runt.SDVectorAP(timeRange_nc14,:).^2)./length(Runt.SDVectorAP(timeRange_nc14,:)));
-
-% Quick check for the Runt gradient
-hold on
-errorbar(0:0.025:1,Runt_averaged_nc13,Runt_averaged_nc13_error)
-errorbar(0:0.025:1,Runt_averaged_nc14,Runt_averaged_nc14_error)
-title('Time-averaged Runt nuclear fluorescence over AP')
-xlabel('AP axis (EL)')
-ylabel('Runt nuclear fluorescence (AU)')
-legend('nc13','nc14 (20min)')
-hold off
-
-% Interpolation and smoothing (or the other way)
-Runt_smoothed_nc13 = movmean(Runt_averaged_nc13,3);
-Runt_interp_nc13 = interp1(0:0.025:1,Runt_smoothed_nc13,0:0.01:1);
-%Runt_error_interp_nc13 = interp1(0:0.025:1,Runt_averaged_nc13_error,0:0.01:1);
-
-% Now, subtracat the background. This should also be revisited once we get
-% a better sense about the background fluorescence, like free eGFP. For
-% now, I'm just subtracting the minimum value, assuming that Runt is
-% almost zero at the very anterior (or posterior)
-RuntBG = 150; %min(Runt_interp_nc13);%150; % Here, I just chose this since I didn't have a value for 20% or more anterior...
-Runt_interp_nc13_BGsubtracted = Runt_interp_nc13 - RuntBG ;
-
-% Check both Bcd and Runt inputs
-figure(2)
-hold on
-plot(0:0.01:1,Bcd_interp_nc13*BcdScale)
-plot(0:0.01:1,Runt_interp_nc13_BGsubtracted)
-%errorbar(0:0.01:1,Runt_interp_nc13,Runt_error_interp_nc13)
-
-title('Bcd and Runt over AP (averaged over nc13)')
-xlabel('AP axis (EL)')
-ylabel('Nuclear fluorescence (AU)')
-legend('Bcd','Runt')
-hold off
-
-% Only think about 20% to 60% of the embryo, and scale for Bcd and Runt.
-EL = 0:0.01:1;
-X = 0.2:0.01:0.6;
-
-BcdScale = 20;
-Bcd = Bcd_interp_nc13*BcdScale;
-Bcd = Bcd(21:61); % getting 0.2~0.6 of EL
-
-RuntScale = 1;
-Runt = Runt_interp_nc13_BGsubtracted*RuntScale;
-Runt = Runt(21:61); % getting 0.2~0.6 of EL
 
 %% Step2. Predicting the transcriptional output for different scenarios
 % First, I will start with 4 scenarios, competition, quenching, direct,

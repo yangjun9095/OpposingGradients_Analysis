@@ -62,6 +62,24 @@ function main02_02_plot_FractionON
 %             FractionON_Average_Error_r3prime,...
 %                 numEmbryos_r3prime] = Average_FractionON('r3prime','skipFigure');
 
+% r1-close
+[FractionON_individual_r1_close,FractionON_Average_r1_close,...
+            FractionON_Average_Error_r1_close,...
+                numEmbryos_r1_close] = Average_FractionON('r1-close','skipFigure');
+% r1-mid            
+[FractionON_individual_r1_mid,FractionON_Average_r1_mid,...
+            FractionON_Average_Error_r1_mid,...
+                numEmbryos_r1_mid] = Average_FractionON('r1-mid','skipFigure');
+
+% r2-close
+[FractionON_individual_r2_close,FractionON_Average_r2_close,...
+            FractionON_Average_Error_r2_close,...
+                numEmbryos_r2_close] = Average_FractionON('r2_1+2','skipFigure');
+% r2-far
+[FractionON_individual_r2_far,FractionON_Average_r2_far,...
+            FractionON_Average_Error_r2_far,...
+                numEmbryos_r2_far] = Average_FractionON('r2_1+3','skipFigure');
+            
 %% Put all processed Fraction ON data into a structure for easier plotting
 
 % 1) individual Fraction ON
@@ -70,6 +88,10 @@ FractionON_individual{2} = FractionON_individual_r1;
 FractionON_individual{3} = FractionON_individual_r2;
 FractionON_individual{4} = FractionON_individual_r3;
 % FractionON_individual{5} = FractionON_individual_r3prime;
+FractionON_individual{5} = FractionON_individual_r1_close;
+FractionON_individual{6} = FractionON_individual_r1_mid;
+FractionON_individual{7} = FractionON_individual_r2_close;
+FractionON_individual{8} = FractionON_individual_r2_far;
 
 % 2) Fraction ON averaged over multiple embryos
 FractionON_Average{1} = FractionON_Average_r0;
@@ -77,6 +99,10 @@ FractionON_Average{2} = FractionON_Average_r1;
 FractionON_Average{3} = FractionON_Average_r2;
 FractionON_Average{4} = FractionON_Average_r3;
 % FractionON_Average{5} = FractionON_Average_r3prime;
+FractionON_Average{5} = FractionON_Average_r1_close;
+FractionON_Average{6} = FractionON_Average_r1_mid;
+FractionON_Average{7} = FractionON_Average_r2_close;
+FractionON_Average{8} = FractionON_Average_r2_far;
 
 % 3) Fraction ON SEM (over multiple embryos, SD / sqrt(number of embryos))
 FractionON_SEM{1} = FractionON_Average_Error_r0;
@@ -84,6 +110,10 @@ FractionON_SEM{2} = FractionON_Average_Error_r1;
 FractionON_SEM{3} = FractionON_Average_Error_r2;
 FractionON_SEM{4} = FractionON_Average_Error_r3;
 % FractionON_SEM{5} = FractionON_Average_Error_r3prime;
+FractionON_SEM{5} = FractionON_Average_Error_r1_close;
+FractionON_SEM{6} = FractionON_Average_Error_r1_mid;
+FractionON_SEM{7} = FractionON_Average_Error_r2_close;
+FractionON_SEM{8} = FractionON_Average_Error_r2_far;
 
 %% Color definition
 % This is defining the line color
@@ -140,15 +170,41 @@ for NC=12:14 % NC
     saveas(FractionON_figure(NC-11),[FigPath,filesep,'FractionON_NC',num2str(NC),'.tif']); 
     saveas(FractionON_figure(NC-11),[FigPath,filesep,'FractionON_NC',num2str(NC),'.pdf']); 
 end
- %% Save figures
-% FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data';
-% 
-% for i=1:3 % NC
-%     %standardizeFigure_YJK(FractionON_figure(i).CurrentAxes,FractionON_figure(i).legend,[])
-%     saveas(FractionON_figure(i),[FigPath,filesep,'FractionON_NC',num2str(i+11),'.tif'])
-%     saveas(FractionON_figure(i),[FigPath,filesep,'FractionON_NC',num2str(i+11),'.pdf'])
-% 
-% end
+
+%% r1 variants with r0 (r1, r2, r3) - NC14
+ FractionON_figure(NC-11) = figure(NC-11);
+hold on
+% Loop over different constructs (r0,1,2,3,3')
+for i=1:length(FractionON_individual)
+    % Extract the Fraction ON from the structure
+    FractionON_individual_temp = FractionON_individual{i};
+    FractionON_Average_temp = FractionON_Average{i};
+    FractionON_SEM_temp = FractionON_SEM{i};
+
+    [~,~,numEmbryos] = size(FractionON_individual_temp);
+
+    % individual embryo (Fraction ON)
+%         for j=1:numEmbryos
+%             plot(0:0.025:1,FractionON_individual_temp(:,NC-11,j),'-o','Color',ColorChoice(i,:))
+%         end
+    %H(i) = shadedErrorBar(0:0.025:1,FractionON_Average_temp(:,NC-11),FractionON_SEM_temp(:,NC-11),'lineprops',{lineColor(i),'markerfacecolor',ColorChoice(i,:)})
+    errorbar(0:0.025:1,FractionON_Average_temp(:,NC-11),FractionON_SEM_temp(:,NC-11),'Color',ColorChoice(i,:))
+end
+%h(i) = H(i).mainLine;
+
+hold off
+title(['Fraction of Active Nuclei',' @ NC ',num2str(NC)])
+xlabel('AP (EL)')
+ylabel('Fraction ON')
+xlim([0.15 0.6])
+ylim([0 1.2])
+%legend(h,'r0','r1','r2','r3','r3prime')
+legend('r0','r1','r2','r3')%,'r3prime')
+StandardFigure(FractionON_figure(NC-11),FractionON_figure(NC-11).CurrentAxes)
+%standardizeFigure_YJK(gca,legend,[])
+% Save the plots
+saveas(FractionON_figure(NC-11),[FigPath,filesep,'FractionON_NC',num2str(NC),'.tif']); 
+saveas(FractionON_figure(NC-11),[FigPath,filesep,'FractionON_NC',num2str(NC),'.pdf']); 
 
 %% Double check individual embryos
 % r0
@@ -167,6 +223,4 @@ DataPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients
 save([DataPath,filesep,'FractionON_r0123.mat'],...
     'FractionON_Average','FractionON_SEM','FractionON_individual');
 
-%% Part 2. Instantaneous Fraction ON (For this, I'll use heatmaps, time x AP bins)
-% First, let's sync all the datasets 
 end

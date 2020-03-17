@@ -95,11 +95,11 @@ colorDict.thickpink = [132,27,69]/255;
 % Define a color matrix, 8 colors right now.
 ColorChoice = [colorDict.blue; colorDict.green;...
                 colorDict.yellow; colorDict.red; colorDict.brown;...
-                colorDict.purple; colorDict.magenta; colorDict.thickpink]; 
+                colorDict.blue; colorDict.purple; colorDict.thickpink]; 
 %% Plot the averaged fittedRate (initial rate of RNAP loading), and SEM
 
-%FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\InitialSlope_Asymmetric\';
-FigPath = '/Users/yangjoonkim/Dropbox/Garcia Lab/Figures/Opposing Gradients/Data/InitialSlope_Asymmetric/OnNuclei/';
+FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\InitialSlope_Asymmetric\';
+
 % % NC12
 % InitialRate_NC12_figure = figure;
 % nc = 1; % NC12
@@ -162,8 +162,8 @@ ylabel('Initial rate (AU/min)')
 title('Initial rate of RNAP loading along AP axis, at NC 14')
 StandardFigure(InitialRate_NC14_figure, InitialRate_NC14_figure.CurrentAxes)
 
-saveas(InitialRate_NC14_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_' , '_NC14' , '.tif']); 
-saveas(InitialRate_NC14_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_' , '_NC14' , '.pdf']); 
+saveas(InitialRate_NC14_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_' , '_NC14_fixedFittingScript' , '.tif']); 
+saveas(InitialRate_NC14_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_' , '_NC14_fixedFittingScript' , '.pdf']); 
 
 %% Generate plots for different constructs (r1, r2 variants)
 %% 1) r1 variants
@@ -188,8 +188,8 @@ ylabel('Initial rate (AU/min)')
 title('Initial rate of RNAP loading along AP axis, at NC 14')
 StandardFigure(gcf, gca)
 
-saveas(gcf,[FigPath 'InitialRate_AsymmetricFit_r1_variants' , '_NC14' , '.tif']); 
-saveas(gcf,[FigPath 'InitialRate_AsymmetricFit_r1_variants' , '_NC14' , '.pdf']); 
+saveas(gcf,[FigPath 'InitialRate_AsymmetricFit_r1_variants' , '_NC14_fixedFittingScript' , '.tif']); 
+saveas(gcf,[FigPath 'InitialRate_AsymmetricFit_r1_variants' , '_NC14_fixedFittingScript' , '.pdf']); 
 %% 2) r2 variants
 hold on
 APaxis = 0:0.025:1;
@@ -210,128 +210,8 @@ ylabel('Initial rate (AU/min)')
 title('Initial rate of RNAP loading along AP axis, at NC 14')
 StandardFigure(gcf, gca)
 
-saveas(gcf,[FigPath 'InitialRate_AsymmetricFit_r2_variants' , '_NC14' , '.tif']); 
-saveas(gcf,[FigPath 'InitialRate_AsymmetricFit_r2_variants' , '_NC14' , '.pdf']); 
-
-%% Different combinations of 1, 2 sites
-% 1st, [1,0,0] (r1-original) + [0,1,0](r1-mid) -> [1,1,0] (r2_close)
-hold on
-APaxis = 0:0.025:1;
-errorbar(0:0.025:1,average_fittedRate_r0(:,nc),SEM_fittedRate_r0(:,nc),'--','Color',ColorChoice(1,:))
-
-errorbar(0:0.025:1,average_fittedRate_r1(:,nc),SEM_fittedRate_r1(:,nc),'Color',ColorChoice(2,:))
-errorbar(0:0.025:1,average_fittedRate_r1_mid(:,nc),SEM_fittedRate_r1_mid(:,nc),'Color',ColorChoice(6,:))
-errorbar(0:0.025:1,average_fittedRate_r2_close(:,nc),SEM_fittedRate_r2_close(:,nc),'Color',ColorChoice(7,:))
-
-errorbar(0:0.025:1,average_fittedRate_r3(:,nc),SEM_fittedRate_r3(:,nc),'--','Color',ColorChoice(4,:)) % red
-
-xlim([0.15 0.6])
-ylim([0 250])
-
-legend('r0','r1-[1,0,0]','r1-[0,1,0]','r2-[1,1,0]','r3')%,'r1-male','r2-male','r3-male') 
-xlabel('AP Position')
-ylabel('Initial rate (AU/min)')
-title('Initial rate of RNAP loading along AP axis, at NC 14')
-StandardFigure(gcf, gca)
-
-saveas(gcf,[FigPath 'InitialRate_AsymmetricFit_[1,0,0]+[0,1,0]=[1,1,0]' , '_NC14' , '.tif']); 
-saveas(gcf,[FigPath 'InitialRate_AsymmetricFit_[1,0,0]+[0,1,0]=[1,1,0]' , '_NC14' , '.pdf']); 
-
-%%
-% 2nd, [1,0,0] (r1-original) + [0,0,1](r1-close) -> [1,0,1] (r2_far)
-hold on
-APaxis = 0:0.025:1;
-errorbar(0:0.025:1,average_fittedRate_r0(:,nc),SEM_fittedRate_r0(:,nc),'--','Color',ColorChoice(1,:))
-
-errorbar(0:0.025:1,average_fittedRate_r1(:,nc),SEM_fittedRate_r1(:,nc),'Color',ColorChoice(2,:))
-errorbar(0:0.025:1,average_fittedRate_r1_close(:,nc),SEM_fittedRate_r1_close(:,nc),'Color',ColorChoice(5,:))
-errorbar(0:0.025:1,average_fittedRate_r2_far(:,nc),SEM_fittedRate_r2_far(:,nc),'Color',ColorChoice(8,:))
-
-errorbar(0:0.025:1,average_fittedRate_r3(:,nc),SEM_fittedRate_r3(:,nc),'--','Color',ColorChoice(4,:)) % red
-
-xlim([0.15 0.6])
-ylim([0 250])
-
-legend('r0','r1-[1,0,0]','r1-[0,0,1]','r2-[1,0,1]','r3')%,'r1-male','r2-male','r3-male') 
-xlabel('AP Position')
-ylabel('Initial rate (AU/min)')
-title('Initial rate of RNAP loading along AP axis, at NC 14')
-StandardFigure(gcf, gca)
-
-saveas(gcf,[FigPath 'InitialRate_AsymmetricFit_[1,0,0]+[0,0,1]=[1,0,1]' , '_NC14' , '.tif']); 
-saveas(gcf,[FigPath 'InitialRate_AsymmetricFit_[1,0,0]+[0,0,1]=[1,0,1]' , '_NC14' , '.pdf']); 
-
-%% 
-% 3rd, [0,1,0] (r1-mid) + [0,0,1](r1-close) -> [0,1,1] (r2-original)
-hold on
-APaxis = 0:0.025:1;
-errorbar(0:0.025:1,average_fittedRate_r0(:,nc),SEM_fittedRate_r0(:,nc),'--','Color',ColorChoice(1,:))
-
-errorbar(0:0.025:1,average_fittedRate_r1_mid(:,nc),SEM_fittedRate_r1_mid(:,nc),'Color',ColorChoice(6,:))
-errorbar(0:0.025:1,average_fittedRate_r1_close(:,nc),SEM_fittedRate_r1_close(:,nc),'Color',ColorChoice(5,:))
-errorbar(0:0.025:1,average_fittedRate_r2(:,nc),SEM_fittedRate_r2(:,nc),'Color',ColorChoice(3,:))
-
-errorbar(0:0.025:1,average_fittedRate_r3(:,nc),SEM_fittedRate_r3(:,nc),'--','Color',ColorChoice(4,:)) % red
-
-xlim([0.15 0.6])
-ylim([0 250])
-
-legend('r0','r1-[0,1,0]','r1-[0,0,1]','r2-[0,1,1]','r3')
-xlabel('AP Position')
-ylabel('Initial rate (AU/min)')
-title('Initial rate of RNAP loading along AP axis, at NC 14')
-StandardFigure(gcf, gca)
-
-saveas(gcf,[FigPath 'InitialRate_AsymmetricFit_[0,1,0]+[0,0,1]=[0,1,1]' , '_NC14' , '.tif']); 
-saveas(gcf,[FigPath 'InitialRate_AsymmetricFit_[0,1,0]+[0,0,1]=[0,1,1]' , '_NC14' , '.pdf']); 
-
-%% [0,1,0](r1-mid) + [1,0,1](r2_1+3) -> [1,1,1] (r3)
-
-hold on
-APaxis = 0:0.025:1;
-errorbar(0:0.025:1,average_fittedRate_r0(:,nc),SEM_fittedRate_r0(:,nc),'--','Color',ColorChoice(1,:))
-
-errorbar(0:0.025:1,average_fittedRate_r1_mid(:,nc),SEM_fittedRate_r1_mid(:,nc),'Color',ColorChoice(6,:))
-errorbar(0:0.025:1,average_fittedRate_r2_far(:,nc),SEM_fittedRate_r2_far(:,nc),'Color',ColorChoice(8,:))
-
-errorbar(0:0.025:1,average_fittedRate_r3(:,nc),SEM_fittedRate_r3(:,nc),'--','Color',ColorChoice(4,:)) % red
-
-xlim([0.15 0.6])
-ylim([0 250])
-
-legend('r0','r1-[0,1,0]','r2-[1,0,1]','r3')
-xlabel('AP Position')
-ylabel('Initial rate (AU/min)')
-title('Initial rate of RNAP loading along AP axis, at NC 14')
-StandardFigure(gcf, gca)
-
-saveas(gcf,[FigPath 'InitialRate_AsymmetricFit_1+2=3_[0,1,0]+[1,0,1]=[1,1,1]' , '_NC14' , '.tif']); 
-saveas(gcf,[FigPath 'InitialRate_AsymmetricFit_1+2=3_[0,1,0]+[1,0,1]=[1,1,1]' , '_NC14' , '.pdf']); 
-
-%% [0,0,1](r1-close) + [1,1,0](r2_1+2) -> [1,1,1] (r3)
-
-hold on
-APaxis = 0:0.025:1;
-errorbar(0:0.025:1,average_fittedRate_r0(:,nc),SEM_fittedRate_r0(:,nc),'--','Color',ColorChoice(1,:))
-
-errorbar(0:0.025:1,average_fittedRate_r1_close(:,nc),SEM_fittedRate_r1_close(:,nc),'Color',ColorChoice(5,:))
-errorbar(0:0.025:1,average_fittedRate_r2_close(:,nc),SEM_fittedRate_r2_close(:,nc),'Color',ColorChoice(7,:))
-
-errorbar(0:0.025:1,average_fittedRate_r3(:,nc),SEM_fittedRate_r3(:,nc),'--','Color',ColorChoice(4,:)) % red
-
-xlim([0.15 0.6])
-ylim([0 250])
-
-legend('r0','r1-[0,0,1]','r2-[1,1,0]','r3')
-xlabel('AP Position')
-ylabel('Initial rate (AU/min)')
-title('Initial rate of RNAP loading along AP axis, at NC 14')
-StandardFigure(gcf, gca)
-
-saveas(gcf,[FigPath 'InitialRate_AsymmetricFit_1+2=3_[0,0,1]+[1,1,0]=[1,1,1]' , '_NC14' , '.tif']); 
-saveas(gcf,[FigPath 'InitialRate_AsymmetricFit_1+2=3_[0,0,1]+[1,1,0]=[1,1,1]' , '_NC14' , '.pdf']); 
-
-
+saveas(gcf,[FigPath 'InitialRate_AsymmetricFit_r2_variants' , '_NC14_fixedFittingScript' , '.tif']); 
+saveas(gcf,[FigPath 'InitialRate_AsymmetricFit_r2_variants' , '_NC14_fixedFittingScript' , '.pdf']); 
 %% Save the fitted initial rate and SEM 
 
 % Define the values
