@@ -1,4 +1,4 @@
-function OpposingGradients_modeling_V2_SimplestModel
+function OpposingGradients_modeling_V3_HillModel
 % hbP2 + N Runt binding sites constructs modeling with actual Bcd and Runt
 % gradient.
 % Last updated : Mar 2020, by YJK
@@ -49,7 +49,7 @@ hold on
 APaxis = 0:0.025:1;
 yyaxis left
 errorbar(APaxis, BcdFluo_tAveraged/max(BcdFluo_tAveraged), SEBcdFluo_tAveraged/max(BcdFluo_tAveraged))
-xlim([0.2 0.6])
+%xlim([0.2 0.6])
 ylim([0 1.2])
 ylabel('Bcd concentration (Normalized)')
 yyaxis right
@@ -61,8 +61,8 @@ xlabel('AP axis (EL)')
 StandardFigure(gcf,gca)
 % save the plot
 figPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Input dynamics\Bcd_Runt_together_Mar2020';
-saveas(gcf,[figPath,filesep,'Bcd_Runt_AP_tAveraged_0_10minNC14_20_60%.tif'])
-saveas(gcf,[figPath,filesep,'Bcd_Runt_AP_tAveraged_0_10minNC14_20_60%.pdf'])
+% saveas(gcf,[figPath,filesep,'Bcd_Runt_AP_tAveraged_0_10minNC14_20_60%.tif'])
+% saveas(gcf,[figPath,filesep,'Bcd_Runt_AP_tAveraged_0_10minNC14_20_60%.pdf'])
 %saveas(gcf,[figPath,filesep,'Bcd_Runt_AP_tAveraged_0_10minNC14.pdf'])
 
 %% 
@@ -101,17 +101,17 @@ initialSlope_r0_SEM = initialSlope_r0_SEM(:,3); % NC14
 fitRange = 9:18; % 20-42.5% of AP axis as a fit range
 
 %% nonlinear least square fitting to the model
-x0 = [10 200]; %[K_a r] potentially wiht N
+x0 = [10 200 6]; %[K_a r] potentially with N
 % Note that the r is constrained by the maximum of initial rate of RNAP
 % loading of r0 (or the maximum value of rate from all constructs, probably
 % r1-close).
 
-lb = [0 0];
-ub = [1000 1000];
+lb = [0 0 0];
+ub = [1000 1000 100];
 %options.Algorithm = 'levenberg-marquardt';
 %lsqOptions=optimset('Display','none');
 
-fun = @(x)rate_r0_Hill_V2(x,Bcd(fitRange)) - initialSlope_r0(fitRange);
+fun = @(x)rate_r0_Hill_V3(x,Bcd(fitRange)) - initialSlope_r0(fitRange);
 x_r0 = lsqnonlin(fun,x0,lb, ub)%, options);
 
 
@@ -137,7 +137,8 @@ x_r0 = lsqnonlin(fun,x0,lb, ub)%, options);
 % x_r0 = lsqnonlin(@rate_r0_Hill, x0, lb, ub, options, Bcd(fitRange),...
 %         initialSlope_r0(fitRange))%
 % x = lsqnonlin(fun,x0,[],[],[]) 
-%% Check the parameter sensitivity
+%% Check the fit with the data
+% To do :  Check the parameter sensitivity
 % Start with different initial conditions, then see where the inferred
 % parameters land
 % for two sets of parameters
@@ -333,6 +334,8 @@ initialSlope_r1_mid_SEM = cell2mat(initialSlopes(7,6));
 initialSlope_r1_mid = initialSlope_r1_mid(:,3); % NC14
 initialSlope_r1_mid_SEM = initialSlope_r1_mid_SEM(:,3); % NC14
 
+% AP range of initial 
+
 % Use the parameters fitted from the r0, then just adjust additional
 % parameters.
 x_r0; %[K_A r N_A]
@@ -347,20 +350,21 @@ ub = [y_r1(1) 10];
 options.Algorithm = 'levenberg-marquardt';
 %lsqOptions=optimset('Display','none');
 
-fun1 = @(y)rate_r1_Hill_V3(x_r0,y,Bcd(fitRange),Runt(fitRange)) - initialSlope_r1_close(fitRange);
-y_r1_close = lsqnonlin(fun1,y0,lb, ub, options);
+fun1 = @(y)rate_r1_Hill_V3(x_r0,y,Bcd(fitRange),Runt(fitRange)) - initialSlope_r1_mid(fitRange);
+y_r1_mid_K_r_fixed = lsqnonlin(fun1,y0,lb, ub, options);
 
-%% Plot to check r1-close and fit
-Prediction = rate_r1_Hill_V3(x_r0, y_r1_close, Bcd, Runt)
+%% Plot to check r1-mid and fit
+Prediction = rate_r1_Hill_V3(x_r0, y_r1_mid, Bcd, Runt)
 
 hold on 
-errorbar(APaxis, initialSlope_r1_close, initialSlope_r1_close_SEM)
+errorbar(APaxis, initialSlope_r1_mid, initialSlope_r1_mid_SEM)
 plot(APaxis, Prediction)
 
 % show the regime of values used for fitting
 xline(0.2,'--')
 xline(0.425,'--')
 
+xlim([0.1 0.6])
 xticks([0.1 0.2 0.3 0.4 0.5 0.6])
 
 % legend('data',num2str(x_r0_1),num2str(x_r0_2))
@@ -374,8 +378,37 @@ StandardFigure(gcf,gca)
 
 % save the plot
 figPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Modeling_hbP2_nRuntsites\Model_V3';
-saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_[001]' , '.tif']); 
-saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_[001]' , '.pdf']); 
+% saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_[010]' , '.tif']); 
+% saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_[010]' , '.pdf']); 
+
+%% Plot to check r1-mid and fit
+Prediction1 = rate_r1_Hill_V3(x_r0, y_r1_mid_1, Bcd, Runt)
+Prediction_K_r_fixed = rate_r1_Hill_V3(x_r0, y_r1_mid_K_r_fixed, Bcd, Runt)
+hold on 
+errorbar(APaxis, initialSlope_r1_mid, initialSlope_r1_mid_SEM)
+plot(APaxis, Prediction1)
+plot(APaxis, Prediction_K_r_fixed)
+
+% show the regime of values used for fitting
+xline(0.2,'--')
+xline(0.425,'--')
+
+xlim([0.1 0.6])
+xticks([0.1 0.2 0.3 0.4 0.5 0.6])
+
+% legend('data',num2str(x_r0_1),num2str(x_r0_2))
+legend('data','fitted (two free params)','fitted (K_r fixed)')
+
+xlabel('AP axis')
+ylabel('initial rate of RNAP loading (AU)')
+
+% make figure
+StandardFigure(gcf,gca)
+
+% save the plot
+figPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Modeling_hbP2_nRuntsites\Model_V3';
+% saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_[010]' , '.tif']); 
+% saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_[010]' , '.pdf']); 
 %% Predict the 2 binding sites ([1,0,0] + [0,0,1])
 Prediction_r2_far = rate_r2_Hill_multiRep(x0,[y_r1(1), y_r1(2), y_r1_close(2)],Bcd, Runt);
 
