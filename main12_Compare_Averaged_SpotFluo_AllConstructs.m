@@ -8,38 +8,33 @@ function main12_compare_r0123(varargin)
 % The plan is to use this script to compare r0, r1, r2, and r3 
 
 %% Average datasets using AverageDatasets.m
-% 7/17/2019
-% Old construct, r0, with 1 bp mutation in the eve promoter. I'm using this
-% since I have more anterior data point, as well as NC14.
-% AverageDatasets('r0','NC',13,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
 
-% New datasets, mixed sex
-%AverageDatasets('r0-new-mixed','NC',13,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
-% New datasets, with all females
 AverageDatasets('r0-new','NC',13,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
 AverageDatasets('r1-new','NC',13,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
 AverageDatasets('r2-new','NC',13,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
 AverageDatasets('r3-new','NC',13,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
+
+AverageDatasets('r0_RuntNull','NC',14,'savePath','E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData');
 %% Load datasets
 % This assumes that the DataType is the name of the constructs in the
 % DataStatus.xlsx tab, for example, r3-new
 
-% FilePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
- FilePath = '/Users/yangjoonkim/Dropbox/OpposingGradient/OpposingGradients_ProcessedData/AveragedDatasets_Feb2020'
-% This is because our new datasets(r0-new-male, r0-new-female lack NC14)
+DropboxPath = 'S:/YangJoon/Dropbox';
+filePath = [DropboxPath,filesep,'OpposingGradient/OpposingGradients_ProcessedData/AveragedDatasets_Feb2020'];
 
-%r0Data = load([FilePath, filesep, 'r0-new-female']);
-r0Data = load([FilePath, filesep, 'r0-new.mat']);
-r1Data = load([FilePath, filesep, 'r1-new.mat']);
-r2Data = load([FilePath, filesep, 'r2-new']);
-r3Data = load([FilePath, filesep, 'r3-new']);
+r0Data = load([filePath, filesep, 'r0-new.mat']);
+r1Data = load([filePath, filesep, 'r1-new.mat']);
+r2Data = load([filePath, filesep, 'r2-new.mat']);
+r3Data = load([filePath, filesep, 'r3-new.mat']);
 
-r1closeData = load([FilePath, filesep, 'r1-close.mat']);
-r1midData = load([FilePath, filesep, 'r1-mid.mat']);
+r1closeData = load([filePath, filesep, 'r1-close.mat']);
+r1midData = load([filePath, filesep, 'r1-mid.mat']);
 
-r2closeData = load([FilePath, filesep, 'r2_1+2.mat']);
-r2farData = load([FilePath, filesep, 'r2_1+3.mat']);
+r2closeData = load([filePath, filesep, 'r2_1+2.mat']);
+r2farData = load([filePath, filesep, 'r2_1+3.mat']);
 
+% Runt null datasets
+r0NullData = load
 %% Put them in a structure for convenience
 AveragedData{1} = r0Data;
 AveragedData{2} = r1Data;
@@ -59,19 +54,34 @@ colorDict.yellow = [234,194,100]/255;
 colorDict.cyan = [108,188,233]/255;
 colorDict.magenta = [208,109,171]/255;
 colorDict.lightBlue = [115,142,193]/255;
-colorDict.purple = [171,133,172]/255;
+purple = [171,133,172]/255;
+colorDict.purple = (4*purple - [1,1,1])/3;
 colorDict.green =  [122,169,116]/255; %[122,150,116]/255;
-colorDict.brown = [179,155,142]/255;
+brown = [179,155,142]/255;
+colorDict.brown = (2*brown - [1,1,1])/1;
+
 colorDict.darkgreen = [126,157,144]/255;
 colorDict.lightgreen = [205,214,209]/255;
-colorDict.thickpink = [132,27,69]/255;
+thickpink = [132,27,69]/255;
+colorDict.thickpink = (3*thickpink + [1,1,1]) / 4; % adding white
+
 % Define a color matrix, 8 colors right now.
 ColorChoice = [colorDict.blue; colorDict.green;...
                 colorDict.yellow; colorDict.red; colorDict.brown;...
                 colorDict.purple; colorDict.magenta; colorDict.thickpink]; 
-%% Plot the time traces of Averaged spot fluo (for NC14)
+            
+%% Color map
+% Use cbrewer (https://colorbrewer2.org/#)
+% Create 10 distintive colors for now.
+% I might need to revisit these color schemes so that we can recognize
+% these better.
+[colormap] = cbrewer('qual', 'Set1', 8);
+
+%% Another choice
+
+%% Plot the time traces of Averaged spot fluo (for NC13)
 % for each datatype (since it's averaged already by AverageDatasets.m)
-% I'll take NC14 and MeanVectorAP, SEVectorAP then plot them over time
+% I'll take NC13/NC14 and MeanVectorAP, SEVectorAP then plot them over time
 % (ElpasedTime)
 
 for APbin = 9:25 % (APbin-1)*2.5 % of Embryo length
@@ -90,7 +100,8 @@ for APbin = 9:25 % (APbin-1)*2.5 % of Embryo length
         SEMSpotFluo = AveragedData{i}.SEVectorAP;
 
         errorbar(Time(tWindow)-Time(nc13),...
-                 SpotFluo(tWindow,APbin), SEMSpotFluo(tWindow,APbin),'Color',ColorChoice(i,:))
+                 SpotFluo(tWindow,APbin), SEMSpotFluo(tWindow,APbin),...
+                 'LineWidth',2,'Color',ColorChoice(i,:))
     end
     
     xlim([0 18])
@@ -99,16 +110,201 @@ for APbin = 9:25 % (APbin-1)*2.5 % of Embryo length
     legend('0','1','2','3')
     StandardFigure(gcf,gca)
     %pause
-    FigPath = '/Users/yangjoonkim/Dropbox/Garcia Lab/Figures/Opposing Gradients/Data/AveragedMS2_TimeTraces'
-    saveas(gcf,[FigPath,filesep,'averaged_MS2_TimeTraces_r0123' ,'_AP=',num2str((APbin-1)*2.5),'%_NC13' , '.tif']); 
-    saveas(gcf,[FigPath,filesep,'averaged_MS2_TimeTraces_r0123' ,'_AP=',num2str((APbin-1)*2.5),'%_NC13' , '.pdf']); 
+    figPath = [DropboxPath,filesep,'Garcia Lab/Figures/Opposing Gradients/Data/AveragedMS2_TimeTracesV2'];
+    saveas(gcf,[figPath,filesep,'averaged_MS2_TimeTraces_r0123' ,'_AP=',num2str((APbin-1)*2.5),'%_NC13' , '.tif']); 
+    saveas(gcf,[figPath,filesep,'averaged_MS2_TimeTraces_r0123' ,'_AP=',num2str((APbin-1)*2.5),'%_NC13' , '.pdf']); 
+end
+
+%% Plot the time traces of Averaged spot fluo (for NC13)- r1 variants
+% for each datatype (since it's averaged already by AverageDatasets.m)
+% I'll take NC13/NC14 and MeanVectorAP, SEVectorAP then plot them over time
+% (ElpasedTime)
+
+for APbin = 9:25 % (APbin-1)*2.5 % of Embryo length (20%-60%)
+    clf
+    hold on
+    for i=[1,2,5,6]%length(AveragedData)
+        % initialize the variables
+        % Extract useful info
+        nc13 = AveragedData{i}.nc13;
+        nc14 = AveragedData{i}.nc14;
+        Time = AveragedData{i}.ElapsedTime;
+        tWindow = nc13:nc14;
+        %tWindow = nc14:length(ElapsedTime); % NC14
+        
+        SpotFluo = AveragedData{i}.MeanVectorAP;
+        SEMSpotFluo = AveragedData{i}.SEVectorAP;
+
+        errorbar(Time(tWindow)-Time(nc13),...
+                 SpotFluo(tWindow,APbin), SEMSpotFluo(tWindow,APbin),...
+                 'LineWidth',2,'Color',ColorChoice(i,:))
+    end
+    
+    xlim([0 18])
+    ylim([0 1000])
+    xlabel('time into NC13(min)')
+    ylabel('mean spot fluorescence (AU)')
+    legend('[0,0,0]','[1,0,0]','[0,0,1]','[0,1,0]')
+    StandardFigure(gcf,gca)
+    %pause
+    figPath = [DropboxPath,filesep,'Garcia Lab/Figures/Opposing Gradients/Data/AveragedMS2_TimeTracesV2'];
+    saveas(gcf,[figPath,filesep,'averaged_MS2_TimeTraces_r1_variants' ,'_AP=',num2str((APbin-1)*2.5),'%_NC13' , '.tif']); 
+    saveas(gcf,[figPath,filesep,'averaged_MS2_TimeTraces_r1_variants' ,'_AP=',num2str((APbin-1)*2.5),'%_NC13' , '.pdf']); 
+end
+
+%% Plot the time traces of Averaged spot fluo (for NC14)- r2 variants
+% for each datatype (since it's averaged already by AverageDatasets.m)
+% I'll take NC13/NC14 and MeanVectorAP, SEVectorAP then plot them over time
+% (ElpasedTime)
+
+for APbin = 9:25 % (APbin-1)*2.5 % of Embryo length (20%-60%)
+    clf
+    hold on
+    for i=[1,3,7,8]%length(AveragedData)
+        % initialize the variables
+        % Extract useful info
+        nc13 = AveragedData{i}.nc13;
+        nc14 = AveragedData{i}.nc14;
+        Time = AveragedData{i}.ElapsedTime;
+        tWindow = nc13:nc14;
+        %tWindow = nc14:length(ElapsedTime); % NC14
+        
+        SpotFluo = AveragedData{i}.MeanVectorAP;
+        SEMSpotFluo = AveragedData{i}.SEVectorAP;
+
+        errorbar(Time(tWindow)-Time(nc13),...
+                 SpotFluo(tWindow,APbin), SEMSpotFluo(tWindow,APbin),...
+                 'LineWidth',2,'Color',ColorChoice(i,:))
+    end
+    
+    xlim([0 18])
+    ylim([0 800])
+    xlabel('time into NC13(min)')
+    ylabel('mean spot fluorescence (AU)')
+    legend('[0,0,0]','[0,1,1]','[1,1,0]','[1,0,1]')
+    StandardFigure(gcf,gca)
+    %pause
+    figPath = [DropboxPath,filesep,'Garcia Lab/Figures/Opposing Gradients/Data/AveragedMS2_TimeTracesV2'];
+    saveas(gcf,[figPath,filesep,'averaged_MS2_TimeTraces_r2_variants' ,'_AP=',num2str((APbin-1)*2.5),'%_NC13' , '.tif']); 
+    saveas(gcf,[figPath,filesep,'averaged_MS2_TimeTraces_r2_variants' ,'_AP=',num2str((APbin-1)*2.5),'%_NC13' , '.pdf']); 
+end
+%%
+%% Plot the time traces of Averaged spot fluo (for NC14)
+% for each datatype (since it's averaged already by AverageDatasets.m)
+% I'll take NC13/NC14 and MeanVectorAP, SEVectorAP then plot them over time
+% (ElpasedTime)
+
+for APbin = 9:25 % (APbin-1)*2.5 % of Embryo length (20%-60%)
+    clf
+    hold on
+    for i=1:4%length(AveragedData)
+        % initialize the variables
+        % Extract useful info
+        nc13 = AveragedData{i}.nc13;
+        nc14 = AveragedData{i}.nc14;
+        Time = AveragedData{i}.ElapsedTime;
+        tWindow = nc14:length(Time);
+        %tWindow = nc14:length(ElapsedTime); % NC14
+        
+        SpotFluo = AveragedData{i}.MeanVectorAP;
+        SEMSpotFluo = AveragedData{i}.SEVectorAP;
+
+        errorbar(Time(tWindow)-Time(nc14),...
+                 SpotFluo(tWindow,APbin), SEMSpotFluo(tWindow,APbin),...
+                 'LineWidth',2,'Color',ColorChoice(i,:))
+    end
+    
+    xlim([0 50])
+    ylim([0 700])
+    xlabel('time into NC14(min)')
+    ylabel('mean spot fluorescence (AU)')
+    legend('[0,0,0]','[1,0,0]','[0,1,1]','[1,1,1]')
+    StandardFigure(gcf,gca)
+    %pause
+    figPath = [DropboxPath,filesep,'Garcia Lab/Figures/Opposing Gradients/Data/AveragedMS2_TimeTracesV2'];
+    saveas(gcf,[figPath,filesep,'averaged_MS2_TimeTraces_r0123' ,'_AP=',num2str((APbin-1)*2.5),'%_NC14' , '.tif']); 
+    saveas(gcf,[figPath,filesep,'averaged_MS2_TimeTraces_r0123' ,'_AP=',num2str((APbin-1)*2.5),'%_NC14' , '.pdf']); 
+end
+
+%% Plot the time traces of Averaged spot fluo (for NC14)- r1 variants
+% for each datatype (since it's averaged already by AverageDatasets.m)
+% I'll take NC13/NC14 and MeanVectorAP, SEVectorAP then plot them over time
+% (ElpasedTime)
+
+for APbin = 9:25 % (APbin-1)*2.5 % of Embryo length (20%-60%)
+    clf
+    hold on
+    for i=[1,2,5,6]%length(AveragedData)
+        % initialize the variables
+        % Extract useful info
+        nc13 = AveragedData{i}.nc13;
+        nc14 = AveragedData{i}.nc14;
+        Time = AveragedData{i}.ElapsedTime;
+        tWindow = nc14:length(Time);
+        %tWindow = nc14:length(ElapsedTime); % NC14
+        
+        SpotFluo = AveragedData{i}.MeanVectorAP;
+        SEMSpotFluo = AveragedData{i}.SEVectorAP;
+
+        errorbar(Time(tWindow)-Time(nc14),...
+                 SpotFluo(tWindow,APbin), SEMSpotFluo(tWindow,APbin),...
+                 'LineWidth',2,'Color',ColorChoice(i,:))
+    end
+    
+    xlim([0 50])
+    ylim([0 800])
+    xlabel('time into NC14(min)')
+    ylabel('mean spot fluorescence (AU)')
+    legend('[0,0,0]','[1,0,0]','[0,0,1]','[0,1,0]')
+    StandardFigure(gcf,gca)
+    %pause
+    figPath = [DropboxPath,filesep,'Garcia Lab/Figures/Opposing Gradients/Data/AveragedMS2_TimeTracesV2'];
+    saveas(gcf,[figPath,filesep,'averaged_MS2_TimeTraces_r1_variants' ,'_AP=',num2str((APbin-1)*2.5),'%_NC14' , '.tif']); 
+    saveas(gcf,[figPath,filesep,'averaged_MS2_TimeTraces_r1_variants' ,'_AP=',num2str((APbin-1)*2.5),'%_NC14' , '.pdf']); 
+end
+
+%% Plot the time traces of Averaged spot fluo (for NC14)- r2 variants
+% for each datatype (since it's averaged already by AverageDatasets.m)
+% I'll take NC13/NC14 and MeanVectorAP, SEVectorAP then plot them over time
+% (ElpasedTime)
+
+for APbin = 9:25 % (APbin-1)*2.5 % of Embryo length (20%-60%)
+    clf
+    hold on
+    for i=[1,3,7,8]%length(AveragedData)
+        % initialize the variables
+        % Extract useful info
+        nc13 = AveragedData{i}.nc13;
+        nc14 = AveragedData{i}.nc14;
+        Time = AveragedData{i}.ElapsedTime;
+        tWindow = nc14:length(Time);
+        %tWindow = nc14:length(ElapsedTime); % NC14
+        
+        SpotFluo = AveragedData{i}.MeanVectorAP;
+        SEMSpotFluo = AveragedData{i}.SEVectorAP;
+
+        errorbar(Time(tWindow)-Time(nc14),...
+                 SpotFluo(tWindow,APbin), SEMSpotFluo(tWindow,APbin),...
+                 'LineWidth',2,'Color',ColorChoice(i,:))
+    end
+    
+    xlim([0 50])
+    ylim([0 700])
+    xlabel('time into NC14(min)')
+    ylabel('mean spot fluorescence (AU)')
+    legend('[0,0,0]','[0,1,1]','[1,1,0]','[1,0,1]')
+    StandardFigure(gcf,gca)
+    %pause
+    figPath = [DropboxPath,filesep,'Garcia Lab/Figures/Opposing Gradients/Data/AveragedMS2_TimeTracesV2'];
+    saveas(gcf,[figPath,filesep,'averaged_MS2_TimeTraces_r2_variants' ,'_AP=',num2str((APbin-1)*2.5),'%_NC14' , '.tif']); 
+    saveas(gcf,[figPath,filesep,'averaged_MS2_TimeTraces_r2_variants' ,'_AP=',num2str((APbin-1)*2.5),'%_NC14' , '.pdf']); 
 end
 %% individual embryo spot fluo- time trace check
 % for r0, since it drops too quickly in NC14, I want to double check if
 % there's some spot/particle segmentation issue (systematically)
 Time_r0 = r0Data.ElapsedTime;
-NC13_r0 = r0Data.nc13;
-NC14_r0 = r0Data.nc14;
+NC13 = r0Data.nc13;
+NC14 = r0Data.nc14;
 MeanVectorAP_r0 = r0Data.MeanVectorAP_individual;
 SDVectorAP_r0 = r0Data.SDVectorAP_individual;
 NParticlesAP_r0 = r0Data.NParticlesAP_individual;
@@ -117,10 +313,11 @@ NParticlesAP_r0 = r0Data.NParticlesAP_individual;
 hold on
 APbin = 15;
 for embryo=1:5
-    errorbar(Time_r0(NC14_r0:end) - Time_r0(NC14),...
-                MeanVectorAP_r0(NC14_r0:end, APbin, embryo),...
-                SDVectorAP_r0(NC14_r0:end, APbin, embryo)./...
-                sqrt(NParticlesAP_r0(NC14_r0:end, APbin, embryo)))
+    errorbar(Time_r0(NC14:end) - Time_r0(NC14),...
+                MeanVectorAP_r0(NC14:end, APbin, embryo),...
+                SDVectorAP_r0(NC14:end, APbin, embryo)./...
+                sqrt(NParticlesAP_r0(NC14:end, APbin, embryo)))
+    pause
 end
 
 %% Plot the time traces of Averaged spot fluo (over ALL nuclei)
@@ -162,9 +359,9 @@ for APbin = 9:25 % (APbin-1)*2.5 % of Embryo length
     legend('0','1','2','3')
     StandardFigure(gcf,gca)
 
-    FigPath = '/Users/yangjoonkim/Dropbox/Garcia Lab/Figures/Opposing Gradients/Data/AveragedMS2_overAllNuclei_TimeTraces'
-    saveas(gcf,[FigPath,filesep,'averaged_MS2_TimeTraces_r0123' ,'_AP=',num2str((APbin-1)*2.5),'%_NC14' , '.tif']); 
-    saveas(gcf,[FigPath,filesep,'averaged_MS2_TimeTraces_r0123' ,'_AP=',num2str((APbin-1)*2.5),'%_NC14' , '.pdf']); 
+    figPath = '/Users/yangjoonkim/Dropbox/Garcia Lab/Figures/Opposing Gradients/Data/AveragedMS2_overAllNuclei_TimeTraces'
+    saveas(gcf,[figPath,filesep,'averaged_MS2_TimeTraces_r0123' ,'_AP=',num2str((APbin-1)*2.5),'%_NC14' , '.tif']); 
+    saveas(gcf,[figPath,filesep,'averaged_MS2_TimeTraces_r0123' ,'_AP=',num2str((APbin-1)*2.5),'%_NC14' , '.pdf']); 
 end
 
 
@@ -366,9 +563,9 @@ StandardFigure(MS2TraceFig,MS2TraceFig.CurrentAxes)
 % standardizeFigure_YJK(gca,legend,[])
 
 % Save Figure
-FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\hbP2-r0123-Averaged_MS2_traces_multipleEmbryos';
-saveas(MS2TraceFig,[FigPath,filesep, 'Mean_MS2_traces at AP=', num2str((APbin-1)*2.5),'%' , '_NC14' , '.tif']); 
-saveas(MS2TraceFig,[FigPath,filesep, 'Mean_MS2_traces at AP=', num2str((APbin-1)*2.5),'%' , '_NC14' , '.pdf']); 
+figPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\hbP2-r0123-Averaged_MS2_traces_multipleEmbryos';
+saveas(MS2TraceFig,[figPath,filesep, 'Mean_MS2_traces at AP=', num2str((APbin-1)*2.5),'%' , '_NC14' , '.tif']); 
+saveas(MS2TraceFig,[figPath,filesep, 'Mean_MS2_traces at AP=', num2str((APbin-1)*2.5),'%' , '_NC14' , '.pdf']); 
 
 %% 
 %% Section 1. Mean Spot fluo
@@ -531,7 +728,7 @@ AccumulatedmRNA('r2-new-female',2);
 AccumulatedmRNA('r3-new-female',2);
 
 %% load the Accumulated mRNA
-FilePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
+filePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
 
 %% Calculate the 
 %% Section 3. Fraction ON

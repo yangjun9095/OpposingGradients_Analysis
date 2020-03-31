@@ -315,7 +315,8 @@ initialSlopes_ONnuclei{9,5} = average_fittedRate_r2_far;
 initialSlopes_ONnuclei{9,6} = SEM_fittedRate_r2_far;
 
 %% Save this variable
-save(['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData',filesep,'InitialSlopes_ONnuclei_AllConstructs.mat'],...
+DropboxFolder = 'S:\YangJoon\Dropbox\OpposingGradient'
+save([DropboxFolder,filesep,'OpposingGradients_ProcessedData',filesep,'InitialSlopes_ONnuclei_AllConstructs.mat'],...
     'initialSlopes_ONnuclei','-v7.3');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Part 2. Generating plots from saved data.

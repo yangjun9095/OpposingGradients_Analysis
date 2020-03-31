@@ -36,6 +36,8 @@ colorDict.thickpink = [132,27,69]/255;
 ColorChoice = [colorDict.magenta; colorDict.green;...
                 colorDict.yellow; colorDict.red; colorDict.brown;...
                 colorDict.blue; colorDict.purple; colorDict.thickpink]; 
+            
+
 %% Calculate the fold-change
 % We need to learn how to calculate the error bars of division (both
 % numereator and denominator have error range).

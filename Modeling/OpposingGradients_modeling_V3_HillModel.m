@@ -12,8 +12,8 @@ function OpposingGradients_modeling_V3_HillModel
 % Here, I'll use the time-averaged Bcd and Runt profiles
 % Actually, the time-averaging "time window" doesn't matter that much,
 % since the gradient scales nicely over time.
-
-filePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
+DropboxFolder = 'S:\YangJoon\Dropbox\OpposingGradient';
+filePath = [DropboxFolder,filesep,'OpposingGradients_ProcessedData'];
 
 %BcdData = load([filePath, filesep, 'Bcd-Averaged.mat']);
 RuntData = load([filePath, filesep, 'Runt_TimeAveraged_mixedSex_NC14.mat']);
@@ -49,7 +49,7 @@ hold on
 APaxis = 0:0.025:1;
 yyaxis left
 errorbar(APaxis, BcdFluo_tAveraged/max(BcdFluo_tAveraged), SEBcdFluo_tAveraged/max(BcdFluo_tAveraged))
-%xlim([0.2 0.6])
+xlim([0.2 0.6])
 ylim([0 1.2])
 ylabel('Bcd concentration (Normalized)')
 yyaxis right
@@ -60,7 +60,8 @@ xlabel('AP axis (EL)')
 
 StandardFigure(gcf,gca)
 % save the plot
-figPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Input dynamics\Bcd_Runt_together_Mar2020';
+DropboxFolder = 'S:\YangJoon\Dropbox';
+figPath = [DropboxFolder,filesep,'Garcia Lab\Figures\Opposing Gradients\Data\Input dynamics\Bcd_Runt_together_Mar2020'];
 % saveas(gcf,[figPath,filesep,'Bcd_Runt_AP_tAveraged_0_10minNC14_20_60%.tif'])
 % saveas(gcf,[figPath,filesep,'Bcd_Runt_AP_tAveraged_0_10minNC14_20_60%.pdf'])
 %saveas(gcf,[figPath,filesep,'Bcd_Runt_AP_tAveraged_0_10minNC14.pdf'])
@@ -160,11 +161,12 @@ legend('data','fitted')
 xlabel('AP axis')
 ylabel('initial rate of RNAP loading (AU)')
 
-figPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Modeling_hbP2_nRuntsites\Model_V3';
+DropboxFolder = 'S:\YangJoon\Dropbox';
+figPath = [DropboxFolder,filesep,'Garcia Lab\Figures\Opposing Gradients\Data\Modeling_hbP2_nRuntsites\Model_V3'];
 
 StandardFigure(gcf,gca)
-saveas(gcf,[figPath,filesep,'initialRate_chi2_r0' , '.tif']); 
-saveas(gcf,[figPath,filesep,'initialRate_chi2_r0' , '.pdf']); 
+% saveas(gcf,[figPath,filesep,'initialRate_chi2_r0' , '.tif']); 
+% saveas(gcf,[figPath,filesep,'initialRate_chi2_r0' , '.pdf']); 
 %% Plot the data and the fit
 % hold on
 % % data (initial fit)
@@ -176,7 +178,6 @@ saveas(gcf,[figPath,filesep,'initialRate_chi2_r0' , '.pdf']);
 % ylabel('initial rate of RNAP loading (AU)')
 % StandardFigure(gcf,gca)
 % % save the plot
-% figPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Modeling_hbP2_nRuntsites';
 % saveas(gcf,[figPath,filesep,'initialRate_chi2_r0' , '.tif']); 
 % saveas(gcf,[figPath,filesep,'initialRate_chi2_r0' , '.pdf']); 
 
@@ -223,9 +224,10 @@ ylabel('initial rate of RNAP loading (AU)')
 StandardFigure(gcf,gca)
 
 % save the plot
-figPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Modeling_hbP2_nRuntsites\Model_V3';
-saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_K_r_sensitivity' , '.tif']); 
-saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_K_r_sensitivity' , '.pdf']); 
+DropboxFolder = 'S:\YangJoon\Dropbox';
+figPath = [DropboxFolder,filesep,'Garcia Lab\Figures\Opposing Gradients\Data\Modeling_hbP2_nRuntsites\Model_V3'];
+% saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_K_r_sensitivity' , '.tif']); 
+% saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_K_r_sensitivity' , '.pdf']); 
 %% r1 : Test the parameter sensitivity, w_AR
 w_AR = 10.^[-2 -1 0 1 2 ];
 
@@ -245,9 +247,10 @@ ylabel('initial rate of RNAP loading (AU)')
 StandardFigure(gcf,gca)
 
 % save the plot
-figPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Modeling_hbP2_nRuntsites\Model_V3';
-saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_w_AR_sensitivity' , '.tif']); 
-saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_w_AR_sensitivity' , '.pdf']); 
+DropboxFolder = 'S:\YangJoon\Dropbox';
+figPath = [DropboxFolder,filesep,'Garcia Lab\Figures\Opposing Gradients\Data\Modeling_hbP2_nRuntsites\Model_V3'];
+% saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_w_AR_sensitivity' , '.tif']); 
+% saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_w_AR_sensitivity' , '.pdf']); 
 %% Plot to check r1 and r1-from chi2
 Prediction = rate_r1_Hill_V3(x_r0, y_r1, Bcd, Runt)
 
@@ -271,7 +274,6 @@ ylabel('initial rate of RNAP loading (AU)')
 StandardFigure(gcf,gca)
 
 % save the plot
-figPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Modeling_hbP2_nRuntsites\Model_V3';
 saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_[100]' , '.tif']); 
 saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_[100]' , '.pdf']); 
 %% r1-close [0,0,1]
@@ -322,9 +324,8 @@ ylabel('initial rate of RNAP loading (AU)')
 StandardFigure(gcf,gca)
 
 % save the plot
-figPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Modeling_hbP2_nRuntsites\Model_V3';
-saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_[001]' , '.tif']); 
-saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_[001]' , '.pdf']); 
+% saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_[001]' , '.tif']); 
+% saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_[001]' , '.pdf']); 
 
 %% r1-mid [0,1,0]
 % Data extract
@@ -341,18 +342,18 @@ initialSlope_r1_mid_SEM = initialSlope_r1_mid_SEM(:,3); % NC14
 x_r0; %[K_A r N_A]
 y0 = [1 0.1]; % K_r, w_AR
 
-% lb = [0 0]; 
-% ub = [100 100];
+lb = [0 0]; 
+ub = [100 100];
 % constrain the K_r as obtained in r1 case
-lb = [y_r1(1) 0]; 
-ub = [y_r1(1) 10];
+% lb = [y_r1(1) 0]; 
+% ub = [y_r1(1) 10];
 
 options.Algorithm = 'levenberg-marquardt';
 %lsqOptions=optimset('Display','none');
 
 fun1 = @(y)rate_r1_Hill_V3(x_r0,y,Bcd(fitRange),Runt(fitRange)) - initialSlope_r1_mid(fitRange);
-y_r1_mid_K_r_fixed = lsqnonlin(fun1,y0,lb, ub, options);
-
+% y_r1_mid_K_r_fixed = lsqnonlin(fun1,y0,lb, ub, options);
+y_r1_mid = lsqnonlin(fun1,y0,lb, ub, options);
 %% Plot to check r1-mid and fit
 Prediction = rate_r1_Hill_V3(x_r0, y_r1_mid, Bcd, Runt)
 
@@ -377,11 +378,10 @@ ylabel('initial rate of RNAP loading (AU)')
 StandardFigure(gcf,gca)
 
 % save the plot
-figPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Modeling_hbP2_nRuntsites\Model_V3';
 % saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_[010]' , '.tif']); 
 % saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_[010]' , '.pdf']); 
 
-%% Plot to check r1-mid and fit
+%% Plot to check r1-mid fitting (different constraints)
 Prediction1 = rate_r1_Hill_V3(x_r0, y_r1_mid_1, Bcd, Runt)
 Prediction_K_r_fixed = rate_r1_Hill_V3(x_r0, y_r1_mid_K_r_fixed, Bcd, Runt)
 hold on 
@@ -406,21 +406,52 @@ ylabel('initial rate of RNAP loading (AU)')
 StandardFigure(gcf,gca)
 
 % save the plot
-figPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Modeling_hbP2_nRuntsites\Model_V3';
-% saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_[010]' , '.tif']); 
-% saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_[010]' , '.pdf']); 
+DropboxFolder = 'S:\YangJoon\Dropbox';
+figPath = [DropboxFolder,filesep,'Garcia Lab\Figures\Opposing Gradients\Data\Modeling_hbP2_nRuntsites\Model_V3'];
+saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_[010]_differentConstraints' , '.tif']); 
+saveas(gcf,[figPath,filesep,'initialRate_chi2_r1_[010]_differentConstraints' , '.tif']);  
 %% Predict the 2 binding sites ([1,0,0] + [0,0,1])
-Prediction_r2_far = rate_r2_Hill_multiRep(x0,[y_r1(1), y_r1(2), y_r1_close(2)],Bcd, Runt);
+Prediction_r2_101=rate_r2_prediction(x0, y_r1, y_r1_close, Bcd, Runt)
 
 % actual r2([1,1,0]) initial slope
-initialSlope_r2_far = cell2mat(initialSlopes(9,5));
-initialSlope_r2_far_SEM = cell2mat(initialSlopes(9,6));
+initialSlope_r2_101 = cell2mat(initialSlopes(9,5));
+initialSlope_r2_SEM_101 = cell2mat(initialSlopes(9,6));
 
-initialSlope_r2_far = initialSlope_r2_far(:,3); % NC14
-initialSlope_r2_far_SEM = initialSlope_r2_far_SEM(:,3); % NC14
+initialSlope_r2_101 = initialSlope_r2_101(:,3); % NC14
+initialSlope_r2_SEM_101 = initialSlope_r2_SEM_101(:,3); % NC14
 
-%% plot r2 prediciton and data
+% plot r2 prediciton and data
 hold on
-plot(APaxis, Prediction_r2_far)
-errorbar(APaxis, initialSlope_r2_far, initialSlope_r2_far_SEM)
+plot(APaxis, Prediction_r2_101)
+errorbar(APaxis, initialSlope_r2_101, initialSlope_r2_SEM_101)
+
+%% Predict the 2 binding sites ([1,0,0] + [0,1,0])
+Prediction_r2_110=rate_r2_prediction(x0, y_r1, y_r1_mid, Bcd, Runt)
+
+% actual r2([1,1,0]) initial slope
+initialSlope_r2_110 = cell2mat(initialSlopes(8,5));
+initialSlope_r2_SEM_110 = cell2mat(initialSlopes(8,6));
+
+initialSlope_r2_110 = initialSlope_r2_110(:,3); % NC14
+initialSlope_r2_SEM_110 = initialSlope_r2_SEM_110(:,3); % NC14
+
+% plot r2 prediciton and data
+hold on
+plot(APaxis, Prediction_r2_110)
+errorbar(APaxis, initialSlope_r2_110, initialSlope_r2_SEM_110)
+
+%% Predict the 2 binding sites ([0,1,0] + [0,0,1])
+Prediction_r2_011=rate_r2_prediction(x0, y_r1_mid, y_r1_close, Bcd, Runt)
+
+% actual r2([0,1,1]) initial slope
+initialSlope_r2_011 = cell2mat(initialSlopes(4,5));
+initialSlope_r2_SEM_011 = cell2mat(initialSlopes(4,6));
+
+initialSlope_r2_011 = initialSlope_r2_011(:,3); % NC14
+initialSlope_r2_SEM_011 = initialSlope_r2_SEM_011(:,3); % NC14
+
+% plot r2 prediciton and data
+hold on
+plot(APaxis, Prediction_r2_011)
+errorbar(APaxis, initialSlope_r2_011, initialSlope_r2_SEM_011)
 end

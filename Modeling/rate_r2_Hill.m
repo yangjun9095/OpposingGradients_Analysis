@@ -1,4 +1,4 @@
-function Prediction=rate_r2_Hill(x0, y0, Act, Rep)
+function Prediction=rate_r2_prediction(x0, y1, y2, Act, Rep)
 
 %Gives the chi square of the data to the fit form in order to do a fit with
 %lsqnonlin

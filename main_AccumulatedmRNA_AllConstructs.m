@@ -10,7 +10,7 @@ function main02_21_AccumulatedmRNA_AllConstructs
 % Script : AccumulatedmRNA.m which utilizes the result "DataType.mat" file
 % produced from the AverageDatasets.m
 dataTypes = {'r0-new','r1-new','r2-new','r3-new','r1-close','r1-mid','r2_1+2','r2_1+3'};
-MinParticles = 2;
+MinParticles = 1;
 
 % initialize the structure to save the results
 AccumulatedmRNA = cell(8,1);
@@ -31,6 +31,16 @@ for i=1:length(dataTypes)
      accumulatemRNA(dataTypes{i}, MinParticles);
 end
 
+
+%% Option
+% In case I already have run the step above for calculating the accumulated
+% mRNA, I'll just load the results from the "OpposingGradients_ProcessedData\AveragedDatasets_Feb2020"
+% folder path.
+resultPath = 'S:\YangJoon\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\AveragedDatasets_Feb2020'
+
+% Load the saved variables
+% AccumulatedmRNA, SD, SE,  AccumualtedmRNA_individual, SD_individual
+
 %% Step2. Compare the accumulated mRNA at different time points
 % Here, the starting point and end point are both important in comparing
 % the accumulated mRNA profiles.
@@ -39,24 +49,24 @@ end
 % synchronized with the beginning of the NC13.
 % We will start by thinking about several time windows
 
-% 1) [NC14, NC14+5min]
+% 1) [NC14, NC14+10min]
 tFrame = 0.6888; %(min) ~41sec/frame
-tInterval = round(5/tFrame); % converting 10 minutes into frames
+tInterval = round(10/tFrame); % converting 10 minutes into frames
 tWindow1 = [NC14 NC14+tInterval];
 
-% 2) [NC14, NC14+20]
-tInterval = round(20/tFrame); % converting 10 minutes into frames
+% 2) [NC14, NC14+30]
+tInterval = round(30/tFrame); % converting 30 minutes into frames
 tWindow2 = [NC14 NC14+tInterval];
 
-% 3) [NC14, NC14+30] : during NC14 early-mid
-tInterval = round(30/tFrame); % converting 10 minutes into frames
+% 3) [NC14, NC14+40] : during NC14 
+tInterval = round(40/tFrame); % converting 40 minutes into frames
 tWindow3 = [NC14 NC14+tInterval];
 
 % 4) [NC13, NC14] : during NC13
 tWindow4 = [NC13+5 NC14];
 
-% 5) [NC13, NC14+30]
-tInterval = round(30/tFrame); % converting 10 minutes into frames
+% 5) [NC13, NC14+40]
+tInterval = round(40/tFrame); % converting 30 minutes into frames
 tWindow5 = [NC13+5 NC14+tInterval];
 
 tWindows{1,1} = tWindow1;
@@ -100,35 +110,86 @@ for i=1:length(dataTypes) % for different constrcuts (rows)
     end
 end
 
+%% Color definition
+% This is defining the line color
+colorDict = struct();
+colorDict.blue = [115,143,193]/255; %[115,143,170]/255;
+colorDict.red =  [213,108,85]/255; %[200,108,85]/255;
+colorDict.yellow = [234,194,100]/255;
+colorDict.cyan = [108,188,233]/255;
+colorDict.magenta = [208,109,171]/255;
+colorDict.lightBlue = [115,142,193]/255;
+purple = [171,133,172]/255;
+colorDict.purple = (4*purple - [1,1,1])/3;
+colorDict.green =  [122,169,116]/255; %[122,150,116]/255;
+brown = [179,155,142]/255;
+colorDict.brown = (2*brown - [1,1,1])/1;
+
+colorDict.darkgreen = [126,157,144]/255;
+colorDict.lightgreen = [205,214,209]/255;
+thickpink = [132,27,69]/255;
+colorDict.thickpink = (3*thickpink + [1,1,1]) / 4; % adding white
+
+% Define a color matrix, 8 colors right now.
+ColorChoice = [colorDict.blue; colorDict.green;...
+                colorDict.yellow; colorDict.red; colorDict.brown;...
+                colorDict.purple; colorDict.magenta; colorDict.thickpink]; 
 %% Generate plots for different time windows
-% 1) NC14 : NC14+5 mins
+% 1) NC14 : NC14+10 mins
 APaxis = 0:0.025:1;
 figure(1)
 hold on
 for i=1:4%length(dataTypes)
-    errorbar(APaxis, accumulatedmRNA_mean{i,1}, accumulatedmRNA_SEM{i,1},'Color',ColorChoice(i,:))
+    errorbar(APaxis, accumulatedmRNA_mean{i,1}, accumulatedmRNA_SEM{i,1},'Color',ColorChoice(i,:),'LineWidth',2)
 end
 
-ylim([0 4500])
+legend('[0,0,0]','[1,0,0]','[0,1,1]','[1,1,1]')
+ylim([0 max(accumulatedmRNA_mean{2,1})+10000])
+xlim([0.2 0.6])
 StandardFigure(gcf,gca)
-%FigPath = ''
-%% 2) NC14 : NC14+30mins
+
+DropboxPath = 'S:/YangJoon/Dropbox';
+% Save the plot
+figPath = [DropboxPath,filesep,'Garcia Lab\Figures\Opposing Gradients\Data\AccumulatedmRNA\NewConstructs'];
+saveas(gcf,[figPath,filesep,'accumulatedmRNA_r0123_10minIntoNC14_20%_60%' , '.tif']); 
+saveas(gcf,[figPath,filesep,'accumulatedmRNA_r0123_10minIntoNC14_20%_60%' , '.pdf']); 
+%% 2) NC14 : NC14+40mins
 % figure(2)
 APaxis = 0:0.025:1;
 tIndex = 3; % 3rd time window (NC14:NC14+30min)
 hold on
 for i=1:4%length(dataTypes)
-    errorbar(APaxis, accumulatedmRNA_mean{i,tIndex}, accumulatedmRNA_SEM{i,tIndex},'Color',ColorChoice(i,:))
+    errorbar(APaxis, accumulatedmRNA_mean{i,tIndex}, accumulatedmRNA_SEM{i,tIndex},'Color',ColorChoice(i,:),'LineWidth',2)
 end
+
+legend('[0,0,0]','[1,0,0]','[0,1,1]','[1,1,1]')
+ylim([0 max(accumulatedmRNA_mean{2,tIndex})+40000]) % since usually r1([1,0,0]) seems to be higher than r0,2,3.
+xlim([0.2 0.6])
 StandardFigure(gcf,gca)
+
+DropboxPath = 'S:/YangJoon/Dropbox';
+% Save the plot
+figPath = [DropboxPath,filesep,'Garcia Lab\Figures\Opposing Gradients\Data\AccumulatedmRNA\NewConstructs'];
+saveas(gcf,[figPath,filesep,'accumulatedmRNA_r0123_40minIntoNC14_20%_60%' , '.tif']); 
+saveas(gcf,[figPath,filesep,'accumulatedmRNA_r0123_40minIntoNC14_20%_60%' , '.pdf']); 
 %% NC13 only for all constructs
 APaxis = 0:0.025:1;
 tIndex = 4; % 
 hold on
 for i=[1,2,3,4]%1:length(dataTypes)
-    errorbar(APaxis, accumulatedmRNA_mean{i,tIndex}, accumulatedmRNA_SEM{i,tIndex},'Color',ColorChoice(i,:))
+    errorbar(APaxis, accumulatedmRNA_mean{i,tIndex}, accumulatedmRNA_SEM{i,tIndex},'Color',ColorChoice(i,:),'LineWidth',2)
 end
+legend('[0,0,0]','[1,0,0]','[0,1,1]','[1,1,1]')
+ylim([0 max(accumulatedmRNA_mean{2,tIndex})+20000]) % since usually r1([1,0,0]) seems to be higher than r0,2,3.
+xlim([0.2 0.6])
 StandardFigure(gcf,gca)
+
+DropboxPath = 'S:/YangJoon/Dropbox';
+% Save the plot
+figPath = [DropboxPath,filesep,'Garcia Lab\Figures\Opposing Gradients\Data\AccumulatedmRNA\NewConstructs'];
+saveas(gcf,[figPath,filesep,'accumulatedmRNA_r0123_NC13_20%_60%' , '.tif']); 
+saveas(gcf,[figPath,filesep,'accumulatedmRNA_r0123_NC13_20%_60%' , '.pdf']); 
+
 %% Plot time-evolution of accumulated mRNA
 % Start with r0
 hold on
@@ -150,13 +211,24 @@ for i=1:length(dataTypes)
                (AccumulatedmRNA_SD{i}(time(1),:)).^2);
 end
 
-%% Plot
+%% Plot (sanity check)
 APaxis = 0:0.025:1;
 hold on
 for i=1:length(dataTypes)
     errorbar(APaxis, Acc_mRNA_tWindow{i}, Acc_mRNA_tWindow_SD{i},'Color',ColorChoice(i,:))
     pause
 end
+
+%% Plot for r1 variants
+
+%% Plot for r2 variants
+
+
+
+
+
+
+
 
 %% Part2. Accumulated mRNA in a different way : Use IntegratemRNA script.
 %% Load the datasets

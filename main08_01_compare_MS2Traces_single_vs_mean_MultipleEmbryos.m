@@ -1,8 +1,9 @@
 function main_08_compare_MS2Traces_single_vs_mean_MultipleEmbryos(DataType, varargin)
 % DESCRIPTION
 % This script is for comparing the individual MS2 traces with the mean, to
-% see if the average represent the individual trace features well.
-% Plus, on top of main_07 function, this one plots Mean vs single traces
+% see if the average represents the individual trace features well.
+
+% Plus, on top of main08_02 function, this function plots Mean vs single traces
 % for multiple embryos (for specific NC, and AP bin) altogether.
 % This will be helpful for looking at embryo-to-embryo variability easily.
 
