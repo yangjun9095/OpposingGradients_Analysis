@@ -13,7 +13,8 @@ function [AccumulatedmRNA, AccumulatedmRNA_SD, AccumulatedmRNA_SE,...
 % (2) 
 % Option : 
 % (1) mRNA half-life
-% (2) whether it's over ALL nuclei or ON nuclei
+% (2) ONnuclei : whether it's over ALL nuclei or ON nuclei
+%  For ON Nuclei, 
 
 %% initialize the variables (options)
 ONnuclei = 0; % whether it's accumulated for only ON nuclei

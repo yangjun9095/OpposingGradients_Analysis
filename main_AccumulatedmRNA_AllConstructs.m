@@ -1,4 +1,4 @@
-function main02_21_AccumulatedmRNA_AllConstructs
+function main_AccumulatedmRNA_AllConstructs
 % This is a main script for 
 % 1)calculating the accumulated mRNA for different constructs
 % : r0,1,2,3, r1 variants, r2 variants
@@ -9,19 +9,28 @@ function main02_21_AccumulatedmRNA_AllConstructs
 % Caveats : from NC13 to the end time points
 % Script : AccumulatedmRNA.m which utilizes the result "DataType.mat" file
 % produced from the AverageDatasets.m
-dataTypes = {'r0-new','r1-new','r2-new','r3-new','r1-close','r1-mid','r2_1+2','r2_1+3'};
+dataTypes = {'r0-new','r1-new','r2-new','r3-new',...
+                'r1-close','r1-mid','r2_1+2','r2_1+3',...
+                'r0_RuntNull','r3_RuntNull'};
+% Note.
+% Nulls only have NC14, thus having some NaNs at the
+% beginning. It's easier to calculate this using means, rather than
+% individuals.
+
 MinParticles = 1;
 
 % initialize the structure to save the results
-AccumulatedmRNA = cell(8,1);
-AccumulatedmRNA_SD = cell(8,1);
-AccumulatedmRNA_SE= cell(8,1);
-AccumulatedmRNA_individual = cell(8,1);
-AccumulatedmRNA_SD_individual = cell(8,1);
+AccumulatedmRNA = cell(10,1);
+AccumulatedmRNA_SD = cell(10,1);
+AccumulatedmRNA_SE= cell(10,1);
+AccumulatedmRNA_individual = cell(10,1);
+AccumulatedmRNA_SD_individual = cell(10,1);
 % Extract NC frames
-NC12 = nan(8,1);
-NC13 = nan(8,1);
-NC14 = nan(8,1);
+NC12 = nan(10,1);
+NC13 = nan(10,1);
+NC14 = nan(10,1);
+% Length of the time frames
+Length = nan(10,1);
 
 % for loop for all data types
 for i=1:length(dataTypes)
@@ -29,6 +38,8 @@ for i=1:length(dataTypes)
      NC12(i), NC13(i), NC14(i),...
      AccumulatedmRNA_individual{i,1}, AccumulatedmRNA_SD_individual{i,1}] =...
      accumulatemRNA(dataTypes{i}, MinParticles);
+    % Define the length of the frames for each dataset
+    [Length(i),~] = size(AccumulatedmRNA{i,1});
 end
 
 
@@ -49,31 +60,47 @@ resultPath = 'S:\YangJoon\Dropbox\OpposingGradient\OpposingGradients_ProcessedDa
 % synchronized with the beginning of the NC13.
 % We will start by thinking about several time windows
 
+% Caveat : The null datasets are shorter than the others, as it's taken up
+% to 30 minutes or so. We need to take this into account when we compare
+% with different datasets.
+
 % 1) [NC14, NC14+10min]
 tFrame = 0.6888; %(min) ~41sec/frame
 tInterval = round(10/tFrame); % converting 10 minutes into frames
 tWindow1 = [NC14 NC14+tInterval];
 
-% 2) [NC14, NC14+30]
-tInterval = round(30/tFrame); % converting 30 minutes into frames
+% 2) [NC14, NC14+20]
+tInterval = round(20/tFrame); % converting 20 minutes into frames
 tWindow2 = [NC14 NC14+tInterval];
 
-% 3) [NC14, NC14+40] : during NC14 
-tInterval = round(40/tFrame); % converting 40 minutes into frames
-tWindow3 = [NC14 NC14+tInterval];
 
-% 4) [NC13, NC14] : during NC13
-tWindow4 = [NC13+5 NC14];
+% 3) [NC13, NC14] : during NC13
+tWindow3 = [NC13+5 NC14];
+
+% % optional) [NC14, end of measurement] : 
+% This is specifically for the nulls, as there's NaNs at the beginning
+% often times not exactly until the same frames.
+% Length = Length' % transpose
+tWindow_end = [NC14 Length];
+tWindow_end(9,1) = 9; % [000], Runt null
+tWindow_end(10,1) = 7; % [111], Runt null
+% For nulls, because the measurement was done beginning of nc14 mostly, so
+% we can also grab the end points.
+
+% 4) [NC14, NC14+40] : during NC14 
+tInterval = round(40/tFrame); % converting 40 minutes into frames
+tWindow4 = [NC14+5 NC14+tInterval];
 
 % 5) [NC13, NC14+40]
-tInterval = round(40/tFrame); % converting 30 minutes into frames
-tWindow5 = [NC13+5 NC14+tInterval];
+% tInterval = round(40/tFrame); % converting 30 minutes into frames
+% tWindow5 = [NC13+5 NC14+tInterval];
 
 tWindows{1,1} = tWindow1;
 tWindows{2,1} = tWindow2;
 tWindows{3,1} = tWindow3;
-tWindows{4,1} = tWindow4;
-tWindows{5,1} = tWindow5;
+tWindows{4,1} = tWindow_end;
+%tWindows{4,1} = tWindow4;
+%tWindows{5,1} = tWindow5;
 
 %% Calculate the accumulated mRNA within a given time window [t1 t2]
 % Basically, subtract the accumulated mRNA at t2 with mRNA at t1
@@ -86,7 +113,8 @@ tWindows{5,1} = tWindow5;
 % are different time windows
 for i=1:length(dataTypes) % for different constrcuts (rows)
     
-    for t=1:length(tWindows) % for different time windows (column)
+    for t=1:length(tWindows)-2 %"-2" is for taking exceptions for Nulls. 
+        % for different time windows (column)
         % initialize the variables
         clear accumulatedmRNA_temp
         clear accumulatedmRNA_mean_temp
@@ -189,14 +217,120 @@ DropboxPath = 'S:/YangJoon/Dropbox';
 figPath = [DropboxPath,filesep,'Garcia Lab\Figures\Opposing Gradients\Data\AccumulatedmRNA\NewConstructs'];
 saveas(gcf,[figPath,filesep,'accumulatedmRNA_r0123_NC13_20%_60%' , '.tif']); 
 saveas(gcf,[figPath,filesep,'accumulatedmRNA_r0123_NC13_20%_60%' , '.pdf']); 
+ %% Plot time-evolution of accumulated mRNA
+% % Start with r0
+% hold on
+% for t=1:length(tWindows)
+%     errorbar(APaxis, accumulatedmRNA_mean{1,t}, accumulatedmRNA_SEM{1,t})
+%     pause
+% end
 
-%% Plot time-evolution of accumulated mRNA
-% Start with r0
+%% Plot for nulls [000] 
+APaxis = 0:0.025:1;
+tIndex = 4; % 
 hold on
-for t=1:length(tWindows)
-    errorbar(APaxis, accumulatedmRNA_mean{1,t}, accumulatedmRNA_SEM{1,t})
-    pause
+for i=[1,9] % [000], index from the AccumulatedmRNA defined on the top
+    errorbar(APaxis, accumulatedmRNA_mean{i,tIndex}, accumulatedmRNA_SEM{i,tIndex},'Color',ColorChoice(i,:),'LineWidth',2)
 end
+
+% [000], Runt null
+% j=9;
+% errorbar(APaxis, AccumulatedmRNA{j,1}(end,:),AccumulatedmRNA_SE{j,1}(end,:),'Color',ColorChoice(j,:),'LineWidth',2)
+
+legend('[000]','[000], Runt null')
+ylim([0 max(AccumulatedmRNA{i,1}(end,:))]) 
+xlim([0.2 0.6])
+
+xlabel('AP axis (EL)')
+ylabel('accumulated mRNA (AU)')
+
+StandardFigure(gcf,gca)
+
+DropboxPath = 'S:/YangJoon/Dropbox';
+% Save the plot
+figPath = [DropboxPath,filesep,'Garcia Lab\Figures\Opposing Gradients\Data\AccumulatedmRNA\NewConstructs'];
+saveas(gcf,[figPath,filesep,'accumulatedmRNA_[000]_Runtnull_NC14_30min_20%_60%' , '.tif']); 
+saveas(gcf,[figPath,filesep,'accumulatedmRNA_[000]_Runtnull_NC14_30min_20%_60%' , '.pdf']); 
+
+%% Plot for nulls [111] 
+APaxis = 0:0.025:1;
+tIndex = 4; % Check the indexing above.
+hold on
+for i=4 % [111], index from the AccumulatedmRNA defined on the top
+    errorbar(APaxis, accumulatedmRNA_mean{i,tIndex}, accumulatedmRNA_SEM{i,tIndex},'Color',ColorChoice(i,:),'LineWidth',2)
+end
+
+%[111], Runt null
+% Grab the last time point, as all the nulls are only calculated for NC14.
+j=10;
+errorbar(APaxis, AccumulatedmRNA{j,1}(end,:),AccumulatedmRNA_SE{j,1}(end,:),'Color',ColorChoice(j,:),'LineWidth',2)
+
+legend('[111]','[111], Runt null')
+%ylim([0 max(AccumulatedmRNA{10,1}(end,:))+10000]) 
+xlim([0.2 0.6])
+
+xlabel('AP axis (EL)')
+ylabel('accumulated mRNA (AU)')
+
+StandardFigure(gcf,gca)
+
+DropboxPath = 'S:/YangJoon/Dropbox';
+% Save the plot
+%figPath = [DropboxPath,filesep,'Garcia Lab\Figures\Opposing Gradients\Data\AccumulatedmRNA\NewConstructs'];
+%saveas(gcf,[figPath,filesep,'accumulatedmRNA_[111]_Runtnull_NC14_30min_20%_60%' , '.tif']); 
+%saveas(gcf,[figPath,filesep,'accumulatedmRNA_[111]_Runtnull_NC14_30min_20%_60%' , '.pdf']); 
+
+%% Plot for r1 variants
+APaxis = 0:0.025:1;
+tIndex = 3; % 3rd time window (NC14:NC14+30min)
+hold on
+for i=[1,2,5,6]
+    errorbar(APaxis, accumulatedmRNA_mean{i,tIndex}, accumulatedmRNA_SEM{i,tIndex},'Color',ColorChoice(i,:),'LineWidth',2)
+end
+
+legend('[0,0,0]','[1,0,0]','[0,0,1]','[0,1,0]')
+ylim([0 max(accumulatedmRNA_mean{5,tIndex})+50000]) % since usually r1-close([0,0,1]) seems to be higher than r0,2,3.
+xlim([0.2 0.6])
+StandardFigure(gcf,gca)
+
+DropboxPath = 'S:/YangJoon/Dropbox';
+% Save the plot
+figPath = [DropboxPath,filesep,'Garcia Lab\Figures\Opposing Gradients\Data\AccumulatedmRNA\NewConstructs'];
+saveas(gcf,[figPath,filesep,'accumulatedmRNA_r1_variants_40minIntoNC14_20%_60%' , '.tif']); 
+saveas(gcf,[figPath,filesep,'accumulatedmRNA_r1_variants_40minIntoNC14_20%_60%' , '.pdf']); 
+%% Plot for r2 variants
+APaxis = 0:0.025:1;
+tIndex = 3; % 3rd time window (NC14:NC14+30min)
+hold on
+for i=[1,3,7,8]
+    errorbar(APaxis, accumulatedmRNA_mean{i,tIndex}, accumulatedmRNA_SEM{i,tIndex},'Color',ColorChoice(i,:),'LineWidth',2)
+end
+
+legend('[0,0,0]','[0,1,1]','[1,1,0]','[1,0,1]')
+ylim([0 max(accumulatedmRNA_mean{5,tIndex})+50000]) % since usually r1-close([0,0,1]) seems to be higher than r0,2,3.
+xlim([0.2 0.6])
+StandardFigure(gcf,gca)
+
+DropboxPath = 'S:/YangJoon/Dropbox';
+% Save the plot
+figPath = [DropboxPath,filesep,'Garcia Lab\Figures\Opposing Gradients\Data\AccumulatedmRNA\NewConstructs'];
+saveas(gcf,[figPath,filesep,'accumulatedmRNA_r2_variants_40minIntoNC14_20%_60%' , '.tif']); 
+saveas(gcf,[figPath,filesep,'accumulatedmRNA_r2_variants_40minIntoNC14_20%_60%' , '.pdf']); 
+
+
+
+
+
+%%
+
+
+
+
+
+
+
+
+
 
 %% Calculate the accumulated mRNA (t2-t1) in a different way
 % Subtract using already averaged profiles, then use the SD to calculate
@@ -219,9 +353,7 @@ for i=1:length(dataTypes)
     pause
 end
 
-%% Plot for r1 variants
 
-%% Plot for r2 variants
 
 
 
