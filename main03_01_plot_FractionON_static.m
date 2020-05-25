@@ -1,4 +1,4 @@
-function main02_02_plot_FractionON
+function main_plot_FractionON_static
 %
 % DESCRIPTION
 % Compile the Fraction ON (Fraction of Active Nuclei) in different
