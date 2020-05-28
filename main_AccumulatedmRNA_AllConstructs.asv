@@ -325,57 +325,25 @@ saveas(gcf,[figPath,filesep,'accumulatedmRNA_r2_variants_40minIntoNC14_20%_60%' 
 
 % First, let's pick a time window for estimating the accumulated mRNA
 % 0-20 min into nc14
-tEnd = 25; % [min]
+tEnd = 20; % [min]
 
-% Second, for each dataType(construct), for each embryo, calculate the
-% integrated mRNA using the trapezoidal sum, then calculate the average and
-% SEM of those separately.
-
+% Second, for each dataType(construct), for each embryo, let's calculate ..
 for setIndex=[1,9] % [000], Runt WT and Runt null
-    clear time
-    clear tWindow
-    clear integratemRNA
-    clear IntegratemRNA
-    % define the data
     data = AveragedData{setIndex};
     
-    time = data.ElapsedTime;
     tRes = median(diff(data.ElapsedTime));
     tSteps = ceil(tEnd/tRes);
     nc14 = data.nc14;
-    tWindow = nc14:nc14+tSteps;
+    accumulatedmRNA{k} = AccumulatedmRNA{setIndex}(nc14+tSteps,:) -...
+        AccumulatedmRNA{setIndex}(nc14,:);
+    accumulatedmRNA_SD{k} = sqrt((AccumulatedmRNA_SD{setIndex}(nc14+tSteps,:)).^2 +...
+               (AccumulatedmRNA_SD{setIndex}(nc14,:)).^2);
     
-    % extract the useful fields (individual embryos)
-    fluo_mean = data.MeanVectorAP_individual;
-    num_particles = data.NParticlesAP_individual;
-    [~,~,numEmbryos] = size(fluo_mean);
-    % convert nans to zeros
-    fluo_mean(isnan(fluo_mean)) = 0;
-    num_particles(isnan(num_particles)) = 0;
-    
-    integratedmRNA = trapz(time(tWindow), fluo_mean(tWindow,:,:).*num_particles(tWindow,:,:));
-
-    % convert nans to zeros back
-    integratedmRNA(integratedmRNA==0) = nan;
-    
-    integratedmRNA_mean = nanmean(integratedmRNA,3);
-    integratedmRNA_std = nanstd(integratedmRNA,0,3);
-    integratedmRNA_sem = integratedmRNA_std./sqrt(numEmbryos);
-    
-    integratedmRNA_average{setIndex} = integratedmRNA_mean;
-    integratedmRNA_SEM{setIndex} = integratedmRNA_sem;
-
+    % counter
+    k = k+1;
 end
 
 
-% Plot to check
-hold on
-for dataset = [1,9]
-    errorbar(APaxis, integratedmRNA_average{dataset},...
-                integratedmRNA_SEM{dataset},'Color',ColorChoice(dataset,:))
-end
-
-legend('[000]','[000], Runt null')
 
 %% Approach 3.
 %% Calculate the accumulated mRNA (t2-t1) in a different way
