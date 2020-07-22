@@ -43,5 +43,4 @@ AddParticlePosition('ManualAlignment','SelectChannel')
 %% CompileParticle
 CompileParticles(Prefix,'skipAll','ApproveAll','MinParticles',2,'MinTime',2)
 
-% Note that if we have a perfect particle curation, then we'd not need
-% 'ApproveAll' option in here. 
+% Note that if we have a perfect particle curation, then we'd not need 'ApproveAl'
