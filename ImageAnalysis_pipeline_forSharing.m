@@ -21,16 +21,24 @@ segmentSpots(Prefix, Thresh,'Shadows',1,'keepProcessedData')%'fit3D','displayFig
 
 %% TrackNuclei
 TrackNuclei(Prefix)
+
+%% CheckNucleiSegmentation
+CheckNucleiSegmentation(Prefix)
 %% TrackmRNADynamics
 TrackmRNADynamics(Prefix)
 
 %% CheckParticleTracking 
+CheckParticleTracking(Prefix)
 % Let's make sure to check this before we launch into the next steps.
 % Reminder : This step is checking 
 % 1) whether we have a good spot segmentation.
 % 2) whether we have a good particle tracking.
 % language : We use "Spots" for spots segmented for each frame, then we use
 % "Particles" for the temporally tracked spots.
+% Let's check the two things above for most of the NC14 frames. GO through
+% some single particle time trace by clicking "p" then moving using "k" is
+% also a good idea. If the particle tracking was done well, you should be
+% able to see a nice trace that looks like averaged time traces.
 
 %% FindAPAxisFullEmbryo
 % AP axis registration

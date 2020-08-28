@@ -202,20 +202,24 @@ AP = 0:0.01:0.99;
 AP = 0.005:0.01:0.995;
 
 hold on
-errorbar(AP, Averaged_Intensity_r0, SEM_Intensity_r0)
-errorbar(AP, Averaged_Intensity_r1, SEM_Intensity_r1)
-errorbar(AP, Averaged_Intensity_r2, SEM_Intensity_r2)
-errorbar(AP, Averaged_Intensity_r3, SEM_Intensity_r3)
+errorbar(AP, Averaged_Intensity_r0, SEM_Intensity_r0,'color',ColorChoice(1,:))
+errorbar(AP, Averaged_Intensity_r1, SEM_Intensity_r1,'color',ColorChoice(2,:))
+errorbar(AP, Averaged_Intensity_r2, SEM_Intensity_r2,'color',ColorChoice(3,:))
+errorbar(AP, Averaged_Intensity_r3, SEM_Intensity_r3,'color',ColorChoice(4,:))
 
-title('In Situ intensity (averaged) over AP')
+ylim([0 160])
+xticks([0 0.2 0.4 0.6 0.8 1])
+
+title('{\it in situ} intensity')
 xlabel('AP axis (EL)')
-ylabel('In Situ intensity (AU)')
+ylabel('{\it in situ} intensity (AU)')
 legend('r0','r1','r2','r3')
 StandardFigure(gcf,gca)
 
 % % Save the result figure
-% saveas(gcf,['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Embryos for Yang Joon\r0123_averaged_intensity_InSitu.tif'])
-% saveas(gcf,['E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\Embryos for Yang Joon\r0123_averaged_intensity_InSitu.pdf'])
+figPath = 'S:\YangJoon\Dropbox\Garcia Lab\Figures\OpposingGradientsFigures\Data\InSitu_MS2_compare_plots\ProcessedResults_InSitu'
+saveas(gcf,[figPath, filesep, 'r0123_averaged_intensity_InSitu.tif'])
+saveas(gcf,[figPath, filesep, 'r0123_averaged_intensity_InSitu.pdf'])
 
 %% Plot the averaged In Situ intensity profile for r0,1,2,3 (normalized)
 

@@ -590,5 +590,102 @@ FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradien
 saveas(gcf,[FigPath,filesep,'AccumulatedmRNA_AllConstructs(SmallLab)-MS2MCP-Averaged.tif'])
 saveas(gcf,[FigPath,filesep,'AccumulatedmRNA_AllConstructs(SmallLab)-MS2MCP-Averaged.pdf'])
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+%% This code above needs a lot of clean up.
+% As of 08/20/2020
+%% load the previously processed data
+load(['P:\YangJoon\LivemRNA\OpposingGradients_Analysis', filesep, ...
+        'AccumulatedmRNA_SpotFluo_overALLnuclei_04022020_temp.mat'])
+    
+% dataTypes = {'r0-new','r1-new','r2-new','r3-new',...
+%                 'r1-close','r1-mid','r2_1+2','r2_1+3',...
+%                 'r0_RuntNull','r3_RuntNull'};    
 
+totalmRNA_000 = AccumulatedmRNA{1,1};
+totalmRNA_100 = AccumulatedmRNA{2,1};
+totalmRNA_011 = AccumulatedmRNA{3,1};
+totalmRNA_111 = AccumulatedmRNA{4,1};
+
+totalmRNA_000_SE = AccumulatedmRNA_SE{1,1};
+totalmRNA_100_SE = AccumulatedmRNA_SE{2,1};
+totalmRNA_011_SE = AccumulatedmRNA_SE{3,1};
+totalmRNA_111_SE = AccumulatedmRNA_SE{4,1};
+%% generate plots of accumulated mRNA at the end of the measurement 
+% (we can be more systematic about this later)
+% Note that these are all from the "new" constructs
+
+hold on
+errorbar(0:0.025:1, totalmRNA_000(end,:), totalmRNA_000_SE(end,:),'color',ColorChoice(1,:))
+errorbar(0:0.025:1, totalmRNA_100(end,:), totalmRNA_100_SE(end,:),'color',ColorChoice(2,:))
+errorbar(0:0.025:1, totalmRNA_011(end,:), totalmRNA_011_SE(end,:),'color',ColorChoice(3,:))
+errorbar(0:0.025:1, totalmRNA_111(end,:), totalmRNA_111_SE(end,:),'color',ColorChoice(4,:))
+
+xlim([0.1 0.7])
+
+xlabel('embryo length')
+ylabel('accumulated mRNA (AU)')
+
+legend('r0','r1','r2','r3')
+StandardFigure(gcf,gca)
+% save the plots
+figPath = 'S:\YangJoon\Dropbox\Garcia Lab\Figures\OpposingGradientsFigures\Data\AccumulatedmRNA\NewConstructs';
+saveas(gcf,[figPath, filesep, 'r0123_new_endOfnc14.tif'])
+saveas(gcf,[figPath, filesep, 'r0123_new_endOfnc14.pdf'])
+
+%% plot an individual embryo (r0-5) as an example
+totalmRNA_000_ind = AccumulatedmRNA_individual{1,1};
+totalmRNA_000_emb5 = totalmRNA_000_ind(:,:,5);
+
+totalmRNA_000_ind_SD = AccumulatedmRNA_SD_individual{1,1};
+totalmRNA_000_SD_emb5 = totalmRNA_000_ind_SD(:,:,5);
+
+tEnd = length(totalmRNA_000_ind);
+errorbar(0:0.025:1, totalmRNA_000_emb5(tEnd,:),totalmRNA_000_SD_emb5(tEnd,:))
+
+xlabel('embryo length')
+ylabel('accumulated mRNA (AU)')
+xticks([0.2 0.3 0.4 0.5 0.6])
+
+StandardFigure(gcf,gca)
+
+%% plot the nulls
+% dataTypes = {'r0-new','r1-new','r2-new','r3-new',...
+%                 'r1-close','r1-mid','r2_1+2','r2_1+3',...
+%                 'r0_RuntNull','r3_RuntNull'};    
+
+totalmRNA_000 = AccumulatedmRNA{1,1};
+totalmRNA_100 = AccumulatedmRNA{2,1};
+totalmRNA_000_null = AccumulatedmRNA{9,1};
+totalmRNA_111_null = AccumulatedmRNA{10,1};
+
+totalmRNA_000_SE = AccumulatedmRNA_SE{1,1};
+totalmRNA_100_SE = AccumulatedmRNA_SE{2,1};
+totalmRNA_000_null_SE = AccumulatedmRNA_SE{9,1};
+totalmRNA_111_null_SE = AccumulatedmRNA_SE{10,1};
+%% generate plots of accumulated mRNA at the end of the measurement 
+% (we can be more systematic about this later)
+% Note that these are all from the "new" constructs
+
+hold on
+errorbar(0:0.025:1, totalmRNA_000(end,:), totalmRNA_000_SE(end,:),'color',ColorChoice(1,:),'LineWidth',2)
+errorbar(0:0.025:1, totalmRNA_111(end,:), totalmRNA_111_SE(end,:),'color',ColorChoice(4,:),'LineWidth',2)
+errorbar(0:0.025:1, totalmRNA_000_null(end,:), totalmRNA_000_null_SE(end,:),'color',ColorChoice(9,:),'LineWidth',2)
+errorbar(0:0.025:1, totalmRNA_111_null(end,:), totalmRNA_111_null_SE(end,:),'color',ColorChoice(10,:),'LineWidth',2)
+
+xlim([0.2 0.6])
+ylim([0 350000])
+
+xlabel('embryo length')
+ylabel('accumulated mRNA (AU)')
+
+%legend('000','000, Runt null')
+%legend('000','000, Runt null','111, Runt null')
+legend('000','111','000, Runt null','111, Runt null')
+
+StandardFigure(gcf,gca)
+
+% save the plots
+figPath = 'S:\YangJoon\Dropbox\Garcia Lab\Figures\OpposingGradientsFigures\Data\AccumulatedmRNA\NewConstructs';
+saveas(gcf,[figPath, filesep, '000_111_WT_RuntNulls.tif'])
+saveas(gcf,[figPath, filesep, '000_111_WT_RuntNulls.pdf'])
 end

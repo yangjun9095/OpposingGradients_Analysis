@@ -19,6 +19,7 @@ Kb = 6; % Bcd dissociation constant. This is for scaling, should change
 % or we can just use actual Bcd data
 % The Bcd data below is interpolated(temporally) using pchip, I recall that
 % it's from Jonathan.
+%filePath = '';
 Bcd = load('E:\YangJoon\LivemRNA\Data\Dropbox\Dropbox\OpposingGradient\Bicoid.mat')
 
 Bcd_averaged_nc13 = nanmean(Bcd.pchbcd(1:120,:));
@@ -86,7 +87,7 @@ standardizeFigure_YJK(gca,legend,[])
 EL = 0:0.01:1;
 X = 0.2:0.01:0.6;
 
-BcdScale = 60;
+BcdScale = 60; 
 Bcd = Bcd_interp_nc13*BcdScale;
 Bcd = Bcd(21:61); % getting 0.2~0.6 of EL
 

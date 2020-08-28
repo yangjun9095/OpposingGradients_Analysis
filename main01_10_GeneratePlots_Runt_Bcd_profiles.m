@@ -91,7 +91,7 @@ function main01_10_GeneratePlots_Runt_Bcd_profiles
 
 %% Part2. generate plots of Bcd and Runt (time-traces)
 % For a figure of Bcd and Runt's time trace
-filePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
+filePath = 'S:\YangJoon\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
 
 % Now, I will start from the NC14.
 % Bcd and Runt should be time-averaged for 0-10 minutes in NC14 (the initial

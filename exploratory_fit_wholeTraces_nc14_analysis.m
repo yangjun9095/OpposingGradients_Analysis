@@ -1,5 +1,5 @@
 % projectName = 'OpposingGradients'
-% Last updated : 5/30/2020
+% Last updated : 8/30/2020
 % Description : fitting a simple model of transcriptional cycle to our
 % averaged MS2 traces to extract parameters as the initial slope, duration,
 % etc.
@@ -7,7 +7,6 @@
 % Inputs : 1) single embryo (Prefix), 2) DataType (LoadMS2Sets) or
 % AveragedDatasets, 3) individual embryos (optional...)
 
-% fit_three_steps_model_data
 
 %% Use Jonathan's script for fitting the whole NC14 with initial rise, steady-state, and exponential decay
 % I need more description on which parameters are extracted from the model
