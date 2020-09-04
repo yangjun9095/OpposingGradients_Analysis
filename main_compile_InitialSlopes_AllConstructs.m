@@ -1,4 +1,4 @@
-function Fig3_plot_InitialSlopes_AllConstructs
+function compile_InitialSlopes_AllConstructs
 %% Description 
 % Compiling and avearging initial slopes from multiple embryos
 % Generate plots, and also save the fields that are calculated.
@@ -27,11 +27,43 @@ Data_r1_mid = LoadMS2Sets('r1-mid','dontCompare')
 Data_r2_close = LoadMS2Sets('r2_1+2','dontCompare')
 Data_r2_far = LoadMS2Sets('r2_1+3','dontCompare')
 
-%% Runt nulls
+% Runt nulls
 Data_r0_null = LoadMS2Sets('r0_RuntNull','dontCompare')
+Data_r1_null = LoadMS2Sets('r1_RuntNull','dontCompare')
 Data_r3_null = LoadMS2Sets('r3_RuntNull','dontCompare')
 Data_r1_close_null = LoadMS2Sets('r1_close_RuntNull','dontCompare')
 
+%% Make a structure that compiles all information
+projectsForFit = {'r0-new','r1-new','r2-new','r3-new','r1-close','r1-mid','r2_1+2','r2_1+3',...
+                    'r0_RuntNull','r1_RuntNull','r2_RuntNull','r3_RuntNull',...
+                    'r1_close_RuntNull','r1_mid_RuntNull','r2_close_RuntNull','r2_far_RuntNull'};
+%% Color definition
+% This is defining the line color
+% We have 8 distinct datasets, with or without Runt protein.
+% I think selecting 8 distinguishable color sets, then changing the
+% brightness by either adding/subtracting white would be a better idea than
+% selecting 16 different color sets.
+
+colorDict = struct();
+colorDict.blue = [115,143,193]/255; %[115,143,170]/255;
+colorDict.red =  [213,108,85]/255; %[200,108,85]/255;
+colorDict.yellow = [234,194,100]/255;
+colorDict.purple = [171,133,172]/255;
+colorDict.cyan = [108,188,233]/255;
+colorDict.green =  [122,169,116]/255; %[122,150,116]/255;
+colorDict.brown = [179,155,142]/255;
+colorDict.darkgreen = [126,157,144]/255;
+
+%colorDict.magenta = [208,109,171]/255;
+%colorDict.lightBlue = [115,142,193]/255;
+colorDict.lightgreen = [205,214,209]/255;
+colorDict.pink = [232,177,157]/255;
+colorDict.thickpink = [132,27,69]/255;
+
+% Define a color matrix, 8 colors right now.
+ColorChoice = [colorDict.blue; colorDict.green;...
+                colorDict.yellow; colorDict.red; colorDict.brown;...
+                colorDict.purple; colorDict.darkgreen; colorDict.thickpink]; 
 %% Extract the fitted values from all of my datasets
 
 [fittedRate_r0,fittedRateSD_r0,fittedTon_r0] = Extract_Fields_MeanFits(Data_r0,'Asymmetric');
@@ -95,25 +127,7 @@ SEM_fittedRate_r3_null = nanstd(fittedRate_r3_null,0,3)/sqrt(length(Data_r3_null
 % r1-close, Runt null
 average_fittedRate_r1_close_null = nanmean(fittedRate_r1_close_null,3);
 SEM_fittedRate_r1_close_null = nanstd(fittedRate_r1_close_null,0,3)/sqrt(length(Data_r1_close_null));
-%% Color definition
-% This is defining the line color
-colorDict = struct();
-colorDict.blue = [115,143,193]/255; %[115,143,170]/255;
-colorDict.red =  [213,108,85]/255; %[200,108,85]/255;
-colorDict.yellow = [234,194,100]/255;
-colorDict.cyan = [108,188,233]/255;
-colorDict.magenta = [208,109,171]/255;
-colorDict.lightBlue = [115,142,193]/255;
-colorDict.purple = [171,133,172]/255;
-colorDict.green =  [122,169,116]/255; %[122,150,116]/255;
-colorDict.brown = [179,155,142]/255;
-colorDict.darkgreen = [126,157,144]/255;
-colorDict.lightgreen = [205,214,209]/255;
-colorDict.thickpink = [132,27,69]/255;
-% Define a color matrix, 8 colors right now.
-ColorChoice = [colorDict.blue; colorDict.green;...
-                colorDict.yellow; colorDict.red; colorDict.brown;...
-                colorDict.blue; colorDict.purple; colorDict.thickpink]; 
+
 %% Plot the averaged fittedRate (initial rate of RNAP loading), and SEM
 
 FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\InitialSlope_Asymmetric\';
@@ -183,6 +197,27 @@ StandardFigure(InitialRate_NC14_figure, InitialRate_NC14_figure.CurrentAxes)
 saveas(InitialRate_NC14_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_' , '_NC14_fixedFittingScript' , '.tif']); 
 saveas(InitialRate_NC14_figure,[FigPath 'InitialRate_AsymmetricFit_r0123_' , '_NC14_fixedFittingScript' , '.pdf']); 
 
+%% r0 fitted rate over AO profile
+% NC14
+InitialRate_NC14_figure = figure;
+nc = 3; % NC13
+hold on
+errorbar(0:0.025:1,average_fittedRate_r0(:,nc),SEM_fittedRate_r0(:,nc),'Color',ColorChoice(2,:),'LineWidth',2) % magenta
+% errorbar(0:0.025:1,average_fittedRate_r1(:,nc),SEM_fittedRate_r1(:,nc),'Color',ColorChoice(2,:)) % green
+% errorbar(0:0.025:1,average_fittedRate_r2(:,nc),SEM_fittedRate_r2(:,nc),'Color',ColorChoice(3,:)) % yellow
+% errorbar(0:0.025:1,average_fittedRate_r3(:,nc),SEM_fittedRate_r3(:,nc),'Color',ColorChoice(4,:)) % red
+
+xlim([0.15 0.6])
+ylim([0 250])
+
+legend('fitted initial RNAP loading rate','Location','Northeast')%,'r1-male','r2-male','r3-male') 
+xlabel('AP Position')
+ylabel('Initial rate (AU/min)')
+%title('Initial rate of RNAP loading along AP axis, at NC 14')
+StandardFigure(InitialRate_NC14_figure, InitialRate_NC14_figure.CurrentAxes)
+
+saveas(InitialRate_NC14_figure,[figPath, filesep, 'initial_rate_example_000' , '.tif']); 
+saveas(InitialRate_NC14_figure,[figPath, filesep, 'initial_rate_example_000' , '.pdf']); 
 %% Generate plots for different constructs (r1, r2 variants)
 %% 1) r1 variants
 APaxis = 0:0.025:1;
@@ -257,27 +292,35 @@ saveas(gcf,[figPath, filesep, 'Initial_rate_r0_r1close_nulls' , '.tif']);
 saveas(gcf,[figPath, filesep, 'Initial_rate_r0_r1close_nulls' , '.pdf']); 
 
 %% calculate the fold-change
+FC_000 = average_fittedRate_r0./average_fittedRate_r0_null;
+FC_000_SEM = SEM_fittedRate_r0./average_fittedRate_r0_null;
+
+FC_001 = average_fittedRate_r1_close./average_fittedRate_r1_close_null;
+FC_001_SEM = SEM_fittedRate_r1_close./average_fittedRate_r1_close_null;
+
 hold on
 figure(2)
 
-errorbar(APaxis, average_fittedRate_r0./average_fittedRate_r0_null,...
-            SEM_fittedRate_r0./average_fittedRate_r0_null,'LineWidth',2,'Color',ColorChoice(1,:))
+errorbar(APaxis,FC_000(:,3),FC_000_SEM(:,3),...
+            'LineWidth',2,'Color',ColorChoice(1,:))
 
-errorbar(APaxis, average_fittedRate_r1_close./average_fittedRate_r1_close_null,...
-            SEM_fittedRate_r1_close./average_fittedRate_r1_close_null,'LineWidth',2,'Color',ColorChoice(5,:))
+errorbar(APaxis,FC_001(:,3),FC_001_SEM(:,3),...
+            'LineWidth',2,'Color',ColorChoice(5,:))
         
-xlim([0.15 0.6])
+xlim([0.15 0.5])
 ylim([0 1.2])
 
-legend('[000]','[000], null','[001]','[001],null')
+xticks([0.15 0.2 0.3 0.4 0.5 0.6])
+
+legend('[000]','[001]')
 xlabel('AP Position (embryo length)')
-ylabel('initial RNAP rate (AU/min)')
+ylabel('fold-change')
 % title('Initial rate of RNAP loading along AP axis, at NC 14')
 StandardFigure(gcf, gca)
 
 figPath = 'S:\YangJoon\Dropbox\Garcia Lab\Figures\OpposingGradientsFigures\Data\Fig3_AsymmetricFits'
-saveas(gcf,[figPath, filesep, 'Initial_rate_r0_r1close_nulls' , '.tif']); 
-saveas(gcf,[figPath, filesep, 'Initial_rate_r0_r1close_nulls' , '.pdf']);         
+saveas(gcf,[figPath, filesep, 'fold_change_r0_r1close_nulls' , '.tif']); 
+saveas(gcf,[figPath, filesep, 'fold_change_r0_r1close_nulls' , '.pdf']);       
 %% Save the fitted initial rate and SEM 
 
 % Define the values

@@ -27,10 +27,6 @@ function [fittedRate,fittedRateSD,fittedTon, T_peak, Tau, Tau_SD] = Extract_Fiel
     fittedRate = nan(41,3,length(Data));
     fittedRateSD = nan(41,3,length(Data));
     fittedTon = nan(41,3,length(Data));
-    
-    T_peak = nan(41,length(Data));
-    Tau = nan(41,length(Data));
-    Tau_SD = nan(41,length(Data));
 
     for i=1:length(Data)
         % check if there's MeanFitsV2 (which is from Asymmetric fit)
@@ -66,8 +62,6 @@ function [fittedRate,fittedRateSD,fittedTon, T_peak, Tau, Tau_SD] = Extract_Fiel
         end
         
         % Extract the fitted values from the decay regime of NC14
-        T_peak(:,i) = NC14DecayFits.Time_peak;
-        Tau(:,i) = NC14DecayFits.Tau;
-        Tau_SD(:,i) = NC14DecayFits.Tau_SD;
+        T_peak(i) = 
     end
 end
