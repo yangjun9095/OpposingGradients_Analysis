@@ -1,5 +1,5 @@
 %% Script to fit an exponential fit to the accumulated mRNA in the decay regime of NC14
-function fit_ExpDecay_NC14DecayRegime(varargin, 'CheckFitting')
+function fit_ExpDecay_NC14DecayRegime(varargin)
 % This script is basically to regenerate the FigS4 in Garcia, 2013 paper,
 % where they attempted to extract the turn-off time by fitting an
 % exponential decay to the accumulated mRNA from the Time_peak.
@@ -397,6 +397,69 @@ if checkFits
     end
 else
     % just show the plots?
+    for AP=ApprovedAPbins(1):ApprovedAPbins(end)
+        clf
+
+        NC14 = APDivision(14,AP);
+        Time =  ElapsedTime(NC14:length(ElapsedTime)) - ElapsedTime(NC14);
+        Fluo = MeanVectorAP(NC14:length(ElapsedTime), AP)';
+        Fluo_SEM = SDVectorAP(NC14:length(ElapsedTime), AP)./NParticlesAP(NC14:length(ElapsedTime), AP);
+
+        % Convert the NaNs in fluo to zeros
+        Fluo(isnan(Fluo)) = 0;
+
+        if sum(Fluo)~=0 
+            % Calculate the integrated fluo again, as the length is different for
+            % different AP bins
+            index_peak = Time_peak_indices(AP,1);
+            int_fluo = zeros(1,length(Time));
+            for t = index_peak+1:length(Time)
+                int_fluo(t) = trapz(Time(index_peak:t), Fluo(index_peak:t));
+            end
+
+            hold on
+            % MS2 spot fluo plot
+            yyaxis left
+            h(1) = errorbar(Time, Fluo, Fluo_SEM)
+            h(2) = xline(Time(Time_peak_indices(AP)),'--')
+            ylim([0 max(Fluo)*1.4])
+            ylabel('mean fluorescence (AU)')
+
+            % Integrated fluo plot
+            yyaxis right
+            % integrate fluo(data)
+            h(3) = plot(Time, int_fluo)
+            % fit
+            h(4) = plot(Time(Time_peak_indices(AP):end), IntFluo_max(AP)*(1 - exp(-(Time(Time_peak_indices(AP):end)-Time(Time_peak_indices(AP)))/Tau(AP))))
+            % marking the Tau from T_peak
+            h(5) = xline(Time(Time_peak_indices(AP)) + Tau(AP),'--')
+            ylabel('integrated fluorescence (AU*min)')
+            % xTicks, yTicks
+            xlim([0 60])
+            %ylim([0 IntFluo_max(AP)*1.4])
+            try
+                ylim([0 max(int_fluo)*1.4])
+            catch
+                ylim([0 IntFluo_max(AP)*1.4])
+            end
+            %xticks([0 10 20 30 40 50])
+
+            % set(gca,'yticklabel',[])
+
+            % no title, no-caps on the axis labels
+            xlabel('time into nc14 (min)')
+            title(['AP=',num2str((AP-1)*2.5),'%'])
+            % xticks([Time(Time_peak_indices(AP)) Time(Time_peak_indices(AP)) + Tau(AP)])
+            % xticklabels({'T_{peak}','T_{off}'})
+
+            legend([h(1) h(3) h(4)],'MS2','integrated','Fit','Location','NorthEast')
+
+            % StandardFigurePBoC(fig_name, fig_name.CurrentAxes)
+            StandardFigurePBoC([h(1) h(3) h(4)],gca)
+            pause(0.5)
+        else
+        end
+    end
 end
 %% Save the information
 save([DropboxFolder,filesep,Prefix,filesep,'MeanFitsAsymmetric.mat'],...

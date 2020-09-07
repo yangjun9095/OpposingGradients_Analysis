@@ -13,30 +13,47 @@ function compile_InitialSlopes_AllConstructs
 % Note that I used old datasets for the r0, for nc14, thus MeanFits.mat,
 % not MeanFitsV2.mat
 
-% Data_r0 = LoadMS2Sets('r0','dontCompare') % old construct
-Data_r0 = LoadMS2Sets('r0-new','dontCompare')
-Data_r1 = LoadMS2Sets('r1-new','dontCompare')
-Data_r2 = LoadMS2Sets('r2-new','dontCompare')
-Data_r3 = LoadMS2Sets('r3-new','dontCompare')
-
-% Variants
-% r1 variants
-Data_r1_close = LoadMS2Sets('r1-close','dontCompare')
-Data_r1_mid = LoadMS2Sets('r1-mid','dontCompare')
-% r2 variants
-Data_r2_close = LoadMS2Sets('r2_1+2','dontCompare')
-Data_r2_far = LoadMS2Sets('r2_1+3','dontCompare')
-
-% Runt nulls
-Data_r0_null = LoadMS2Sets('r0_RuntNull','dontCompare')
-Data_r1_null = LoadMS2Sets('r1_RuntNull','dontCompare')
-Data_r3_null = LoadMS2Sets('r3_RuntNull','dontCompare')
-Data_r1_close_null = LoadMS2Sets('r1_close_RuntNull','dontCompare')
+% % Data_r0 = LoadMS2Sets('r0','dontCompare') % old construct
+% Data_r0 = LoadMS2Sets('r0-new','dontCompare')
+% Data_r1 = LoadMS2Sets('r1-new','dontCompare')
+% Data_r2 = LoadMS2Sets('r2-new','dontCompare')
+% Data_r3 = LoadMS2Sets('r3-new','dontCompare')
+% 
+% % Variants
+% % r1 variants
+% Data_r1_close = LoadMS2Sets('r1-close','dontCompare')
+% Data_r1_mid = LoadMS2Sets('r1-mid','dontCompare')
+% % r2 variants
+% Data_r2_close = LoadMS2Sets('r2_1+2','dontCompare')
+% Data_r2_far = LoadMS2Sets('r2_1+3','dontCompare')
+% 
+% % Runt nulls
+% Data_r0_null = LoadMS2Sets('r0_RuntNull','dontCompare')
+% Data_r1_null = LoadMS2Sets('r1_RuntNull','dontCompare')
+% Data_r3_null = LoadMS2Sets('r3_RuntNull','dontCompare')
+% Data_r1_close_null = LoadMS2Sets('r1_close_RuntNull','dontCompare')
 
 %% Make a structure that compiles all information
-projectsForFit = {'r0-new','r1-new','r2-new','r3-new','r1-close','r1-mid','r2_1+2','r2_1+3',...
+DataTypesForFit = {'r0-new','r1-new','r2-new','r3-new','r1-close','r1-mid','r2_1+2','r2_1+3',...
                     'r0_RuntNull','r1_RuntNull','r2_RuntNull','r3_RuntNull',...
                     'r1_close_RuntNull','r1_mid_RuntNull','r2_close_RuntNull','r2_far_RuntNull'};
+
+% Name of constructs so that we can label plots and files
+constructNames = {'000','100','011','111','001','010','110','101',...
+                    '000, null','100, null','011, null','111, null','001, null','010, null','110, null','101, null'};
+                
+% SAve the DataType and LoadMS2Sets into a structure, named compiledData
+% The first row will contain the field names
+compiledData{1,1} = 'DataType';
+compiledData{1,2} = 'compiledData';
+
+% Loop through all DataTypes to load comipled data from each dataType
+for DataType = 1:length(DataTypesForFit)
+    compiledData{DataType+1,1} = DataTypesForFit{DataType};
+    compiledData{DataType+1,2} = LoadMS2Sets(DataTypesForFit{DataType});
+end
+
+
 %% Color definition
 % This is defining the line color
 % We have 8 distinct datasets, with or without Runt protein.
@@ -64,25 +81,54 @@ colorDict.thickpink = [132,27,69]/255;
 ColorChoice = [colorDict.blue; colorDict.green;...
                 colorDict.yellow; colorDict.red; colorDict.brown;...
                 colorDict.purple; colorDict.darkgreen; colorDict.thickpink]; 
+
+% For now, I'll add white (color+[111])/2 to make thinner color (for the
+% Runt nulls)
+
 %% Extract the fitted values from all of my datasets
 
-[fittedRate_r0,fittedRateSD_r0,fittedTon_r0] = Extract_Fields_MeanFits(Data_r0,'Asymmetric');
-[fittedRate_r1,fittedRateSD_r1,fittedTon_r1] = Extract_Fields_MeanFits(Data_r1,'Asymmetric');
-[fittedRate_r2,fittedRateSD_r2,fittedTon_r2] = Extract_Fields_MeanFits(Data_r2,'Asymmetric');
-[fittedRate_r3,fittedRateSD_r3,fittedTon_r3] = Extract_Fields_MeanFits(Data_r3,'Asymmetric');
+% [fittedRate_r0,fittedRateSD_r0,fittedTon_r0] = Extract_Fields_MeanFits(Data_r0,'Asymmetric');
+% [fittedRate_r1,fittedRateSD_r1,fittedTon_r1] = Extract_Fields_MeanFits(Data_r1,'Asymmetric');
+% [fittedRate_r2,fittedRateSD_r2,fittedTon_r2] = Extract_Fields_MeanFits(Data_r2,'Asymmetric');
+% [fittedRate_r3,fittedRateSD_r3,fittedTon_r3] = Extract_Fields_MeanFits(Data_r3,'Asymmetric');
+% 
+% % r1 variants (close, mid)
+% [fittedRate_r1_close,fittedRateSD_r1_close,fittedTon_r1_close] = Extract_Fields_MeanFits(Data_r1_close,'Asymmetric');
+% [fittedRate_r1_mid,fittedRateSD_r1_mid,fittedTon_r1_mid] = Extract_Fields_MeanFits(Data_r1_mid,'Asymmetric');
+% 
+% % r2 variants (close (1+2), far(1+3), original is (2+3))
+% [fittedRate_r2_close,fittedRateSD_r2_close,fittedTon_r2_close] = Extract_Fields_MeanFits(Data_r2_close,'Asymmetric');
+% [fittedRate_r2_far,fittedRateSD_r2_far,fittedTon_r2_far] = Extract_Fields_MeanFits(Data_r2_far,'Asymmetric');
+% 
+% % Runt nulls
+% [fittedRate_r0_null,fittedRateSD_r0_null,fittedTon_r0_null] = Extract_Fields_MeanFits(Data_r0_null,'Asymmetric');
+% [fittedRate_r3_null,fittedRateSD_r3_null,fittedTon_r3_null] = Extract_Fields_MeanFits(Data_r3_null,'Asymmetric');
+% [fittedRate_r1_close_null,fittedRateSD_r1_close_null,fittedTon_r1_close_null] = Extract_Fields_MeanFits(Data_r1_close_null,'Asymmetric');
 
-% r1 variants (close, mid)
-[fittedRate_r1_close,fittedRateSD_r1_close,fittedTon_r1_close] = Extract_Fields_MeanFits(Data_r1_close,'Asymmetric');
-[fittedRate_r1_mid,fittedRateSD_r1_mid,fittedTon_r1_mid] = Extract_Fields_MeanFits(Data_r1_mid,'Asymmetric');
 
-% r2 variants (close (1+2), far(1+3), original is (2+3))
-[fittedRate_r2_close,fittedRateSD_r2_close,fittedTon_r2_close] = Extract_Fields_MeanFits(Data_r2_close,'Asymmetric');
-[fittedRate_r2_far,fittedRateSD_r2_far,fittedTon_r2_far] = Extract_Fields_MeanFits(Data_r2_far,'Asymmetric');
+%% Extract the fitted values from all DataTypes
+% First, initialize the structure with the field names
+compiledData{1,3} = 'fitted Rate';
+compiledData{1,4} = 'fitted Rate_SD';
+compiledData{1,5} = 'fitted T_ON';
+compiledData{1,6} = 'T_peak';
+compiledData{1,7} = 'Tau';
+compiledData{1,8} = 'Tau_SD';
 
-% Runt nulls
-[fittedRate_r0_null,fittedRateSD_r0_null,fittedTon_r0_null] = Extract_Fields_MeanFits(Data_r0_null,'Asymmetric');
-[fittedRate_r3_null,fittedRateSD_r3_null,fittedTon_r3_null] = Extract_Fields_MeanFits(Data_r3_null,'Asymmetric');
-[fittedRate_r1_close_null,fittedRateSD_r1_close_null,fittedTon_r1_close_null] = Extract_Fields_MeanFits(Data_r1_close_null,'Asymmetric');
+% Go over the structure (compiledData) to extract the fitted initial slope,
+% SD, number of embryos, T_on, T_peak, Tau, etc.
+
+for i=1:length(DataTypesForFit)
+    [fittedRate,fittedRateSD,fittedTon,T_peak, Tau, Tau_SD] = Extract_Fields_MeanFits(compiledData{i+1,2},'Asymmetric');
+    
+    compiledData{i+1,3} = fittedRate;
+    compiledData{i+1,4} = fittedRateSD;
+    compiledData{i+1,5} = fittedTon;
+    compiledData{i+1,6} = T_peak;
+    compiledData{i+1,7} = Tau;
+    compiledData{i+1,8} = Tau_SD;
+end
+
 %% Calculate the average using nanmean, nanstd
 
 % r0
