@@ -1,9 +1,9 @@
 %% Script to fit an exponential fit to the accumulated mRNA in the decay regime of NC14
-function fit_ExpDecay_NC14DecayRegime(varargin)
+function fit_ExpDecay_NC14DecayRegime_upto30min(varargin)
 % This script is basically to regenerate the FigS4 in Garcia, 2013 paper,
 % where they attempted to extract the turn-off time by fitting an
 % exponential decay to the accumulated mRNA from the Time_peak.
-% Last updated : 9/1/2020, Yang Joon Kim
+% Last updated : 9/20/2020, Yang Joon Kim
 
 % INPUT : Prefix
 % OUTPUT : mRNA_max, mRNA_max_SD, Tau, Tau_SD, T_peak saved in
@@ -35,10 +35,14 @@ close all
 % Options
 checkFits = false;
 
+% Define the time window for numerical accumulation of mRNA
+tEnd = 30; % min
+
 for i=1:length(varargin)
     Prefix=varargin{1};
     if strcmpi(varargin{i},'TimeWindow')
         TimeWindow = varargin{i+1}; %[t1 t2] in nc14
+        tEnd = TimeWindow(2);
     elseif strcmpi(varargin{i},'CheckFitting')
         checkFits = true;
     end
@@ -127,21 +131,23 @@ for AP = ApprovedAPbins(1):ApprovedAPbins(end) %APbinStart:APbinEnd
     
     % define the Fluo and Time
     Time = ElapsedTime(NC14:length(ElapsedTime)) - ElapsedTime(NC14); % initialize to 0 min
-    
     % We need to get the number of competent nuclei, such that we get the
     % mean activity over competent nuclei (not instantaneously ON nuclei).
-    N_comp = max(NParticlesAP(NC14:length(ElapsedTime), AP)); % number of competent nuclei
-    Fluo = (MeanVectorAP(NC14:length(ElapsedTime), AP).* NParticlesAP(NC14:length(ElapsedTime), AP)/N_comp)';
     
+    % end of the time range, NC14+20 minutes, or end of the time frame,
+    % whichever comes first.
+    tRange_end = min(NC14+30, length(ElapsedTime));
+    N_comp = max(NParticlesAP(NC14:tRange_end, AP)); % number of competent nuclei, NC14-NC14+20 min
+    Fluo = (MeanVectorAP(NC14:length(ElapsedTime), AP).* NParticlesAP(NC14:length(ElapsedTime), AP)/N_comp)';
     %Fluo_SEM = SDVectorAP(nc14:length(ElapsedTime), AP)./NParticlesAP(nc14:length(ElapsedTime), AP);
     
     % filter out NaNs from the Fluo
     Fluo(isnan(Fluo)) = 0; % making as zero is fair as it doesn't contribute to the integrated amount.
     
-    if sum(Fluo)~=0
+    if sum(Fluo)~=0 && Time(end)>=25 % longer than 30 minutes
     
         % find the peak of the Fluo (within 5min-15min into nc14, just to ignore some weird spikes before or after)
-        index_peak = find(Fluo == max(Fluo(8:17))); %8, 25 are hard-coded to account for 40sec/frame. This shoudl be relaxed to be more flexible.
+        index_peak = find(Fluo == max(Fluo(5:12))); %8, 25 are hard-coded to account for 40sec/frame. This shoudl be relaxed to be more flexible.
         Time_peak(AP,1) = Time(index_peak);
         Time_peak_indices(AP,1) = index_peak;
 
@@ -160,36 +166,33 @@ for AP = ApprovedAPbins(1):ApprovedAPbins(end) %APbinStart:APbinEnd
         % Note that I'm fitting only from the T_peak either 20 min of NC14 (or
         % end of our measurement)
         time_interval = median(diff(ElapsedTime));
-        tEnd = TimeWindow(2);%20; % min
-
+        
+        
+        % Define the latest time point, here, we will set as 30min into
+        % nc14.
+%         if tEnd < Time(end)
+%             tEnd_index = floor(tEnd/time_interval);
+%         else
+%             tEnd_index = Time(end);
+%         end
+            
         tEnd_index = min(floor(tEnd/time_interval), length(Time)); % counted from the beginning of nc14
-        tWindow_fit_index = [index_peak, tEnd_index];
+        
+        %tWindow_fit_index = [index_peak, tEnd_index];
+        
+        % Calculate the integrated fluo at 30 minutes into nc14, then
+        % assume that it's the maximum it could reach.
+        Fluo_max = int_fluo(tEnd_index);
+        
+        % Fine the time point that is closest to the (1-1/e)*Fluo_max
+        Fluo_thresh = Fluo_max*(1-1/exp(1));
+        
+        [~,min_index] = min((int_fluo - Fluo_thresh).^2);
+        
+        Tau(AP,1) = Time(min_index) - Time_peak(AP,1);
+        
+        IntFluo_max(AP,1) = Fluo_max;
 
-        % interpolation for a smoother fitting
-        t_fold = 10;
-        Time_fit = Time(index_peak):time_interval/t_fold:Time(tEnd_index);
-        int_fluo_fit = interp1(Time, int_fluo, Time_fit);
-
-        % fit
-        fun = @(x) x(1)*(1 - exp(-(Time_fit-Time(index_peak))/x(2))) - int_fluo_fit;
-        %fun = @(x) x(1)*(1 - exp(-(Time(tWindow_fit_index)-Time(index_peak))/x(2))) - int_fluo(tWindow_fit_index,AP)';
-        x0 = [10000, 5];
-    %     lb = [max(int_fluo(:,AP)), 0];
-    %     ub = [3*max(int_fluo(:,AP)),30];
-        [xFit,resnorm,residual,exitflag,output,lambda,jacobian] =  lsqnonlin(fun,x0); %, lb, ub);
-
-        IntFluo_max(AP,1) = xFit(1);
-        Tau(AP,1) = xFit(2);
-
-        % Calculate the Standard deviation using the confidence interval
-        try
-            CI=nlparci(xFit,residual,'jacobian',jacobian,'alpha',0.68);
-
-            IntFluo_max_SD(AP,1) = (CI(1,2)-CI(1,1))/2;
-            Tau_SD(AP,1) = (CI(2,2)-CI(2,1))/2;
-        catch
-            warning([num2str((AP-1)*2.5),'% bin is not returning the CI. Check the plot'])
-        end
     else
     end
 end
@@ -197,13 +200,13 @@ end
 %% Save the fitted result into a structure, then save into the MeanAPAsymmetric.mat
 % structure : NC14DecayRegimeFitResults
 % fields : IntFluo_max, IntFluo_max_SD, Tau, Tau_SD
-NC14DecayRegimeFitResults.IntFluo_max = IntFluo_max;
-NC14DecayRegimeFitResults.IntFluo_max_SD = IntFluo_max_SD;
+NC14DecayRegimeNumericalResults.IntFluo_max = IntFluo_max;
+NC14DecayRegimeNumericalResults.IntFluo_max_SD = IntFluo_max_SD;
 
-NC14DecayRegimeFitResults.Tau = Tau;
-NC14DecayRegimeFitResults.Tau_SD = Tau_SD;
+NC14DecayRegimeNumericalResults.Tau = Tau;
+NC14DecayRegimeNumericalResults.Tau_SD = Tau_SD;
 
-NC14DecayRegimeFitResults.Time_peak = Time_peak; % peak time
+NC14DecayRegimeNumericalResults.Time_peak = Time_peak; % peak time
 
 % Approval/Disapproval
 % initialize the approval/disapproval states as zeros (so that this NC14
@@ -212,78 +215,13 @@ NC14DecayRegimeFitResults.Time_peak = Time_peak; % peak time
 
 % for manual checking, we need to initialize this
 % Approved = zeros(numAPbins,1); 
-NC14DecayRegimeFitResults.Approved = Approved; % default is from the FitMeanAPAsymmetric.m result
+NC14DecayRegimeNumericalResults.Approved = Approved; % default is from the FitMeanAPAsymmetric.m result
 
 % %Save the information
 % save([DropboxFolder,filesep,Prefix,filesep,'MeanFitsAsymmetric.mat'],...
 %     'FitResults','NC14DecayRegimeFitResults')
 % display('MeanFitsAsymmetric.mat updated')   
 
-%% Plot for checking if the fitting was reasonable
-% generate plot
-% for AP=ApprovedAPbins(1):ApprovedAPbins(end)
-%     clf
-%     
-%     NC14 = APDivision(14,AP);
-%     Time =  ElapsedTime(NC14:length(ElapsedTime)) - ElapsedTime(NC14);
-%     Fluo = MeanVectorAP(NC14:length(ElapsedTime), AP)';
-%     Fluo_SEM = SDVectorAP(NC14:length(ElapsedTime), AP)./NParticlesAP(NC14:length(ElapsedTime), AP);
-%     
-%     % Convert the NaNs in fluo to zeros
-%     Fluo(isnan(Fluo)) = 0;
-%     
-%     if sum(Fluo)~=0 
-%         % Calculate the integrated fluo again, as the length is different for
-%         % different AP bins
-%         index_peak = Time_peak_indices(AP,1);
-%         int_fluo = zeros(1,length(Time));
-%         for t = index_peak+1:length(Time)
-%             int_fluo(t) = trapz(Time(index_peak:t), Fluo(index_peak:t));
-%         end
-% 
-%         hold on
-%         % MS2 spot fluo plot
-%         yyaxis left
-%         h(1) = errorbar(Time, Fluo, Fluo_SEM)
-%         h(2) = xline(Time(Time_peak_indices(AP)),'--')
-%         ylim([0 max(Fluo)*1.4])
-%         ylabel('mean fluorescence (AU)')
-% 
-%         % Integrated fluo plot
-%         yyaxis right
-%         % integrate fluo(data)
-%         h(3) = plot(Time, int_fluo)
-%         % fit
-%         h(4) = plot(Time(Time_peak_indices(AP):end), IntFluo_max(AP)*(1 - exp(-(Time(Time_peak_indices(AP):end)-Time(Time_peak_indices(AP)))/Tau(AP))))
-%         % marking the Tau from T_peak
-%         h(5) = xline(Time(Time_peak_indices(AP)) + Tau(AP),'--')
-%         ylabel('integrated fluorescence (AU*min)')
-%         % xTicks, yTicks
-%         xlim([0 60])
-%         %ylim([0 IntFluo_max(AP)*1.4])
-%         try
-%             ylim([0 max(int_fluo)*1.4])
-%         catch
-%             ylim([0 IntFluo_max(AP)*1.4])
-%         end
-%         %xticks([0 10 20 30 40 50])
-% 
-%         % set(gca,'yticklabel',[])
-% 
-%         % no title, no-caps on the axis labels
-%         xlabel('time into nc14 (min)')
-%         title(['AP=',num2str((AP-1)*2.5),'%'])
-%         % xticks([Time(Time_peak_indices(AP)) Time(Time_peak_indices(AP)) + Tau(AP)])
-%         % xticklabels({'T_{peak}','T_{off}'})
-% 
-%         legend([h(1) h(3) h(4)],'MS2','integrated','Fit','Location','NorthEast')
-% 
-%         % StandardFigurePBoC(fig_name, fig_name.CurrentAxes)
-%         StandardFigurePBoC([h(1) h(3) h(4)],gca)
-%         pause(0.5)
-%     else
-%     end
-% end
 %% Make a while loop to approve or disapprove the fitted result for each AP bin
 % initialize the conditions
 cc=1;
@@ -291,7 +229,7 @@ cc=1;
 AP=ApprovedAPbins(1);
 
 % file path
-figPath = [DropboxFolder,filesep,Prefix,filesep,'NC14DecayRegimeFits']
+figPath = [DropboxFolder,filesep,Prefix,filesep,'NC14DecayRegimeNumericalResults']
 mkdir(figPath)
 
 % if CheckFits is true, then do a while loop for Approval/Disapproval of
@@ -313,13 +251,13 @@ if checkFits
 
         %for AP=ApprovedAPbins(1):ApprovedAPbins(end)
         NC14 = APDivision(14,AP);
+        % define the Fluo and Time
         Time = ElapsedTime(NC14:length(ElapsedTime)) - ElapsedTime(NC14); % initialize to 0 min
-    
         % We need to get the number of competent nuclei, such that we get the
         % mean activity over competent nuclei (not instantaneously ON nuclei).
-        N_comp = max(NParticlesAP(NC14:length(ElapsedTime), AP)); % number of competent nuclei
+        N_comp = max(NParticlesAP(NC14:NC14+30, AP)); % number of competent nuclei, NC14-NC14+20 min
         Fluo = (MeanVectorAP(NC14:length(ElapsedTime), AP).* NParticlesAP(NC14:length(ElapsedTime), AP)/N_comp)';
-        Fluo_SEM = SDVectorAP(nc14:length(ElapsedTime), AP)./NParticlesAP(nc14:length(ElapsedTime), AP);
+        Fluo_SEM = SDVectorAP(NC14:length(ElapsedTime), AP)./sqrt(NParticlesAP(NC14:length(ElapsedTime), AP));
 
         % generate plot
         hold on
@@ -332,7 +270,8 @@ if checkFits
         % Integrated fluo plot
         yyaxis right
         h(3) = plot(Time, int_fluo(:,AP))
-        h(4) = plot(Time(Time_peak_indices(AP):end), IntFluo_max(AP)*(1 - exp(-(Time(Time_peak_indices(AP):end)-Time(Time_peak_indices(AP)))/Tau(AP))))
+        h(4) = yline(IntFluo_max(AP),'--')
+        %h(4) = plot(Time(Time_peak_indices(AP):end), IntFluo_max(AP)*(1 - exp(-(Time(Time_peak_indices(AP):end)-Time(Time_peak_indices(AP)))/Tau(AP))))
         h(5) = xline(Time(Time_peak_indices(AP)) + Tau(AP),'--')
         ylabel('integrated fluorescence (AU*min)')
         % xTicks, yTicks
@@ -348,10 +287,10 @@ if checkFits
         % xticks([Time(Time_peak_indices(AP)) Time(Time_peak_indices(AP)) + Tau(AP)])
         % xticklabels({'T_{peak}','T_{off}'})
 
-        legend([h(1) h(3) h(4)],'MS2','integrated','Fit','Location','NorthEast')
+        legend([h(1) h(3) h(4)],'MS2','integrated','Maximum','Location','NorthEast')
 
         % StandardFigurePBoC(fig_name, fig_name.CurrentAxes)
-        StandardFigurePBoC([h(1) h(3) h(4)],gca)
+        StandardFigurePBoC([h(1) h(3)],gca)
 
         % save the plot after approval/disapproval
         %end
@@ -372,35 +311,35 @@ if checkFits
 
         %Approve, disapprove fit
         elseif (ct~=0)&(cc=='q')
-            if NC14DecayRegimeFitResults.Approved(AP)==0
-                NC14DecayRegimeFitResults.Approved(AP)=1;
+            if NC14DecayRegimeNumericalResults.Approved(AP)==0
+                NC14DecayRegimeNumericalResults.Approved(AP)=1;
                 % Save the plot
                 title(['Approved, ','AP=',num2str((AP-1)*2.5),'%'])
                 saveas(gcf,[figPath,filesep,num2str((AP-1)*2.5),'%','.tif']); 
     %             saveas(gcf,[figPath,filesep,num2str((AP-1)*2.5),'%','.pdf']); 
     %             saveas(gcf,[figPath,filesep,num2str((AP-1)*2.5),'%','.png']); 
-            elseif NC14DecayRegimeFitResults.Approved(AP)==1
-                NC14DecayRegimeFitResults.Approved(AP)=1;
+            elseif NC14DecayRegimeNumericalResults.Approved(AP)==1
+                NC14DecayRegimeNumericalResults.Approved(AP)=1;
             end
 
 
         %Disapprove, disapprove fit
         elseif (ct~=0)&(cc=='w')
-            if NC14DecayRegimeFitResults.Approved(AP)==0
-                NC14DecayRegimeFitResults.Approved(AP)=-1;
+            if NC14DecayRegimeNumericalResults.Approved(AP)==0
+                NC14DecayRegimeNumericalResults.Approved(AP)=-1;
                 % Save the plot
                 title(['Disapproved, ','AP=',num2str((AP-1)*2.5),'%'])
                 saveas(gcf,[figPath,filesep,num2str((AP-1)*2.5),'%','.tif']); 
     %             saveas(gcf,[figPath,filesep,num2str((AP-1)*2.5),'%','.pdf']); 
     %             saveas(gcf,[figPath,filesep,num2str((AP-1)*2.5),'%','.png']); 
-            elseif NC14DecayRegimeFitResults.Approved(AP)==-1
-                NC14DecayRegimeFitResults.Approved(AP)=-1;
+            elseif NC14DecayRegimeNumericalResults.Approved(AP)==-1
+                NC14DecayRegimeNumericalResults.Approved(AP)=-1;
             end
 
         %Save
         elseif (ct~=0)&(cc=='e')
             save([DropboxFolder,filesep,Prefix,filesep,'MeanFitsAsymmetric.mat'],...
-                'FitResults','NC14DecayRegimeFitResults')
+                'FitResults','NC14DecayRegimeFitResults','NC14DecayRegimeNumericalResults')
         display('MeanFitsAsymmetric.mat updated')
         end
     end
@@ -410,18 +349,26 @@ else
         clf
 
         NC14 = APDivision(14,AP);
+%         Time =  ElapsedTime(NC14:length(ElapsedTime)) - ElapsedTime(NC14);
+%         Fluo = MeanVectorAP(NC14:length(ElapsedTime), AP)';
+%         Fluo_SEM = SDVectorAP(NC14:length(ElapsedTime), AP)./NParticlesAP(NC14:length(ElapsedTime), AP);
+
+        % define the Fluo and Time
         Time = ElapsedTime(NC14:length(ElapsedTime)) - ElapsedTime(NC14); % initialize to 0 min
-    
         % We need to get the number of competent nuclei, such that we get the
         % mean activity over competent nuclei (not instantaneously ON nuclei).
-        N_comp = max(NParticlesAP(NC14:length(ElapsedTime), AP)); % number of competent nuclei
+        
+        % end of the time range, NC14+20 minutes, or end of the time frame,
+        % whichever comes first.
+        tRange_end = min(NC14+30, length(ElapsedTime));
+        N_comp = max(NParticlesAP(NC14:tRange_end, AP)); % number of competent nuclei, NC14-NC14+20 min
         Fluo = (MeanVectorAP(NC14:length(ElapsedTime), AP).* NParticlesAP(NC14:length(ElapsedTime), AP)/N_comp)';
-        Fluo_SEM = SDVectorAP(NC14:length(ElapsedTime), AP)./NParticlesAP(NC14:length(ElapsedTime), AP);
+        Fluo_SEM = SDVectorAP(NC14:length(ElapsedTime), AP)./sqrt(NParticlesAP(NC14:length(ElapsedTime), AP));
 
         % Convert the NaNs in fluo to zeros
         Fluo(isnan(Fluo)) = 0;
 
-        if sum(Fluo)~=0 
+        if sum(Fluo)~=0 && Time(end)>=25 % longer than 30 minutes
             % Calculate the integrated fluo again, as the length is different for
             % different AP bins
             index_peak = Time_peak_indices(AP,1);
@@ -433,7 +380,7 @@ else
             hold on
             % MS2 spot fluo plot
             yyaxis left
-            h(1) = errorbar(Time, Fluo, Fluo_SEM)
+            h(1) = errorbar(Time, Fluo, Fluo_SEM')
             h(2) = xline(Time(Time_peak_indices(AP)),'--')
             ylim([0 max(Fluo)*1.4])
             ylabel('mean fluorescence (AU)')
@@ -443,7 +390,9 @@ else
             % integrate fluo(data)
             h(3) = plot(Time, int_fluo)
             % fit
-            h(4) = plot(Time(Time_peak_indices(AP):end), IntFluo_max(AP)*(1 - exp(-(Time(Time_peak_indices(AP):end)-Time(Time_peak_indices(AP)))/Tau(AP))))
+            h(4) = yline(IntFluo_max(AP),'b','--')
+            %h(4) = plot(Time(Time_peak_indices(AP):end), IntFluo_max(AP)*(1 - exp(-(Time(Time_peak_indices(AP):end)-Time(Time_peak_indices(AP)))/Tau(AP))))
+            
             % marking the Tau from T_peak
             h(5) = xline(Time(Time_peak_indices(AP)) + Tau(AP),'--')
             ylabel('integrated fluorescence (AU*min)')
@@ -465,19 +414,24 @@ else
             % xticks([Time(Time_peak_indices(AP)) Time(Time_peak_indices(AP)) + Tau(AP)])
             % xticklabels({'T_{peak}','T_{off}'})
 
-            legend([h(1) h(3) h(4)],'MS2','integrated','Fit','Location','NorthEast')
+            legend([h(1) h(3) h(4)],'MS2','integrated','Maximum','Location','NorthEast')
 
             % StandardFigurePBoC(fig_name, fig_name.CurrentAxes)
-            StandardFigurePBoC([h(1) h(3) h(4)],gca)
+            StandardFigurePBoC([h(1) h(3)],gca)
             pause(0.5)
+            % Save the figures
+%             saveas(gcf,[figPath,filesep,num2str((AP-1)*2.5),'%','.tif']); 
+%             saveas(gcf,[figPath,filesep,num2str((AP-1)*2.5),'%','.pdf']); 
+%             saveas(gcf,[figPath,filesep,num2str((AP-1)*2.5),'%','.png']); 
+            
         else
         end
     end
 end
 %% Save the information
 save([DropboxFolder,filesep,Prefix,filesep,'MeanFitsAsymmetric.mat'],...
-    'FitResults','NC14DecayRegimeFitResults')
-display('MeanFitsAsymmetric.mat updated')   
+        'FitResults','NC14DecayRegimeFitResults','NC14DecayRegimeNumericalResults')
+display('MeanFitsAsymmetric.mat updated')
 
 close all
 %% generate individual plots

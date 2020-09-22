@@ -40,6 +40,9 @@ AccumulatedData{1,7} = 'AccumulatedmRNA_SD_individual';
 
 AccumulatedData{1,8} = 'AccumulatedmRNA_tWindow_mean';
 AccumulatedData{1,9} = 'AccumulatedmRNA_tWindow_SEM';
+
+AccumulatedData{1,10} = 'AccumulatedmRNA_tWindow_mean_avg';
+AccumulatedData{1,11} = 'AccumulatedmRNA_tWindow_SEM_avg';
 %% Step1. Calculate the Accumulated mRNA at each time point
 % Caveats : from NC13 to the end time points
 % Script : AccumulatedmRNA.m which utilizes the result "DataType.mat" file
@@ -79,17 +82,28 @@ for i=1:length(DataTypes)
     % end time point (Note that for [000], Runt WT/nulls, we will only
     % consider up to 25min
     if i==1
-        tEnd = NC14+floor(25/0.6833);
+        tEnd = NC14+round(30/0.6833);
     elseif i==9
-        tEnd = NC14+floor(23/0.6833); % [000], Runt null is 2 min faster
+        tEnd = NC14+round(20/0.6833); % [000], Runt null is 2 min faster
+    elseif i==2
+        tEnd = NC14+round(25/0.6833);
+    elseif i==10
+        tEnd = NC14+round(25/0.6833);
     else
-        tEnd = NC14+floor(30/0.6833);
+        tEnd = NC14+round(30/0.6833);
     end
     
     tWindow = [tStart tEnd];
-
+    
+    % Method1. Using individual embryos, then average
+    % All the Runt null data starts from NC14, thus no need to subtract at
+    % all.
+    if i>=9
+         accumulatedmRNA_temp = AccumulatedmRNA_individual(tWindow(2),:,:);
+    else
     accumulatedmRNA_temp = AccumulatedmRNA_individual(tWindow(2),:,:) - ...
         AccumulatedmRNA_individual(tWindow(1),:,:);
+    end
 
     % Average/SEM over embryos
     [~,~,numEmbryos] = size(accumulatedmRNA_temp);
@@ -100,7 +114,27 @@ for i=1:length(DataTypes)
     AccumulatedData{i+1,8} = accumulatedmRNA_mean_temp;
     AccumulatedData{i+1,9} = accumulatedmRNA_SEM_temp;
 
+    % Method2. Using the averaged accumulated mRNA, subtract from one time
+    % point to the other.
+    
+    % All the Runt null data starts from NC14, thus no need to subtract at
+    % all.
+    if i>=9
+         accumulatedmRNA_avg_temp = AccumulatedmRNA(tWindow(2),:);
+         accumulatedmRNA_SEM_temp_avg = AccumulatedmRNA_SE(tWindow(2),:);
+    else
+        accumulatedmRNA_avg_temp = AccumulatedmRNA(tWindow(2),:) - ...
+                                        AccumulatedmRNA(tWindow(1),:);
+        accumulatedmRNA_SEM_temp_avg = sqrt(AccumulatedmRNA_SE(tWindow(2),:).^2 +...
+                                            AccumulatedmRNA_SE(tWindow(1),:).^2)
+    end
+        % Save into a structure
+    AccumulatedData{i+1,10} = accumulatedmRNA_avg_temp;
+    AccumulatedData{i+1,11} = accumulatedmRNA_SEM_temp_avg;
 end
+
+%% 
+
 
 %% Save the master structure into the Dropbox
 

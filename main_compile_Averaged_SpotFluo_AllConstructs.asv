@@ -15,45 +15,61 @@ AverageDatasets('r1-new','NC',13,'savePath',[DropboxPath,filesep,'OpposingGradie
 AverageDatasets('r2-new','NC',13,'savePath',[DropboxPath,filesep,'OpposingGradients_ProcessedData']);
 AverageDatasets('r3-new','NC',13,'savePath',[DropboxPath,filesep,'OpposingGradients_ProcessedData']);
 
+% Other variants
 %% Average datasets using AverageDatasets.m (Runt nulls)
 % Note that we mostly have NC14 only,
-%AverageDatasets('r0_RuntNull','NC',14,'savePath',[DropboxPath,filesep,'OpposingGradients_ProcessedData']);
+AverageDatasets('r0_RuntNull','NC',14,'savePath',[DropboxPath,filesep,'OpposingGradients_ProcessedData']);
 AverageDatasets('r1_RuntNull','NC',14,'savePath',[DropboxPath,filesep,'OpposingGradients_ProcessedData']);
 AverageDatasets('r1_mid_RuntNull','NC',14,'savePath',[DropboxPath,filesep,'OpposingGradients_ProcessedData']);
 AverageDatasets('r1_close_RuntNull','NC',14,'savePath',[DropboxPath,filesep,'OpposingGradients_ProcessedData']);
 AverageDatasets('r2_RuntNull','NC',14,'savePath',[DropboxPath,filesep,'OpposingGradients_ProcessedData']);
 AverageDatasets('r2_close_RuntNull','NC',14,'savePath',[DropboxPath,filesep,'OpposingGradients_ProcessedData']);
 AverageDatasets('r2_far_RuntNull','NC',14,'savePath',[DropboxPath,filesep,'OpposingGradients_ProcessedData']);
-%AverageDatasets('r3_RuntNull','NC',14,'savePath',[DropboxPath,filesep,'OpposingGradients_ProcessedData']);
-%% Load datasets
+AverageDatasets('r3_RuntNull','NC',14,'savePath',[DropboxPath,filesep,'OpposingGradients_ProcessedData']);
+%% Load datasets into a structure (a master one to save)
+
 % This assumes that the DataType is the name of the constructs in the
 % DataStatus.xlsx tab, for example, r3-new
 
-DropboxPath = 'S:/YangJoon/Dropbox';
-filePath = [DropboxPath,filesep,'OpposingGradient/OpposingGradients_ProcessedData/AveragedDatasets_Feb2020'];
+DropboxPath = 'S:/YangJoon/Dropbox/OpposingGradient';
+filePath = [DropboxPath,filesep,'OpposingGradients_ProcessedData/AveragedDatasets_Feb2020'];
 
-r0Data = load([filePath, filesep, 'r0-new.mat']);
-r1Data = load([filePath, filesep, 'r1-new.mat']);
-r2Data = load([filePath, filesep, 'r2-new.mat']);
-r3Data = load([filePath, filesep, 'r3-new.mat']);
+AveragedData{1,1} = 'DataType';
+AveragedData{1,2} = 'averagedData';
 
-r1closeData = load([filePath, filesep, 'r1-close.mat']);
-r1midData = load([filePath, filesep, 'r1-mid.mat']);
+DataTypesForFit = {'r0-new','r1-new','r2-new','r3-new','r1-close','r1-mid','r2_1+2','r2_1+3',...
+                    'r0_RuntNull','r1_RuntNull','r2_RuntNull','r3_RuntNull',...
+                    'r1_close_RuntNull','r1_mid_RuntNull','r2_close_RuntNull','r2_far_RuntNull'};
 
-r2closeData = load([filePath, filesep, 'r2_1+2.mat']);
-r2farData = load([filePath, filesep, 'r2_1+3.mat']);
-
-% Runt null datasets ([0,0,0] and [1,1,1])
-r0NullData = load([filePath, filesep, 'r0_RuntNull.mat']);
-r3NullData = load([filePath, filesep, 'r3_RuntNull.mat']);
+% Name of constructs so that we can label plots and files
+constructNames = {'000','100','011','111','001','010','110','101',...
+                    '000, null','100, null','011, null','111, null','001, null','010, null','110, null','101, null'};
+                
+                
+for i=1:length(DataTypesForFit)
+    AveragedData{i+1,1} = DataTypesForFit{i};
+% r0Data = load([filePath, filesep, 'r0-new.mat']);
+% r1Data = load([filePath, filesep, 'r1-new.mat']);
+% r2Data = load([filePath, filesep, 'r2-new.mat']);
+% r3Data = load([filePath, filesep, 'r3-new.mat']);
+% 
+% r1closeData = load([filePath, filesep, 'r1-close.mat']);
+% r1midData = load([filePath, filesep, 'r1-mid.mat']);
+% 
+% r2closeData = load([filePath, filesep, 'r2_1+2.mat']);
+% r2farData = load([filePath, filesep, 'r2_1+3.mat']);
+% 
+% % Runt null datasets ([0,0,0] and [1,1,1])
+% r0NullData = load([filePath, filesep, 'r0_RuntNull.mat']);
+% r3NullData = load([filePath, filesep, 'r3_RuntNull.mat']);
 
 % Load the input TF dynamics data
 % Use MeanVectorAP, and SEVectorAP (that are averaged over nuclei, over
 % embryos)
 % Load the Bicoid and Runt datasets
-BcdData = load([filePath,filesep, 'Bcd-Averaged.mat'])
-% Right now, the Runt is mixed sex (for NC14)
-RuntData = load([filePath, filesep, 'Runt-1min-200Hz-mixed_BGsubtracted-Averaged'])
+% BcdData = load([filePath,filesep, 'Bcd-Averaged.mat'])
+% % Right now, the Runt is mixed sex (for NC14)
+% RuntData = load([filePath, filesep, 'Runt-1min-200Hz-mixed_BGsubtracted-Averaged'])
 
 %% Put them in a structure for convenience
 AveragedData{1} = r0Data;

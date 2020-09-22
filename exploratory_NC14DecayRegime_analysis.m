@@ -24,21 +24,33 @@ projectsForFit = {'r0-new','r1-new','r2-new','r3-new','r1-close','r1-mid','r2_1+
 %% For each dataType, perfor the fitting process in the decay regime of NC14.                
 % For each dataset, they might need their own time windows for fitting, as
 % in [000] case.
-typeIndex = 16;
-dataType = projectsForFit{typeIndex};
-projects = getProjectPrefixes(dataType,'onlyApproved');
+for typeIndex = 1:length(DataTypesForFit)
+    dataType = projectsForFit{typeIndex};
+    projects = getProjectPrefixes(dataType,'onlyApproved');
 
-% for each dataset(Prefix), run the fitting script
-for set = 1:length(projects)
-    Prefix = cell2mat(projects(set));
-    fit_ExpDecay_NC14DecayRegime(Prefix,'TimeWindow',[0 20])
+    % for each dataset(Prefix), run the fitting script
+    for set = 1:length(projects)
+        Prefix = cell2mat(projects(set));
+        fit_ExpDecay_NC14DecayRegime(Prefix,'TimeWindow',[0 20])
+    end
 end
 
 % show the progress
 %waitbar(typeindex/length(projectsForFit),['fitting in progress : ',num2str(typeindex),'/16 processed'])
 
 
-%% For each DataType, check the fitting
+%% For each DataType, try the fitting with numerically calculating the max*(1-1/e) point, rather than fitting.
+% This is because some traces are dominated by the noise.
 
+for typeIndex = 1:length(projectsForFit)
+    dataType = projectsForFit{typeIndex};
+    projects = getProjectPrefixes(dataType,'onlyApproved');
+
+    % for each dataset(Prefix), run the fitting script
+    for set = 1:length(projects)
+        Prefix = cell2mat(projects(set));
+        fit_ExpDecay_NC14DecayRegime_upto30min(Prefix)
+    end
+end
 
 %% Extract the fitted values

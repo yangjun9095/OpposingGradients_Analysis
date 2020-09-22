@@ -1,6 +1,7 @@
 function [AccumulatedmRNA, AccumulatedmRNA_SD, AccumulatedmRNA_SE,...
             NC12,NC13,NC14,...
-            AccumulatedmRNA_individual, AccumulatedmRNA_SD_individual] = accumulatemRNA(DataType, MinParticles, varargin)
+            AccumulatedmRNA_individual, AccumulatedmRNA_SD_individual,...
+            Nuclei_competent_individual] = accumulatemRNA(DataType, MinParticles, varargin)
 % This function is for calculating the accumulated mRNA,
 % using Processed datasets from AverageDatasets.m
 % So, this script will
@@ -62,6 +63,7 @@ nAPbins = 41; % This should be done better.
 
 AccumulatedmRNA_individual = zeros(NFrames,nAPbins,numEmbryos);
 AccumulatedmRNA_SD_individual =  zeros(NFrames,nAPbins,numEmbryos);
+Nuclei_competent_individual = nan(nAPbins, numEmbryos);
 
 % Loop over individual embryos
 for k=1:numEmbryos
@@ -87,9 +89,9 @@ for k=1:numEmbryos
                 AccumulatedmRNA_SD_individual(j,i,k) =...
                     sqrt(trapz(ElapsedTime(1:j),SDVectorAP(1:j,i,k).^2 ));
                 
+            end
         end
     end
-end
 
 %% Convert Zeros to NaNs back
 AccumulatedmRNA_individual(AccumulatedmRNA_individual==0) = nan;

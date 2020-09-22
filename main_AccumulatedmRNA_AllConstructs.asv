@@ -1,4 +1,4 @@
-function main_compile_AccumulatedmRNA_AllConstructs
+function main_AccumulatedmRNA_AllConstructs
 % This is a main script for 
 % 1)calculating the accumulated mRNA for different constructs
 % : r0,1,2,3, r1 variants, r2 variants
@@ -38,8 +38,8 @@ AccumulatedData{1,5} = 'NC14';
 AccumulatedData{1,6} = 'AccumulatedmRNA_individual';
 AccumulatedData{1,7} = 'AccumulatedmRNA_SD_individual';
 
-AccumulatedData{1,8} = 'AccumulatedmRNA_tWindow_mean';
-AccumulatedData{1,9} = 'AccumulatedmRNA_tWindow_SEM';
+AccumulatedData{1,8} = 'AccumulatedmRNA_SD_individual';
+AccumulatedData{1,9} = 'AccumulatedmRNA_SD_individual';
 %% Step1. Calculate the Accumulated mRNA at each time point
 % Caveats : from NC13 to the end time points
 % Script : AccumulatedmRNA.m which utilizes the result "DataType.mat" file
@@ -51,6 +51,20 @@ AccumulatedData{1,9} = 'AccumulatedmRNA_tWindow_SEM';
 % individuals.
 
 MinParticles = 1;
+
+% initialize the structure to save the results
+% AccumulatedmRNA = cell(10,1);
+% AccumulatedmRNA_SD = cell(10,1);
+% AccumulatedmRNA_SE= cell(10,1);
+% AccumulatedmRNA_individual = cell(10,1);
+% AccumulatedmRNA_SD_individual = cell(10,1);
+
+% Extract NC frames
+% NC12 = nan(10,1);
+% NC13 = nan(10,1);
+% NC14 = nan(10,1);
+% Length of the time frames
+% Length = nan(10,1);
 
 % for loop for all data types
 for i=1:length(DataTypes)
@@ -88,8 +102,8 @@ for i=1:length(DataTypes)
     
     tWindow = [tStart tEnd];
 
-    accumulatedmRNA_temp = AccumulatedmRNA_individual(tWindow(2),:,:) - ...
-        AccumulatedmRNA_individual(tWindow(1),:,:);
+    accumulatedmRNA_temp = AccumulatedmRNA_individual{i}(tWindow(2),:,:) - ...
+        AccumulatedmRNA_individual{i}(tWindow(1),:,:);
 
     % Average/SEM over embryos
     [~,~,numEmbryos] = size(accumulatedmRNA_temp);
@@ -97,11 +111,43 @@ for i=1:length(DataTypes)
     accumulatedmRNA_SEM_temp = nanstd(accumulatedmRNA_temp,0,3)./sqrt(numEmbryos);
 
     % Save into a structure
-    AccumulatedData{i+1,8} = accumulatedmRNA_mean_temp;
-    AccumulatedData{i+1,9} = accumulatedmRNA_SEM_temp;
-
+    accumulatedmRNA_mean{i,t} = accumulatedmRNA_mean_temp;
+    accumulatedmRNA_SEM{i,t} = accumulatedmRNA_SEM_temp;
 end
 
+
+%% estimate the accumulated mRNA for a specific time window
+% In this case, we will calculate [NC14, NC14+30min], let's save this value
+% as the field as well.
+
+% Create a structure whose rows are constructs (r0-r3), and whose columns
+% are different time windows
+for i=1:length(DataTypes) % for different constrcuts (rows)
+    
+    % initialize the variables
+
+    % Subtract the accumulated mRNA (t2) - (t1), for each AP bin, for each
+    % embryo.
+
+    % Extract the tWindow 
+    AccumulatedmRNA = AccumulatedData{i+1,2};
+    NC14 = AccumulatedData{i+1,5};
+    tStart = NC14;
+    tEnd = min(NC14+50, 
+    tWindow = ; %t column, i th embryo
+    accumulatedmRNA_temp = AccumulatedmRNA_individual{i}(tWindow(2),:,:) - ...
+        AccumulatedmRNA_individual{i}(tWindow(1),:,:);
+
+    % Average/SEM over embryos
+    [~,~,numEmbryos] = size(accumulatedmRNA_temp);
+    accumulatedmRNA_mean_temp = nanmean(accumulatedmRNA_temp,3);
+    accumulatedmRNA_SEM_temp = nanstd(accumulatedmRNA_temp,0,3)./sqrt(numEmbryos);
+
+    % Save into a structure
+    accumulatedmRNA_mean{i,t} = accumulatedmRNA_mean_temp;
+    accumulatedmRNA_SEM{i,t} = accumulatedmRNA_SEM_temp;
+
+end
 %% Save the master structure into the Dropbox
 
 save('S:\YangJoon\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\AccumulatedData.mat',...

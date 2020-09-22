@@ -8,31 +8,6 @@ function compile_InitialSlopes_AllConstructs
 %The T_on (time of activation of the transcription,extrapolated from the initial rate)
 %can also be plotted.
 
-%% Load the datasets (using LoadMS2Sets.m)
-% New datasets with known sex
-% Note that I used old datasets for the r0, for nc14, thus MeanFits.mat,
-% not MeanFitsV2.mat
-
-% % Data_r0 = LoadMS2Sets('r0','dontCompare') % old construct
-% Data_r0 = LoadMS2Sets('r0-new','dontCompare')
-% Data_r1 = LoadMS2Sets('r1-new','dontCompare')
-% Data_r2 = LoadMS2Sets('r2-new','dontCompare')
-% Data_r3 = LoadMS2Sets('r3-new','dontCompare')
-% 
-% % Variants
-% % r1 variants
-% Data_r1_close = LoadMS2Sets('r1-close','dontCompare')
-% Data_r1_mid = LoadMS2Sets('r1-mid','dontCompare')
-% % r2 variants
-% Data_r2_close = LoadMS2Sets('r2_1+2','dontCompare')
-% Data_r2_far = LoadMS2Sets('r2_1+3','dontCompare')
-% 
-% % Runt nulls
-% Data_r0_null = LoadMS2Sets('r0_RuntNull','dontCompare')
-% Data_r1_null = LoadMS2Sets('r1_RuntNull','dontCompare')
-% Data_r3_null = LoadMS2Sets('r3_RuntNull','dontCompare')
-% Data_r1_close_null = LoadMS2Sets('r1_close_RuntNull','dontCompare')
-
 %% Make a structure that compiles all information
 DataTypesForFit = {'r0-new','r1-new','r2-new','r3-new','r1-close','r1-mid','r2_1+2','r2_1+3',...
                     'r0_RuntNull','r1_RuntNull','r2_RuntNull','r3_RuntNull',...
@@ -48,9 +23,9 @@ compiledData{1,1} = 'DataType';
 compiledData{1,2} = 'compiledData';
 
 % Loop through all DataTypes to load comipled data from each dataType
-for DataType = 1:length(DataTypesForFit)
+for DataType = [2:1:8,10:1:16]%1:length(DataTypesForFit)
     compiledData{DataType+1,1} = DataTypesForFit{DataType};
-    compiledData{DataType+1,2} = LoadMS2Sets(DataTypesForFit{DataType});
+    compiledData{DataType+1,2} = LoadMS2Sets(DataTypesForFit{DataType},'dontCompare');
 end
 
 
@@ -85,27 +60,6 @@ ColorChoice = [colorDict.blue; colorDict.green;...
 % For now, I'll add white (color+[111])/2 to make thinner color (for the
 % Runt nulls)
 
-%% Extract the fitted values from all of my datasets
-
-% [fittedRate_r0,fittedRateSD_r0,fittedTon_r0] = Extract_Fields_MeanFits(Data_r0,'Asymmetric');
-% [fittedRate_r1,fittedRateSD_r1,fittedTon_r1] = Extract_Fields_MeanFits(Data_r1,'Asymmetric');
-% [fittedRate_r2,fittedRateSD_r2,fittedTon_r2] = Extract_Fields_MeanFits(Data_r2,'Asymmetric');
-% [fittedRate_r3,fittedRateSD_r3,fittedTon_r3] = Extract_Fields_MeanFits(Data_r3,'Asymmetric');
-% 
-% % r1 variants (close, mid)
-% [fittedRate_r1_close,fittedRateSD_r1_close,fittedTon_r1_close] = Extract_Fields_MeanFits(Data_r1_close,'Asymmetric');
-% [fittedRate_r1_mid,fittedRateSD_r1_mid,fittedTon_r1_mid] = Extract_Fields_MeanFits(Data_r1_mid,'Asymmetric');
-% 
-% % r2 variants (close (1+2), far(1+3), original is (2+3))
-% [fittedRate_r2_close,fittedRateSD_r2_close,fittedTon_r2_close] = Extract_Fields_MeanFits(Data_r2_close,'Asymmetric');
-% [fittedRate_r2_far,fittedRateSD_r2_far,fittedTon_r2_far] = Extract_Fields_MeanFits(Data_r2_far,'Asymmetric');
-% 
-% % Runt nulls
-% [fittedRate_r0_null,fittedRateSD_r0_null,fittedTon_r0_null] = Extract_Fields_MeanFits(Data_r0_null,'Asymmetric');
-% [fittedRate_r3_null,fittedRateSD_r3_null,fittedTon_r3_null] = Extract_Fields_MeanFits(Data_r3_null,'Asymmetric');
-% [fittedRate_r1_close_null,fittedRateSD_r1_close_null,fittedTon_r1_close_null] = Extract_Fields_MeanFits(Data_r1_close_null,'Asymmetric');
-
-
 %% Extract the fitted values from all DataTypes
 % First, initialize the structure with the field names
 compiledData{1,3} = 'fitted Rate';
@@ -113,70 +67,114 @@ compiledData{1,4} = 'fitted Rate_SD';
 compiledData{1,5} = 'fitted T_ON';
 compiledData{1,6} = 'T_peak';
 compiledData{1,7} = 'Tau';
-compiledData{1,8} = 'Tau_SD';
+% compiledData{1,8} = 'Tau_SD';
+compiledData{1,8} = 'Tau_numer';
 
 % Go over the structure (compiledData) to extract the fitted initial slope,
 % SD, number of embryos, T_on, T_peak, Tau, etc.
 
 for i=1:length(DataTypesForFit)
-    [fittedRate,fittedRateSD,fittedTon,T_peak, Tau, Tau_SD] = Extract_Fields_MeanFits(compiledData{i+1,2},'Asymmetric');
+    [fittedRate,fittedRateSD,fittedTon,T_peak, Tau, Tau_SD, Tau_numer] = Extract_Fields_MeanFits(compiledData{i+1,2},'Asymmetric');
     
     compiledData{i+1,3} = fittedRate;
     compiledData{i+1,4} = fittedRateSD;
     compiledData{i+1,5} = fittedTon;
     compiledData{i+1,6} = T_peak;
     compiledData{i+1,7} = Tau;
-    compiledData{i+1,8} = Tau_SD;
+%     compiledData{i+1,8} = Tau_SD;
+    compiledData{i+1,8} = Tau_numer; % numerically calculated from the maximum at 40min into nc14
 end
+
 
 %% Calculate the average using nanmean, nanstd
 
-% r0
-average_fittedRate_r0 = nanmean(fittedRate_r0,3);
-SEM_fittedRate_r0 = nanstd(fittedRate_r0,0,3)/sqrt(length(Data_r0));
+% Loop through all datasets to calculate the mean and SEM of the fitted
+% rate, T_ON, Tau, and duration (in NC14)
 
-% r1
-average_fittedRate_r1 = nanmean(fittedRate_r1,3);
-SEM_fittedRate_r1 = nanstd(fittedRate_r1,0,3)/sqrt(length(Data_r1));
-% r1 (close)
-average_fittedRate_r1_close = nanmean(fittedRate_r1_close,3);
-SEM_fittedRate_r1_close = nanstd(fittedRate_r1_close,0,3)/sqrt(length(Data_r1_close));
-% r1 (mid)
-average_fittedRate_r1_mid = nanmean(fittedRate_r1_mid,3);
-SEM_fittedRate_r1_mid = nanstd(fittedRate_r1_mid,0,3)/sqrt(length(Data_r1_mid));
+% NOTE : the [000] and [000], Runt null are taken for less than 30 min,
+% thus we need to use the 
 
-% r2
-average_fittedRate_r2 = nanmean(fittedRate_r2,3);
-SEM_fittedRate_r2 = nanstd(fittedRate_r2,0,3)/sqrt(length(Data_r2));
+% initialize the structure column
+% fitted initial slope and SEM
+compiledData{1,9} = 'fittedRate_mean';
+compiledData{1,10} = 'fittedRate_SEM';
+% fitted T_ON and SEM
+compiledData{1,11} = 'fitted_T_ON_mean';
+compiledData{1,12} = 'fitted_T_ON_SEM';
+% Duration of Txn (T_peak - T_ON + Tau)
+% average and SEM over multiple embryos of the same genotype
+compiledData{1,13} = 'Duration_mean';
+compiledData{1,14} = 'Duration_SEM';
 
-% r2(1+2, close)
-average_fittedRate_r2_close = nanmean(fittedRate_r2_close,3);
-SEM_fittedRate_r2_close = nanstd(fittedRate_r2_close,0,3)/sqrt(length(Data_r2_close));
+NC = 3; %nc14
 
-% r2(1+3, far)
-average_fittedRate_r2_far = nanmean(fittedRate_r2_far,3);
-SEM_fittedRate_r2_far = nanstd(fittedRate_r2_far,0,3)/sqrt(length(Data_r2_far));
+for i=[2:1:8,10:1:16]%1:length(DataTypesForFit)
+    % clear the variables for each run
+    vars = {'fittedRate_mean','fittedRate_SEM',...
+                'fittedTon','fitted_T_ON_SEM','T_peak','Duration_individual',...
+                'Duration_mean','Duration_SEM'};
+    clear (vars{:})
+    
+    % initial slope
+    fittedRate_mean = nanmean(compiledData{i+1,3}(:,NC,:),3); % only nc14
+    fittedRate_SEM = nanstd(compiledData{i+1,3}(:,NC,:),0,3)./sqrt(length(compiledData{i+1,2})); 
+    compiledData{i+1,9} = fittedRate_mean;
+    compiledData{i+1,10} = fittedRate_SEM;
+    
+    % T_ON
+    fitted_T_ON_mean = nanmean(compiledData{i+1,5}(:,NC,:),3); % only nc14
+    fitted_T_ON_SEM = nanstd(compiledData{i+1,5}(:,NC,:),0,3)./sqrt(length(compiledData{i+1,2})); 
+    compiledData{i+1,11} = fitted_T_ON_mean;
+    compiledData{i+1,12} = fitted_T_ON_SEM;
+    
+    % Txn Duration 
+    T_peak = compiledData{i+1,6};
+    T_ON = squeeze(compiledData{i+1,5}(:,NC,:));
+    Tau = compiledData{i+1,8}; % numerically calculated from the max @ 30min
+    %Tau = compiledData{i+1,7}; % fitted : [000] and [000], Runt null
+    
+    % filter out the Tau value that is too long
+    Tau(Tau>20) = nan; % threshold of 60 min, this should be revisited later.
+    Tau(Tau<2) = nan; % threshold of 60 min, this should be revisited later.
+    
+    % Duration = (T_peak - T_ON + Tau)
+    Duration_individual = T_peak - T_ON + Tau; % APbins x embryos
+    Duration_mean = nanmean(Duration_individual,2);
+    Duration_SEM = nanstd(Duration_individual,0,2)./sqrt(length(compiledData{i+1,2}));
+    compiledData{i+1,13} = Duration_mean;
+    compiledData{i+1,14} = Duration_SEM;
+end
 
-% r3
-average_fittedRate_r3 = nanmean(fittedRate_r3,3);
-SEM_fittedRate_r3 = nanstd(fittedRate_r3,0,3)/sqrt(length(Data_r3));
+%% check the duration of Txn over AP axis
+% hold on
+% % for i=1:5
+% %     plot(0:0.025:1, Tau(:,i))
+% % end
+% errorbar(0:0.025:1, Duration_mean, Duration_SEM)
+% xlabel('embryo length')
+% ylabel('duration (min)')
+% ylim([0 60])
+% 
+% % save the plot
 
-% Runt nulls
-% r0, Runt null
-average_fittedRate_r0_null = nanmean(fittedRate_r0_null,3);
-SEM_fittedRate_r0_null = nanstd(fittedRate_r0_null,0,3)/sqrt(length(Data_r0_null));
+%% Save the structure, compiledData for future usage (in plotting scripts)
+save('S:\YangJoon\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\compiledData.mat',...
+        'compiledData')
 
-% r3, Runt null
-average_fittedRate_r3_null = nanmean(fittedRate_r3_null,3);
-SEM_fittedRate_r3_null = nanstd(fittedRate_r3_null,0,3)/sqrt(length(Data_r3_null));
 
-% r1-close, Runt null
-average_fittedRate_r1_close_null = nanmean(fittedRate_r1_close_null,3);
-SEM_fittedRate_r1_close_null = nanstd(fittedRate_r1_close_null,0,3)/sqrt(length(Data_r1_close_null));
 
-%% Plot the averaged fittedRate (initial rate of RNAP loading), and SEM
 
-FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\InitialSlope_Asymmetric\';
+
+
+
+
+
+
+
+
+%% OLD - Plot the averaged fittedRate (initial rate of RNAP loading), and SEM
+
+% FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\InitialSlope_Asymmetric\';
 
 % % NC12
 % InitialRate_NC12_figure = figure;

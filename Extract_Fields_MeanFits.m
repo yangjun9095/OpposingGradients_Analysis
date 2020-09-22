@@ -1,5 +1,5 @@
 %% Extract useful fields
-function [fittedRate,fittedRateSD,fittedTon, T_peak, Tau, Tau_SD] = Extract_Fields_MeanFits(Data,varargin)
+function [fittedRate,fittedRateSD,fittedTon, T_peak, Tau, Tau_SD, Tau_40] = Extract_Fields_MeanFits(Data,varargin)
     % Data is the compiled datasets by LoadMS2Sets.m
     
     % Option : Different scripts used for the fitting. (Symmetric,
@@ -44,6 +44,13 @@ function [fittedRate,fittedRateSD,fittedTon, T_peak, Tau, Tau_SD] = Extract_Fiel
                 catch
                     warning('Is the NC14 decay regime fitted?')
                 end
+                
+                try
+                    NC14Decay_Numerical = Data(i).NC14DecayRegimeNumerical;
+                catch
+                    warning('Is the NC14 decay regime fitted?')
+                end
+                
             elseif isfield(Data(i),'MeanFitsV2')
                 MeanFits = Data(i).MeanFitsV2;
             else
@@ -69,5 +76,9 @@ function [fittedRate,fittedRateSD,fittedTon, T_peak, Tau, Tau_SD] = Extract_Fiel
         T_peak(:,i) = NC14DecayFits.Time_peak;
         Tau(:,i) = NC14DecayFits.Tau;
         Tau_SD(:,i) = NC14DecayFits.Tau_SD;
+        
+        % Numerically calculated Tau, from the maximum value at 40min into
+        % nc14
+        Tau_40(:,i) = NC14Decay_Numerical.Tau;
     end
 end
