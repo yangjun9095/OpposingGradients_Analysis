@@ -136,7 +136,9 @@ for AP = ApprovedAPbins(1):ApprovedAPbins(end) %APbinStart:APbinEnd
     
     % end of the time range, NC14+20 minutes, or end of the time frame,
     % whichever comes first.
-    tRange_end = min(NC14+30, length(ElapsedTime));
+    % For certain data types, this should be modulated such that we don't
+    % fool ourselves with the second peak from the noise.
+    tRange_end = min(NC14+20, length(ElapsedTime));
     N_comp = max(NParticlesAP(NC14:tRange_end, AP)); % number of competent nuclei, NC14-NC14+20 min
     Fluo = (MeanVectorAP(NC14:length(ElapsedTime), AP).* NParticlesAP(NC14:length(ElapsedTime), AP)/N_comp)';
     %Fluo_SEM = SDVectorAP(nc14:length(ElapsedTime), AP)./NParticlesAP(nc14:length(ElapsedTime), AP);
@@ -147,7 +149,7 @@ for AP = ApprovedAPbins(1):ApprovedAPbins(end) %APbinStart:APbinEnd
     if sum(Fluo)~=0 && Time(end)>=25 % longer than 30 minutes
     
         % find the peak of the Fluo (within 5min-15min into nc14, just to ignore some weird spikes before or after)
-        index_peak = find(Fluo == max(Fluo(5:12))); %8, 25 are hard-coded to account for 40sec/frame. This shoudl be relaxed to be more flexible.
+        index_peak = find(Fluo == max(Fluo(5:25))); %8, 25 are hard-coded to account for 40sec/frame. This shoudl be relaxed to be more flexible.
         Time_peak(AP,1) = Time(index_peak);
         Time_peak_indices(AP,1) = index_peak;
 
@@ -418,7 +420,7 @@ else
 
             % StandardFigurePBoC(fig_name, fig_name.CurrentAxes)
             StandardFigurePBoC([h(1) h(3)],gca)
-            pause(0.5)
+            pause(0.1)
             % Save the figures
 %             saveas(gcf,[figPath,filesep,num2str((AP-1)*2.5),'%','.tif']); 
 %             saveas(gcf,[figPath,filesep,num2str((AP-1)*2.5),'%','.pdf']); 
@@ -438,11 +440,17 @@ close all
 % % select an AP bin
 % AP = 9;
 % 
-% % NC14 = APDivision(14,AP);
+% NC14 = APDivision(14,AP);
 % Time =  ElapsedTime(nc14:length(ElapsedTime)) - ElapsedTime(nc14);
 % Fluo = MeanVectorAP(nc14:length(ElapsedTime), AP)';
 % Fluo_SEM = SDVectorAP(nc14:length(ElapsedTime), AP)./NParticlesAP(nc14:length(ElapsedTime), AP);
 % 
+% % calculate the int fluo
+% index_peak = Time_peak_indices(AP,1);
+% int_fluo = zeros(1,length(Time));
+% for t = index_peak+1:length(Time)
+%     int_fluo(t) = trapz(Time(index_peak:t), Fluo(index_peak:t));
+% end
 % traceFig = figure;
 % hold on
 % % MS2 spot fluo plot
@@ -466,11 +474,11 @@ close all
 % saveas(traceFig,[figPath,filesep,'example_r2far_set1_20%_MS2trace','.pdf']); 
 % 
 % 
-% % Integrated fluo plot
+% Integrated fluo plot
 % integratedFig = figure;
 % hold on
 % h(2) = xline(Time(Time_peak_indices(AP)),'--')
-% h(3) = plot(Time, int_fluo(:,AP))
+% h(3) = plot(Time, int_fluo)
 % h(4) = plot(Time(Time_peak_indices(AP):end), IntFluo_max(AP)*(1 - exp(-(Time(Time_peak_indices(AP):end)-Time(Time_peak_indices(AP)))/Tau(AP))),'--')
 % h(5) = xline(Time(Time_peak_indices(AP)) + Tau(AP),'--')
 % h(6) = yline(IntFluo_max(AP),'--')

@@ -2,8 +2,13 @@ function main_compile_Fraction_competent
 
 %% Description
 
-%% load the ID variables
+%% Load the ID variables
+% Load the compiledData
+DropboxFolder = 'S:/YangJoon/Dropbox/OpposingGradient';
+% load data structure
+load([DropboxFolder,filesep,'OpposingGradients_ProcessedData',filesep,'compiledData.mat'])
 
+% compiledData is full up to 15th column.
 
 
 %% Make a structure that compiles all information
@@ -17,16 +22,88 @@ constructNames = {'000','100','011','111','001','010','110','101',...
                 
 % SAve the DataType and LoadMS2Sets into a structure, named compiledData
 % The first row will contain the field names
-compiledData{1,1} = 'DataType';
-compiledData{1,2} = 'compiledData';
+compiledData{1,16} = 'Fraction_Competent_mean';
+compiledData{1,17} = 'Fraction_Competent_SEM';
+compiledData{1,18} = 'Fraction_Competent_individual';
 
-% Loop through all DataTypes to load comipled data from each dataType
-for DataType = [2:1:8,10:1:16]%1:length(DataTypesForFit)
-    compiledData{DataType+1,1} = DataTypesForFit{DataType};
-    compiledData{DataType+1,2} = LoadMS2Sets(DataTypesForFit{DataType},'dontCompare');
+% Loop through all DataTypes to calculate the fraction competent for each dataType
+% Note that 
+for DataType = [1:8,10,11,13:1:16]%1:length(DataTypesForFit)
+    vars = {'FractionON_individual','FractionON_Average',...
+            'FractionON_Average_SEM','numEmbryos'};
+    clear vars
+    
+    % Calculate the averaged/individual fraction competent using the
+    % Average_FractionON function
+    [FractionON_individual, FractionON_Average,...
+            FractionON_Average_SEM, numEmbryos] = Average_FractionON(compiledData{DataType+1,1},'skipFigure');
+    compiledData{DataType+1,16} = FractionON_Average;
+    compiledData{DataType+1,17} = FractionON_Average_SEM;
+    compiledData{DataType+1,18} = FractionON_individual;
 end
 
+%% Runt null datasets without Histone markers
 
+DropboxPath = 'S:/YangJoon/Dropbox/OpposingGradient';
+filePath = [DropboxPath,filesep,'OpposingGradients_ProcessedData/AveragedDatasets_Feb2020'];
+
+% Runt null datasets ([0,0,0] and [1,1,1])
+r0NullData = load([filePath, filesep, 'r0_RuntNull.mat']);
+r3NullData = load([filePath, filesep, 'r3_RuntNull.mat']);
+
+%% Extract useful info from the [000]/[111] Runt null datasets
+% [000], Runt null
+r0Null_Time = r0NullData.ElapsedTime;
+r0Null_nc14 = r0NullData.nc14;
+r0Null_FractionON_mean = nanmean(r0NullData.FractionON_individual,3);
+r0Null_FractionON_STD = nanstd(r0NullData.FractionON_individual,0,3);
+[~,~,r0Null_numEmbryos] = size(r0NullData.FractionON_individual);
+r0Null_FractionON_SEM = r0Null_FractionON_STD./sqrt(r0Null_numEmbryos);
+
+% Since the fraction on is #spots/APbinArea, we want to rescale this using
+% the 95% percentile value of FractionON
+[row,col] = size(r0Null_FractionON_mean);
+r0Null_scale = prctile(reshape(r0Null_FractionON_mean,[1,row*col]),99);
+r0Null_FractionON_mean_rescaled = r0Null_FractionON_mean./r0Null_scale;
+r0Null_FractionON_SEM_rescaled = r0Null_FractionON_SEM./r0Null_scale;
+
+% We only have up until ~30 minutes for the [000], Runt nullfor the plotting purpose, let's add some zero values after the time point
+% in here, let's hardcode for the [000] datasets, ~40 min into nc14
+r0Null_tMax = 45; % min
+tRes = median(diff(r0Null_Time));
+nLength = r0Null_tMax/tRes;
+nLength_add = ceil(nLength - length(r0Null_Time));
+[~,nAPbins] = size(r0NullData.FractionON);
+vec_add = nan(nLength_add,nAPbins);
+tvec = tRes*[1:nLength_add] + r0Null_Time(end);
+
+r0Null_Time_elongated = [r0Null_Time, tvec];
+r0Null_FractionON_mean_rescaled_elongated = [r0Null_FractionON_mean_rescaled; vec_add];
+
+
+% [111], Runt null
+r3Null_Time = r3NullData.ElapsedTime;
+r3Null_nc14 = r3NullData.nc14;
+r3Null_FractionON_mean = nanmean(r3NullData.FractionON_individual,3);
+r3Null_FractionON_STD = nanstd(r3NullData.FractionON_individual,0,3);
+[~,~,r3Null_numEmbryos] = size(r3NullData.FractionON_individual);
+r3Null_FractionON_SEM = r3Null_FractionON_STD./sqrt(r3Null_numEmbryos);
+
+% Since the fraction on is #spots/APbinArea, we want to rescale this using
+% the 95% percentile value of FractionON
+[row,col] = size(r3Null_FractionON_mean);
+r3Null_scale = prctile(reshape(r3Null_FractionON_mean,[1,row*col]),99);
+r3Null_FractionON_mean_rescaled = r3Null_FractionON_mean./r3Null_scale;
+r3Null_FractionON_SEM_rescaled = r3Null_FractionON_SEM./r3Null_scale;
+
+% Pick the maximum time point when the fracion competent is maximum
+[~, maxIndex] = max(r0Null_FractionON_mean_rescaled);
+tMax_r0Null = 10; % 10th
+
+FractionON_mean = r0Null_FractionON_mean_rescaled(tMax_r0Null,:);
+FractionON_SEM = r0Null_FractionON_SEM_rescaled(tMax_r0Null,:);
+
+% Convert zeros to NaNs
 %% Color definition
 % This is defining the line color
 % We have 8 distinct datasets, with or without Runt protein.

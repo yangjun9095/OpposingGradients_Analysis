@@ -63,7 +63,7 @@ nAPbins = 41; % This should be done better.
 
 AccumulatedmRNA_individual = zeros(NFrames,nAPbins,numEmbryos);
 AccumulatedmRNA_SD_individual =  zeros(NFrames,nAPbins,numEmbryos);
-Nuclei_competent_individual = nan(nAPbins, numEmbryos);
+% Nuclei_competent_individual = nan(nAPbins, numEmbryos);
 
 % Loop over individual embryos
 for k=1:numEmbryos

@@ -75,15 +75,15 @@ APaxis = 0:0.025:1;
 % 2, 10th rows are [000], WT and Runt null
 fig_mRNA = figure;
 
-for construct=1:8 % total number of constructs (enhancers)
+for construct=1%:8 % total number of constructs (enhancers)
     clf
     hold on
-    errorbar(APaxis, AccumulatedData{construct+1,8}, AccumulatedData{construct+1,9},'LineWidth',2,'Color',ColorChoice(construct,:))
-    errorbar(APaxis, AccumulatedData{construct+1+8,8}, AccumulatedData{construct+1+8,9},'LineWidth',2,'Color',(ColorChoice(construct,:)+[1 1 1])/2);
+    errorbar(APaxis, AccumulatedData{construct+1,8}, AccumulatedData{construct+1,9},'LineWidth',2,'CapSize',0,'Color',ColorChoice(construct,:))
+    errorbar(APaxis, AccumulatedData{construct+1+8,8}, AccumulatedData{construct+1+8,9},'LineWidth',2,'CapSize',0,'Color',(ColorChoice(construct,:)+[1 1 1])/2);
 
     % xTicks, yTicks
     xlim([0.15 0.6])
-    ylim([0 3*10^5])
+    ylim([0 2.5*10^5])
     xticks([0.2 0.3 0.4 0.5 0.6])
     yticks([0 1 2 3]*10^5)
 
@@ -104,13 +104,63 @@ for construct=1:8 % total number of constructs (enhancers)
     saveas(gcf,[FigPath,filesep,constructNames{construct},'.pdf']); 
 end
 
+%% Accumulated mRNA (from individual embryo) with average
+APaxis = 0:0.025:1;
+% 2, 10th rows are [000], WT and Runt null
+fig_mRNA = figure;
+
+for construct=1:16 % total number of constructs (enhancers)
+    clf
+    hold on
+    errorbar(APaxis, AccumulatedData{construct+1,8}, AccumulatedData{construct+1,9},'k','LineWidth',2)%,'Color',ColorChoice(construct,:))
+    % individual embryos
+    [~,~,numEmbryos] = size(AccumulatedData{construct+1,6});
+    NC14 = AccumulatedData{construct+1,5};
+    tEnd = min(NC14 + 20, length(AccumulatedData{construct+1,6}(:,1,1)));
+    
+    accumulatedmRNA_temp = AccumulatedData{construct+1,6};
+    accumulatedmRNA_SD_temp = AccumulatedData{construct+1,7};
+    
+    if construct>9
+        for i=1:numEmbryos
+            errorbar(APaxis,accumulatedmRNA_temp(tEnd,:,i) , accumulatedmRNA_SD_temp(tEnd,:,i))
+        end
+    else
+        for i=1:numEmbryos
+            errorbar(APaxis,accumulatedmRNA_temp(tEnd,:,i) - accumulatedmRNA_temp(NC14,:,i) ,...
+                        sqrt(accumulatedmRNA_SD_temp(tEnd,:,i).^2 +accumulatedmRNA_SD_temp(NC14,:,i).^2 ))
+        end
+    end
+
+    % xTicks, yTicks
+    xlim([0.15 0.6])
+    ylim([0 3*10^5])
+    xticks([0.2 0.3 0.4 0.5 0.6])
+    yticks([0 1 2 3]*10^5)
+
+    %set(gca,'yticklabel',[])
+
+    % no title, no-caps on the axis labels
+    xlabel('embryo length')
+    ylabel('accumulated mRNA (AU)')
+
+    legend(constructNames{construct},'Location','NorthEast')
+
+    box on
+
+    StandardFigure(fig_mRNA, fig_mRNA.CurrentAxes)
+    pause(1)
+    % Save the plot
+%     saveas(gcf,[FigPath,filesep,constructNames{construct},'.tif']); 
+%     saveas(gcf,[FigPath,filesep,constructNames{construct},'.pdf']); 
+end
 %% Accumulated mRNA over AP axis for each construct with/without Runt protein
 APaxis = 0:0.025:1;
 % 2, 10th rows are [000], WT and Runt null
 fig_mRNA = figure;
 
-for construct=1:8 % total number of constructs (enhancers)
-    clf
+for construct=1%:8 % total number of constructs (enhancers)
+    %clf
     hold on
     errorbar(APaxis, AccumulatedData{construct+1,10}, AccumulatedData{construct+1,11},'LineWidth',2,'Color',ColorChoice(construct,:))
     errorbar(APaxis, AccumulatedData{construct+1+8,10}, AccumulatedData{construct+1+8,11},'LineWidth',2,'Color',(ColorChoice(construct,:)+[1 1 1])/2);
@@ -134,8 +184,8 @@ for construct=1:8 % total number of constructs (enhancers)
     StandardFigure(fig_mRNA, fig_mRNA.CurrentAxes)
     pause(1)
     % Save the plot
-    saveas(gcf,[FigPath,filesep,constructNames{construct},'.tif']); 
-    saveas(gcf,[FigPath,filesep,constructNames{construct},'.pdf']); 
+%     saveas(gcf,[FigPath,filesep,constructNames{construct},'.tif']); 
+%     saveas(gcf,[FigPath,filesep,constructNames{construct},'.pdf']); 
 end
 
 %% fold-change of accumulated mRNA
@@ -173,6 +223,71 @@ for construct=1:8 % total number of constructs (enhancers)
     StandardFigure(fig_mRNA, fig_mRNA.CurrentAxes)
     pause(1)
     % Save the plot
-    saveas(gcf,[FigPath,filesep,constructNames{construct},'_FC','.tif']); 
-    saveas(gcf,[FigPath,filesep,constructNames{construct},'_FC','.pdf']); 
+%     saveas(gcf,[FigPath,filesep,constructNames{construct},'_FC','.tif']); 
+%     saveas(gcf,[FigPath,filesep,constructNames{construct},'_FC','.pdf']); 
+    % Optional
+    % Calculate the spatially averaged fold-change(repression)
+    FC_spatial_mean_mRNA(construct) = nanmean(FC(9:13));
+    FC_spatial_error_mRNA(construct) = sqrt(sum(FC_SEM(9:13).^2))/length(9:13);
 end
+
+
+
+%% fold-change(repression) of accumulated mRNA
+APaxis = 0:0.025:1;
+% 2, 10th rows are [000], WT and Runt null
+fig_mRNA = figure;
+
+
+for construct=1:8 % total number of constructs (enhancers)
+    clf
+    FC = AccumulatedData{construct+1+8,8}./AccumulatedData{construct+1,8};
+    fracError1 = AccumulatedData{construct+1,9}./ AccumulatedData{construct+1,8};
+    fracError2 = AccumulatedData{construct+1+8,9}./ AccumulatedData{construct+1+8,8};
+    
+    FC_SEM = sqrt(fracError1.^2 + fracError2.^2).*FC;
+    errorbar(APaxis, FC, FC_SEM,'LineWidth',2,'CapSize',0,'Color',ColorChoice(construct,:))
+
+
+    % xTicks, yTicks
+    xlim([0.15 0.6])
+    ylim([0 30])
+    xticks([0.2 0.3 0.4 0.5 0.6])
+    %yticks([0 0.2 0.4 0.6 0.8 1 1.2 1.4])
+
+    %set(gca,'yticklabel',[])
+
+    % no title, no-caps on the axis labels
+    xlabel('embryo length')
+    ylabel('repression')
+
+    legend(constructNames{construct},'Location','NorthEast')
+
+    box on
+
+    StandardFigure(fig_mRNA, fig_mRNA.CurrentAxes)
+    pause(1)
+    % Save the plot
+    saveas(gcf,[FigPath,filesep,constructNames{construct},'_repression','.tif']); 
+    saveas(gcf,[FigPath,filesep,constructNames{construct},'_repression','.pdf']); 
+    
+    % Optional
+    % Calculate the spatially averaged fold-change(repression)
+    FC_spatial_mean_mRNA(construct) = nanmean(FC(9:13));
+    FC_spatial_error_mRNA(construct) = sqrt(sum(FC_SEM(9:13).^2))/length(9:13);
+end
+%% plot the spatially averaged fold-change for each construct
+
+construct = [1,2,5,6,3,7,8,4];
+order = 1:8;
+errorbar(order, FC_spatial_mean_mRNA(construct), FC_spatial_error_mRNA(construct),'o')
+yline(1,'--')
+xticklabels({'000','100','001','010','011','110','101','111'})
+
+xlabel('construct')
+ylabel('repression')
+
+StandardFigure(gcf,gca)
+
+saveas(gcf,[FigPath,filesep,'repression_20%-30%_averaged''.tif']); 
+saveas(gcf,[FigPath,filesep,'repression_20%-30%_averaged''.pdf']); 

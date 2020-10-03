@@ -84,17 +84,21 @@ APaxis = 0:0.025:1;
 % 2, 10th rows are [000], WT and Runt null
 fig_slope = figure;
 
-for construct=1:8 % total number of constructs (enhancers)
+% update on 10/2/2020
+% absolute calibration of fluorescence to MS2 signal
+
+
+for construct=1%1:8 % total number of constructs (enhancers)
     clf
     hold on
-    errorbar(APaxis, compiledData{construct+1,9}, compiledData{construct+1,10},'LineWidth',2,'Color',ColorChoice(construct,:))
-    errorbar(APaxis, compiledData{construct+1+8,9}, compiledData{construct+1+8,10},'LineWidth',2,'Color',(ColorChoice(construct,:)+[1 1 1])/2);
+    errorbar(APaxis, compiledData{construct+1,9}, compiledData{construct+1,10},'LineWidth',2,'CapSize',0,'Color',ColorChoice(construct,:))
+    errorbar(APaxis, compiledData{construct+1+8,9}, compiledData{construct+1+8,10},'LineWidth',2,'CapSize',0,'Color',(ColorChoice(construct,:)+[1 1 1])/2);
 
     % xTicks, yTicks
     xlim([0.15 0.6])
-    ylim([0 400])
+    ylim([0 30])
     xticks([0.2 0.3 0.4 0.5 0.6])
-    yticks([0 100 200 300 400])
+    yticks([0 10 20 30])
 
     %set(gca,'yticklabel',[])
 
@@ -107,12 +111,51 @@ for construct=1:8 % total number of constructs (enhancers)
     box on
 
     StandardFigure(fig_slope, fig_slope.CurrentAxes)
-
+    
+    pause(1)
     % Save the plot
-    saveas(gcf,[FigPath,filesep,constructNames{construct},'.tif']); 
-    saveas(gcf,[FigPath,filesep,constructNames{construct},'.pdf']); 
+%     saveas(gcf,[FigPath,filesep,constructNames{construct},'.tif']); 
+%     saveas(gcf,[FigPath,filesep,constructNames{construct},'.pdf']); 
 end
 
+%% %% initial slope over AP axis for each construct with/without Runt protein
+APaxis = 0:0.025:1;
+% 2, 10th rows are [000], WT and Runt null
+fig_slope = figure;
+
+% update on 10/2/2020
+% absolute calibration of fluorescence to MS2 signal
+F_calib = 13% +- 1.7 AU/RNAP
+
+for construct=1%1:8 % total number of constructs (enhancers)
+    clf
+    hold on
+    errorbar(APaxis, compiledData{construct+1,9}, compiledData{construct+1,10},'LineWidth',2,'CapSize',0,'Color',ColorChoice(construct,:))
+    errorbar(APaxis, compiledData{construct+1+8,9}, compiledData{construct+1+8,10},'LineWidth',2,'CapSize',0,'Color',(ColorChoice(construct,:)+[1 1 1])/2);
+
+    % xTicks, yTicks
+    xlim([0.15 0.6])
+    ylim([0 30])
+    xticks([0.2 0.3 0.4 0.5 0.6])
+    yticks([0 10 20 30])
+
+    %set(gca,'yticklabel',[])
+
+    % no title, no-caps on the axis labels
+    xlabel('embryo length')
+    ylabel('initial slope (AU)')
+
+    legend(constructNames{construct},constructNames{construct+8},'Location','NorthEast')
+
+    box on
+
+    StandardFigure(fig_slope, fig_slope.CurrentAxes)
+    
+    pause(1)
+    % Save the plot
+%     saveas(gcf,[FigPath,filesep,constructNames{construct},'.tif']); 
+%     saveas(gcf,[FigPath,filesep,constructNames{construct},'.pdf']); 
+end
 %% Initial slope for all Runt nulls
 APaxis = 0:0.025:1;
 % 2, 10th rows are [000], WT and Runt null
@@ -210,7 +253,7 @@ APaxis = 0:0.025:1;
 % 2, 10th rows are [000], WT and Runt null
 fig_FC = figure;
 
-for construct=1:8 % total number of constructs (enhancers)
+for construct=1%1:8 % total number of constructs (enhancers)
     % clf
     hold on
     FC = compiledData{construct+1,9}./compiledData{construct+1+8,9};
@@ -221,9 +264,7 @@ for construct=1:8 % total number of constructs (enhancers)
 
 
 
-    %set(gca,'yticklabel',[])
-end
-    
+
     % xTicks, yTicks
     xlim([0.15 0.6])
     ylim([0 1.4])
@@ -241,14 +282,75 @@ end
     StandardFigure(fig_FC, fig_FC.CurrentAxes)
 
     % Save the plot
-    saveas(gcf,[FigPath,filesep,'fold-change-all','.tif']); 
-    saveas(gcf,[FigPath,filesep,'fold-change-all','.pdf']); 
+    saveas(gcf,[FigPath,filesep,'fold-change_',constructNames{construct},'.tif']); 
+    saveas(gcf,[FigPath,filesep,'fold-change_',constructNames{construct},'.pdf']); 
+end
     
-%% Fold-change for 1 Runt binding site
+
+
+%% Calculate the fold-change(repression) for each construct
+APaxis = 0:0.025:1;
+% 2, 10th rows are [000], WT and Runt null
+fig_FC = figure;
+
+for construct=1%1:8 % total number of constructs (enhancers)
+    clf
+    hold on
+    FC = compiledData{construct+1+8,9}./compiledData{construct+1,9};
+    fracError1 = compiledData{construct+1,10}./compiledData{construct+1,9};
+    fracError2 = compiledData{construct+1+8,10}./compiledData{construct+1+8,9};
+    FC_error = sqrt(fracError1.^2 + fracError2.^2).*FC;
+    errorbar(APaxis, FC, FC_error, 'LineWidth',2,'CapSize',0,'Color',ColorChoice(construct,:))
+    
+    % y-line for the baseline
+    yline(1,'--')
+
+    % xTicks, yTicks
+    xlim([0.15 0.6])
+    ylim([0 7])
+    xticks([0.2 0.3 0.4 0.5 0.6])
+    %yticks([0 0.5 1 1.5 2])
+    
+    % no title, no-caps on the axis labels
+    xlabel('embryo length')
+    ylabel('repression')
+
+    legend(constructNames{construct},'Location','NorthEast')
+
+    box on
+
+    StandardFigure(fig_FC, fig_FC.CurrentAxes)
+    pause(1)
+    % Save the plot
+%     saveas(gcf,[FigPath,filesep,'repression_',constructNames{construct},'.tif']); 
+%     saveas(gcf,[FigPath,filesep,'repression_',constructNames{construct},'.pdf']); 
+    
+    % Optional
+    % Calculate the spatially averaged fold-change(repression)
+    FC_spatial_mean(construct) = nanmean(FC(9:13));
+    FC_spatial_error(construct) = sqrt(sum(FC_error(9:13).^2))/length(9:13);
+end
+    
+%% plot the spatially averaged fold-change for each construct
+
+construct = [1,2,5,6,3,7,8,4];
+order = 1:8;
+errorbar(order, FC_spatial_mean(construct), FC_spatial_error(construct),'o')
+yline(1,'--')
+xticklabels({'000','100','001','010','011','110','101','111'})
+
+xlabel('construct')
+ylabel('repression')
+
+StandardFigure(gcf,gca)
+
+saveas(gcf,[FigPath,filesep,'repression_20%-30%_averaged''.tif']); 
+saveas(gcf,[FigPath,filesep,'repression_20%-30%_averaged''.pdf']); 
+%% Fold-change for 0 Runt binding site
     
 fig_FC = figure;
 
-for construct=[1,2,5,6,4] % total number of constructs (enhancers)
+for construct=[1] % total number of constructs (enhancers)
     % clf
     hold on
     FC = compiledData{construct+1,9}./compiledData{construct+1+8,9};
@@ -273,15 +375,127 @@ end
     xlabel('embryo length')
     ylabel('fold-change')
 
+    legend(constructNames{[1]},'Location','NorthEast')
+
+    box on
+    StandardFigure(fig_FC, fig_FC.CurrentAxes)
+
+    % Save the plot
+    saveas(fig_FC,[FigPath,filesep,'fold-change-000','.tif']); 
+    saveas(fig_FC,[FigPath,filesep,'fold-change-000','.pdf']); 
+%% Fold-change for 1 Runt binding site
+    
+fig_FC = figure;
+
+for construct=[2,5,6] % total number of constructs (enhancers)
+    clf
+    hold on
+    FC = compiledData{construct+1,9}./compiledData{construct+1+8,9};
+    fracError1 = compiledData{construct+1,10}./compiledData{construct+1,9};
+    fracError2 = compiledData{construct+1+8,10}./compiledData{construct+1+8,9};
+    FC_error = sqrt(fracError1.^2 + fracError2.^2).*FC;
+    
+    errorbar(APaxis, FC, FC_error, 'LineWidth',2,'CapSize',0,'Color',ColorChoice(construct,:))
+
+    yline(1,'--','LineWidth',2)
+    % xTicks, yTicks
+    xlim([0.15 0.6])
+    ylim([0 1.4])
+    xticks([0.2 0.3 0.4 0.5 0.6])
+    yticks([0 0.2 0.4 0.6 0.8 1 1.2 1.4])
+    
+    % no title, no-caps on the axis labels
+    xlabel('embryo length')
+    ylabel('fold-change')
+
     legend(constructNames{[1,2,5,6,4]},'Location','NorthEast')
 
     box on
     StandardFigure(fig_FC, fig_FC.CurrentAxes)
 
     % Save the plot
-%     saveas(fig_FC,[FigPath,filesep,'fold-change-1RuntSite_0,3_ref','.tif']); 
-%     saveas(fig_FC,[FigPath,filesep,'fold-change-1RuntSite_0,3_ref','.pdf']); 
+    saveas(fig_FC,[FigPath,filesep,'fold-change-1RuntSite_',constructNames{construct},'.tif']); 
+    saveas(fig_FC,[FigPath,filesep,'fold-change-1RuntSite_',constructNames{construct},'.pdf']); 
+
+
+end
+
+%% Fold-change for 2 Runt binding sites
     
+fig_FC = figure;
+
+for construct=[3,7,8] % total number of constructs (enhancers)
+    clf
+    hold on
+    FC = compiledData{construct+1,9}./compiledData{construct+1+8,9};
+    fracError1 = compiledData{construct+1,10}./compiledData{construct+1,9};
+    fracError2 = compiledData{construct+1+8,10}./compiledData{construct+1+8,9};
+    FC_error = sqrt(fracError1.^2 + fracError2.^2).*FC;
+    
+    errorbar(APaxis, FC, FC_error, 'LineWidth',2,'CapSize',0,'Color',ColorChoice(construct,:))
+
+    yline(1,'--','LineWidth',2)
+    % xTicks, yTicks
+    xlim([0.15 0.6])
+    ylim([0 1.4])
+    xticks([0.2 0.3 0.4 0.5 0.6])
+    yticks([0 0.2 0.4 0.6 0.8 1 1.2 1.4])
+    
+    % no title, no-caps on the axis labels
+    xlabel('embryo length')
+    ylabel('fold-change')
+
+    legend(constructNames{[1,2,5,6,4]},'Location','NorthEast')
+
+    box on
+    StandardFigure(fig_FC, fig_FC.CurrentAxes)
+
+    % Save the plot
+    saveas(fig_FC,[FigPath,filesep,'fold-change-2RuntSites_',constructNames{construct},'.tif']); 
+    saveas(fig_FC,[FigPath,filesep,'fold-change-2RuntSites_',constructNames{construct},'.pdf']); 
+
+
+end
+
+%% Fold-change for 3 Runt binding sites
+    
+fig_FC = figure;
+
+for construct=[4] % total number of constructs (enhancers)
+    clf
+    hold on
+    FC = compiledData{construct+1,9}./compiledData{construct+1+8,9};
+    fracError1 = compiledData{construct+1,10}./compiledData{construct+1,9};
+    fracError2 = compiledData{construct+1+8,10}./compiledData{construct+1+8,9};
+    FC_error = sqrt(fracError1.^2 + fracError2.^2).*FC;
+    
+    errorbar(APaxis, FC, FC_error, 'LineWidth',2,'CapSize',0,'Color',ColorChoice(construct,:))
+
+    yline(1,'--','LineWidth',2)
+    % xTicks, yTicks
+    xlim([0.15 0.6])
+    ylim([0 1.4])
+    xticks([0.2 0.3 0.4 0.5 0.6])
+    yticks([0 0.2 0.4 0.6 0.8 1 1.2 1.4])
+    
+    % no title, no-caps on the axis labels
+    xlabel('embryo length')
+    ylabel('fold-change')
+
+    legend(constructNames{[1,2,5,6,4]},'Location','NorthEast')
+
+    box on
+    StandardFigure(fig_FC, fig_FC.CurrentAxes)
+
+    % Save the plot
+    saveas(fig_FC,[FigPath,filesep,'fold-change-3RuntSites_',constructNames{construct},'.tif']); 
+    saveas(fig_FC,[FigPath,filesep,'fold-change-3RuntSites_',constructNames{construct},'.pdf']); 
+
+
+end
+
+%% Multiple curves at once
+%% %%%%%%%%%%%%%%%%%%%%%%%5  OLD %%%%%%%%%%%%%%%%%%%55
 %% Fold-change for 2 Runt binding sites
     
 fig_FC = figure;

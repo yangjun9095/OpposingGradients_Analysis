@@ -23,8 +23,8 @@ AverageDatasets('r3_RuntNull','NC',14,'savePath',filePath)
 % This assumes that the DataType is the name of the constructs in the
 % DataStatus.xlsx tab, for example, r3-new
 
-DropboxPath = 'S:/YangJoon/Dropbox/OpposingGradient';
-filePath = [DropboxPath,filesep,'OpposingGradients_ProcessedData/AveragedDatasets_Feb2020'];
+DropboxPath = 'S:/YangJoon/Dropbox';
+filePath = [DropboxPath,filesep,'OpposingGradient/OpposingGradients_ProcessedData/AveragedDatasets_Feb2020'];
 
 r0Data = load([filePath, filesep, 'r0-new.mat']);
 r1Data = load([filePath, filesep, 'r1-new.mat']);

@@ -8,31 +8,6 @@ function compile_InitialSlopes_AllConstructs
 %The T_on (time of activation of the transcription,extrapolated from the initial rate)
 %can also be plotted.
 
-%% Load the datasets (using LoadMS2Sets.m)
-% New datasets with known sex
-% Note that I used old datasets for the r0, for nc14, thus MeanFits.mat,
-% not MeanFitsV2.mat
-
-% % Data_r0 = LoadMS2Sets('r0','dontCompare') % old construct
-% Data_r0 = LoadMS2Sets('r0-new','dontCompare')
-% Data_r1 = LoadMS2Sets('r1-new','dontCompare')
-% Data_r2 = LoadMS2Sets('r2-new','dontCompare')
-% Data_r3 = LoadMS2Sets('r3-new','dontCompare')
-% 
-% % Variants
-% % r1 variants
-% Data_r1_close = LoadMS2Sets('r1-close','dontCompare')
-% Data_r1_mid = LoadMS2Sets('r1-mid','dontCompare')
-% % r2 variants
-% Data_r2_close = LoadMS2Sets('r2_1+2','dontCompare')
-% Data_r2_far = LoadMS2Sets('r2_1+3','dontCompare')
-% 
-% % Runt nulls
-% Data_r0_null = LoadMS2Sets('r0_RuntNull','dontCompare')
-% Data_r1_null = LoadMS2Sets('r1_RuntNull','dontCompare')
-% Data_r3_null = LoadMS2Sets('r3_RuntNull','dontCompare')
-% Data_r1_close_null = LoadMS2Sets('r1_close_RuntNull','dontCompare')
-
 %% Make a structure that compiles all information
 DataTypesForFit = {'r0-new','r1-new','r2-new','r3-new','r1-close','r1-mid','r2_1+2','r2_1+3',...
                     'r0_RuntNull','r1_RuntNull','r2_RuntNull','r3_RuntNull',...
@@ -48,62 +23,10 @@ compiledData{1,1} = 'DataType';
 compiledData{1,2} = 'compiledData';
 
 % Loop through all DataTypes to load comipled data from each dataType
-for DataType = 1:length(DataTypesForFit)
+for DataType = [1,9]%1:length(DataTypesForFit)
     compiledData{DataType+1,1} = DataTypesForFit{DataType};
     compiledData{DataType+1,2} = LoadMS2Sets(DataTypesForFit{DataType},'dontCompare');
 end
-
-
-%% Color definition
-% This is defining the line color
-% We have 8 distinct datasets, with or without Runt protein.
-% I think selecting 8 distinguishable color sets, then changing the
-% brightness by either adding/subtracting white would be a better idea than
-% selecting 16 different color sets.
-
-colorDict = struct();
-colorDict.blue = [115,143,193]/255; %[115,143,170]/255;
-colorDict.red =  [213,108,85]/255; %[200,108,85]/255;
-colorDict.yellow = [234,194,100]/255;
-colorDict.purple = [171,133,172]/255;
-colorDict.cyan = [108,188,233]/255;
-colorDict.green =  [122,169,116]/255; %[122,150,116]/255;
-colorDict.brown = [179,155,142]/255;
-colorDict.darkgreen = [126,157,144]/255;
-
-%colorDict.magenta = [208,109,171]/255;
-%colorDict.lightBlue = [115,142,193]/255;
-colorDict.lightgreen = [205,214,209]/255;
-colorDict.pink = [232,177,157]/255;
-colorDict.thickpink = [132,27,69]/255;
-
-% Define a color matrix, 8 colors right now.
-ColorChoice = [colorDict.blue; colorDict.green;...
-                colorDict.yellow; colorDict.red; colorDict.brown;...
-                colorDict.purple; colorDict.darkgreen; colorDict.thickpink]; 
-
-% For now, I'll add white (color+[111])/2 to make thinner color (for the
-% Runt nulls)
-
-%% Extract the fitted values from all of my datasets
-
-% [fittedRate_r0,fittedRateSD_r0,fittedTon_r0] = Extract_Fields_MeanFits(Data_r0,'Asymmetric');
-% [fittedRate_r1,fittedRateSD_r1,fittedTon_r1] = Extract_Fields_MeanFits(Data_r1,'Asymmetric');
-% [fittedRate_r2,fittedRateSD_r2,fittedTon_r2] = Extract_Fields_MeanFits(Data_r2,'Asymmetric');
-% [fittedRate_r3,fittedRateSD_r3,fittedTon_r3] = Extract_Fields_MeanFits(Data_r3,'Asymmetric');
-% 
-% % r1 variants (close, mid)
-% [fittedRate_r1_close,fittedRateSD_r1_close,fittedTon_r1_close] = Extract_Fields_MeanFits(Data_r1_close,'Asymmetric');
-% [fittedRate_r1_mid,fittedRateSD_r1_mid,fittedTon_r1_mid] = Extract_Fields_MeanFits(Data_r1_mid,'Asymmetric');
-% 
-% % r2 variants (close (1+2), far(1+3), original is (2+3))
-% [fittedRate_r2_close,fittedRateSD_r2_close,fittedTon_r2_close] = Extract_Fields_MeanFits(Data_r2_close,'Asymmetric');
-% [fittedRate_r2_far,fittedRateSD_r2_far,fittedTon_r2_far] = Extract_Fields_MeanFits(Data_r2_far,'Asymmetric');
-% 
-% % Runt nulls
-% [fittedRate_r0_null,fittedRateSD_r0_null,fittedTon_r0_null] = Extract_Fields_MeanFits(Data_r0_null,'Asymmetric');
-% [fittedRate_r3_null,fittedRateSD_r3_null,fittedTon_r3_null] = Extract_Fields_MeanFits(Data_r3_null,'Asymmetric');
-% [fittedRate_r1_close_null,fittedRateSD_r1_close_null,fittedTon_r1_close_null] = Extract_Fields_MeanFits(Data_r1_close_null,'Asymmetric');
 
 
 %% Extract the fitted values from all DataTypes
@@ -151,6 +74,8 @@ compiledData{1,12} = 'fitted_T_ON_SEM';
 % average and SEM over multiple embryos of the same genotype
 compiledData{1,13} = 'Duration_mean';
 compiledData{1,14} = 'Duration_SEM';
+% duration of individual embryos
+compiledData{1,15} = 'Duration_individual';
 
 NC = 3; %nc14
 
@@ -177,10 +102,11 @@ for i=1:length(DataTypesForFit)
     T_peak = compiledData{i+1,6};
     T_ON = squeeze(compiledData{i+1,5}(:,NC,:));
     Tau = compiledData{i+1,8}; % numerically calculated from the max @ 30min
-    %Tau = compiledData{i+1,7}; % fitted
+    %Tau = compiledData{i+1,7}; % fitted : [000] and [000], Runt null (1st
+    %and 9th datatype)
     
     % filter out the Tau value that is too long
-    Tau(Tau>20) = nan; % threshold of 60 min, this should be revisited later.
+    Tau(Tau>15) = nan; % threshold of 60 min, this should be revisited later.
     Tau(Tau<2) = nan; % threshold of 60 min, this should be revisited later.
     
     % Duration = (T_peak - T_ON + Tau)
@@ -189,6 +115,7 @@ for i=1:length(DataTypesForFit)
     Duration_SEM = nanstd(Duration_individual,0,2)./sqrt(length(compiledData{i+1,2}));
     compiledData{i+1,13} = Duration_mean;
     compiledData{i+1,14} = Duration_SEM;
+    compiledData{i+1,15} = Duration_individual;
 end
 
 %% check the duration of Txn over AP axis
@@ -207,17 +134,7 @@ end
 save('S:\YangJoon\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\compiledData.mat',...
         'compiledData')
 
-
-
-
-
-
-
-
-
-
-
-
+    
 %% OLD - Plot the averaged fittedRate (initial rate of RNAP loading), and SEM
 
 % FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\InitialSlope_Asymmetric\';

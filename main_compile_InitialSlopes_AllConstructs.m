@@ -23,42 +23,11 @@ compiledData{1,1} = 'DataType';
 compiledData{1,2} = 'compiledData';
 
 % Loop through all DataTypes to load comipled data from each dataType
-for DataType = [2:1:8,10:1:16]%1:length(DataTypesForFit)
+for DataType = [1,9]%1:length(DataTypesForFit)
     compiledData{DataType+1,1} = DataTypesForFit{DataType};
     compiledData{DataType+1,2} = LoadMS2Sets(DataTypesForFit{DataType},'dontCompare');
 end
 
-
-%% Color definition
-% This is defining the line color
-% We have 8 distinct datasets, with or without Runt protein.
-% I think selecting 8 distinguishable color sets, then changing the
-% brightness by either adding/subtracting white would be a better idea than
-% selecting 16 different color sets.
-
-colorDict = struct();
-colorDict.blue = [115,143,193]/255; %[115,143,170]/255;
-colorDict.red =  [213,108,85]/255; %[200,108,85]/255;
-colorDict.yellow = [234,194,100]/255;
-colorDict.purple = [171,133,172]/255;
-colorDict.cyan = [108,188,233]/255;
-colorDict.green =  [122,169,116]/255; %[122,150,116]/255;
-colorDict.brown = [179,155,142]/255;
-colorDict.darkgreen = [126,157,144]/255;
-
-%colorDict.magenta = [208,109,171]/255;
-%colorDict.lightBlue = [115,142,193]/255;
-colorDict.lightgreen = [205,214,209]/255;
-colorDict.pink = [232,177,157]/255;
-colorDict.thickpink = [132,27,69]/255;
-
-% Define a color matrix, 8 colors right now.
-ColorChoice = [colorDict.blue; colorDict.green;...
-                colorDict.yellow; colorDict.red; colorDict.brown;...
-                colorDict.purple; colorDict.darkgreen; colorDict.thickpink]; 
-
-% For now, I'll add white (color+[111])/2 to make thinner color (for the
-% Runt nulls)
 
 %% Extract the fitted values from all DataTypes
 % First, initialize the structure with the field names
@@ -105,10 +74,12 @@ compiledData{1,12} = 'fitted_T_ON_SEM';
 % average and SEM over multiple embryos of the same genotype
 compiledData{1,13} = 'Duration_mean';
 compiledData{1,14} = 'Duration_SEM';
+% duration of individual embryos
+compiledData{1,15} = 'Duration_individual';
 
 NC = 3; %nc14
 
-for i=[2:1:8,10:1:16]%1:length(DataTypesForFit)
+for i=1:length(DataTypesForFit)
     % clear the variables for each run
     vars = {'fittedRate_mean','fittedRate_SEM',...
                 'fittedTon','fitted_T_ON_SEM','T_peak','Duration_individual',...
@@ -131,10 +102,11 @@ for i=[2:1:8,10:1:16]%1:length(DataTypesForFit)
     T_peak = compiledData{i+1,6};
     T_ON = squeeze(compiledData{i+1,5}(:,NC,:));
     Tau = compiledData{i+1,8}; % numerically calculated from the max @ 30min
-    %Tau = compiledData{i+1,7}; % fitted : [000] and [000], Runt null
+    %Tau = compiledData{i+1,7}; % fitted : [000] and [000], Runt null (1st
+    %and 9th datatype)
     
     % filter out the Tau value that is too long
-    Tau(Tau>20) = nan; % threshold of 60 min, this should be revisited later.
+    Tau(Tau>15) = nan; % threshold of 60 min, this should be revisited later.
     Tau(Tau<2) = nan; % threshold of 60 min, this should be revisited later.
     
     % Duration = (T_peak - T_ON + Tau)
@@ -143,6 +115,7 @@ for i=[2:1:8,10:1:16]%1:length(DataTypesForFit)
     Duration_SEM = nanstd(Duration_individual,0,2)./sqrt(length(compiledData{i+1,2}));
     compiledData{i+1,13} = Duration_mean;
     compiledData{i+1,14} = Duration_SEM;
+    compiledData{i+1,15} = Duration_individual;
 end
 
 %% check the duration of Txn over AP axis
@@ -161,17 +134,7 @@ end
 save('S:\YangJoon\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\compiledData.mat',...
         'compiledData')
 
-
-
-
-
-
-
-
-
-
-
-
+    
 %% OLD - Plot the averaged fittedRate (initial rate of RNAP loading), and SEM
 
 % FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\InitialSlope_Asymmetric\';

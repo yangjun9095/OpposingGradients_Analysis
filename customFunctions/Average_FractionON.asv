@@ -73,18 +73,24 @@ for i=1:numEmbryos
 %     N_filter(:,3) = Data(i).APbinArea > 10000;
     
     N_TotalNuclei = Data(i).TotalEllipsesAP(:,3).*N_filter;
-    FractionON_individual(:,i) = Data(i).EllipsesOnAP{1,1}(:,3)./N_TotalNuclei;
-    
+    %FractionON_individual(:,:,i) = Data(i).EllipsesOnAP{1,1}./N_TotalNuclei;
     % maximum number of spots (this is assuming that our signal is not
     % bursty.
-%     tWindow = Data(i).nc14:length(Data(i).ElapsedTime);
-%     FractionON_individual(:,i) = max(Data(i).NParticlesAP{1,1}(tWindow, :))'./N_TotalNuclei;
+%     window1 = Data(i).nc12:Data(i).nc13;
+%     window2 = Data(i).nc13:Data(i).nc14;
+    tWindow = Data(i).nc14:length(Data(i).ElapsedTime);
+    
+%     FractionON_individual(:,1,i) = max(Data(i).NParticlesAP{1,1}(window1, :))';
+%     FractionON_individual(:,2,i) = max(Data(i).NParticlesAP{1,1}(window2, :))';
+    FractionON_individual(:,i) = max(Data(i).NParticlesAP{1,1}(tWindow, :))'./N_TotalNuclei;
+    
+    
     
     FractionON_individual(FractionON_individual>1)=1;
     FractionON_individual(FractionON_individual==inf) = nan;
 end
-FractionON_Average = nanmean(FractionON_individual,2);
-FractionON_Average_Error = nanstd(FractionON_individual,[],2) / sqrt(numEmbryos);
+FractionON_Average = nanmean(FractionON_individual,3);
+FractionON_Average_Error = nanstd(FractionON_individual,[],3) / sqrt(numEmbryos);
 %% Check by plotting (FractionON)
 if ~skipFigure
     for NC=14 % NC
@@ -92,9 +98,9 @@ if ~skipFigure
         %figure(NC-11)
         hold on
         for j=1:numEmbryos
-            plot(0:0.025:1,FractionON_individual(:,j),'-o')
+            plot(0:0.025:1,FractionON_individual(:,NC-11,j),'-o')
         end
-            shadedErrorBar(0:0.025:1,FractionON_Average,FractionON_Average_Error)
+            shadedErrorBar(0:0.025:1,FractionON_Average(:,NC-11),FractionON_Average_Error(:,NC-11))
         hold off
         title(['Fraction of Active Nuclei',' @ NC ',num2str(NC)])
         xlabel('AP (EL)')

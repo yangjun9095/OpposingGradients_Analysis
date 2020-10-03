@@ -79,6 +79,12 @@ figPath = '';
 saveas(gcf,[figPath,filesep,'name','.tif']); 
 saveas(gcf,[figPath,filesep,'name','.pdf']); 
 
+%% step1. MS2 fluorescence calibratino to absolute number of RNAPs
+% Lammers, 2020 supplementary
+% F_RNAP = v_elong *F_MS2 / (N_FISH) * 1/(L1+L2)
+F_RNAP = 1.5*9600/220 / (1.275+3.952);
+
+% F_RNAP_error = 
 %% initial slope over AP axis for each construct with/without Runt protein
 APaxis = 0:0.025:1;
 % 2, 10th rows are [000], WT and Runt null
@@ -118,44 +124,6 @@ for construct=1%1:8 % total number of constructs (enhancers)
 %     saveas(gcf,[FigPath,filesep,constructNames{construct},'.pdf']); 
 end
 
-%% %% initial slope over AP axis for each construct with/without Runt protein
-APaxis = 0:0.025:1;
-% 2, 10th rows are [000], WT and Runt null
-fig_slope = figure;
-
-% update on 10/2/2020
-% absolute calibration of fluorescence to MS2 signal
-F_calib = 13% +- 1.7 AU/RNAP
-
-for construct=1%1:8 % total number of constructs (enhancers)
-    clf
-    hold on
-    errorbar(APaxis, compiledData{construct+1,9}, compiledData{construct+1,10},'LineWidth',2,'CapSize',0,'Color',ColorChoice(construct,:))
-    errorbar(APaxis, compiledData{construct+1+8,9}, compiledData{construct+1+8,10},'LineWidth',2,'CapSize',0,'Color',(ColorChoice(construct,:)+[1 1 1])/2);
-
-    % xTicks, yTicks
-    xlim([0.15 0.6])
-    ylim([0 30])
-    xticks([0.2 0.3 0.4 0.5 0.6])
-    yticks([0 10 20 30])
-
-    %set(gca,'yticklabel',[])
-
-    % no title, no-caps on the axis labels
-    xlabel('embryo length')
-    ylabel('initial slope (AU)')
-
-    legend(constructNames{construct},constructNames{construct+8},'Location','NorthEast')
-
-    box on
-
-    StandardFigure(fig_slope, fig_slope.CurrentAxes)
-    
-    pause(1)
-    % Save the plot
-%     saveas(gcf,[FigPath,filesep,constructNames{construct},'.tif']); 
-%     saveas(gcf,[FigPath,filesep,constructNames{construct},'.pdf']); 
-end
 %% Initial slope for all Runt nulls
 APaxis = 0:0.025:1;
 % 2, 10th rows are [000], WT and Runt null

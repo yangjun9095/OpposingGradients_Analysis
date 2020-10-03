@@ -11,6 +11,9 @@ function main_compile_AccumulatedmRNA_AllConstructs
 % DataStatus.xlsx tab, for example, r0-new
 
 DropboxPath = 'S:/YangJoon/Dropbox/OpposingGradient';
+% If already processed these steps, I'll just load the AccumulatedData
+load([DropboxPath, filesep, 'OpposingGradients_ProcessedData', filesep, 'AccumulatedData.mat']);
+
 filePath = [DropboxPath,filesep,'OpposingGradients_ProcessedData/AveragedDatasets_Feb2020'];
 
 AccumulatedData{1,1} = 'DataType';
@@ -43,6 +46,10 @@ AccumulatedData{1,9} = 'AccumulatedmRNA_tWindow_SEM';
 
 AccumulatedData{1,10} = 'AccumulatedmRNA_tWindow_mean_avg';
 AccumulatedData{1,11} = 'AccumulatedmRNA_tWindow_SEM_avg';
+
+%% Step0. Run AverageDatasets.m for all DataTypes
+% the default folder is AveragedDatasets_Feb2020
+
 %% Step1. Calculate the Accumulated mRNA at each time point
 % Caveats : from NC13 to the end time points
 % Script : AccumulatedmRNA.m which utilizes the result "DataType.mat" file
@@ -56,7 +63,7 @@ AccumulatedData{1,11} = 'AccumulatedmRNA_tWindow_SEM_avg';
 MinParticles = 1;
 
 % for loop for all data types
-for i=1:length(DataTypes)
+for i=[1,9]%1:length(DataTypes)
     
     % initialize the varialbes
 %     vars = 
@@ -82,15 +89,14 @@ for i=1:length(DataTypes)
     % end time point (Note that for [000], Runt WT/nulls, we will only
     % consider up to 25min
     if i==1
-        tEnd = NC14+round(30/0.6833);
-    elseif i==9
-        tEnd = NC14+round(20/0.6833); % [000], Runt null is 2 min faster
-    elseif i==2
         tEnd = NC14+round(25/0.6833);
-    elseif i==10
-        tEnd = NC14+round(30/0.6833);
+    elseif i==9
+        tEnd = round(13/0.6833); % [000], Runt null is 2 min faster
+        
+    elseif i==10 || i==2
+        tEnd = NC14+round(20/0.6833);
     else
-        tEnd = NC14+round(30/0.6833);
+        tEnd = NC14+round(20/0.6833);
     end
     
     tWindow = [tStart tEnd];

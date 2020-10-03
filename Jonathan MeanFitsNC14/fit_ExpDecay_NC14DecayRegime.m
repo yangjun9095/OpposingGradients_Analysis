@@ -354,7 +354,10 @@ if checkFits
         StandardFigurePBoC([h(1) h(3) h(4)],gca)
 
         % save the plot after approval/disapproval
-        %end
+%         % Save the figures
+%         saveas(gcf,[figPath,filesep,num2str((AP-1)*2.5),'%','.tif']); 
+%         saveas(gcf,[figPath,filesep,num2str((AP-1)*2.5),'%','.pdf']); 
+%         saveas(gcf,[figPath,filesep,num2str((AP-1)*2.5),'%','.png']); 
 
         %% Keypad for options (move between APbins, Approval/Disapproval of fits, etc.)
         % To do : Add functionality to change the fitting range, or parameters,
@@ -469,7 +472,10 @@ else
 
             % StandardFigurePBoC(fig_name, fig_name.CurrentAxes)
             StandardFigurePBoC([h(1) h(3) h(4)],gca)
-            pause(0.5)
+            % Save the figures
+%             saveas(gcf,[figPath,filesep,num2str((AP-1)*2.5),'%','.tif']); 
+%             saveas(gcf,[figPath,filesep,num2str((AP-1)*2.5),'%','.pdf']); 
+%             saveas(gcf,[figPath,filesep,num2str((AP-1)*2.5),'%','.png']); 
         else
         end
     end

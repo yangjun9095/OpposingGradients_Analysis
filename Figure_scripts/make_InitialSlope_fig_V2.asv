@@ -79,18 +79,209 @@ figPath = '';
 saveas(gcf,[figPath,filesep,'name','.tif']); 
 saveas(gcf,[figPath,filesep,'name','.pdf']); 
 
-%% Step1. 
+%% Step1. Checking the credibility of individual rate fitting (MeanFitAPAsymmetric)
 
+%% individual rate fit with their own errors from the fitting
+% Start with 000
+for construct = 1:16
+
+    % Define the AP axis
+    APaxis = 0:0.025:1;
+
+    % number of embryos
+    [~,~,numEmbryos] = size(compiledData{construct+1,3});
+    fig_slope = figure;
+
+    % Extract the fitted rate and SD (from confidence intervals)
+    fittedRate_ind = compiledData{construct+1, 3};
+    fittedRate_ind_SD = compiledData{construct+1, 4};
+
+    NC=3; % nc14
+
+    clf
+    clear h
+    hold on
+    for emb=1:numEmbryos % total number of constructs (enhancers)
+        h(emb) = errorbar(APaxis, fittedRate_ind(:,NC,emb),fittedRate_ind_SD(:,NC,emb) ,'LineWidth',1,'CapSize',0)%,'Color',ColorChoice(construct,:))
+        %pause
+    end
+    % plot the averaged one with its STD
+    h(numEmbryos+1) = errorbar(APaxis, compiledData{construct+1,9}, compiledData{construct+1,10},'-k','LineWidth',2,'CapSize',0),%'Color',ColorChoice(construct,:))
+
+    % xTicks, yTicks
+    xlim([0.15 0.6])
+    ylim([0 400])
+    xticks([0.2 0.3 0.4 0.5 0.6])
+    yticks([0 100 200 300 400])
+
+    %set(gca,'yticklabel',[])
+
+    % no title, no-caps on the axis labels
+    xlabel('embryo length')
+    ylabel('initial slope (AU)')
+
+    legend([h(end)],constructNames{construct},'Location','NorthEast')
+
+    box on
+
+    StandardFigure(fig_slope, fig_slope.CurrentAxes)
+
+    % Save the plot
+    saveas(gcf,[FigPath,filesep,constructNames{construct},'_individual.tif']); 
+    saveas(gcf,[FigPath,filesep,constructNames{construct},'_individual.pdf']); 
+    %pause(1)
+end
 %% coefficient of variation of individual fits
+for construct = 1:16
+
+    % Define the AP axis
+    APaxis = 0:0.025:1;
+
+    % number of embryos
+    [~,~,numEmbryos] = size(compiledData{construct+1,3});
+    fig_slope = figure;
+
+    % Extract the fitted rate and SD (from confidence intervals)
+    fittedRate_ind = compiledData{construct+1, 3};
+    fittedRate_ind_SD = compiledData{construct+1, 4};
+
+    NC=3; % nc14
+
+    clf
+    clear h
+    hold on
+    for emb=1:numEmbryos % total number of constructs (enhancers)
+        h(emb) = plot(APaxis, fittedRate_ind_SD(:,NC,emb)./fittedRate_ind(:,NC,emb) ,'LineWidth',1,'CapSize',0)%,'Color',ColorChoice(construct,:))
+    end
+    % plot the averaged one with its STD
+    h(numEmbryos+1) = plot(APaxis, compiledData{construct+1,10}./compiledData{construct+1,9},'-k','LineWidth',2),%'Color',ColorChoice(construct,:))
+
+    % xTicks, yTicks
+    xlim([0.15 0.6])
+    ylim([0 1])
+    xticks([0.2 0.3 0.4 0.5 0.6])
+%     yticks([0 100 200 300 400])
+
+    %set(gca,'yticklabel',[])
+
+    % no title, no-caps on the axis labels
+    xlabel('embryo length')
+    ylabel('coefficient of variation')
+
+    legend([h(end)],constructNames{construct},'Location','NorthEast')
+
+    box on
+
+    StandardFigure(fig_slope, fig_slope.CurrentAxes)
+
+    % Save the plot
+    saveas(gcf,[FigPath,filesep,constructNames{construct},'_CV_individual.tif']); 
+    saveas(gcf,[FigPath,filesep,constructNames{construct},'_CV_individual.pdf']); 
+    %pause(1)
+end
+
+%% STD of individual fits
+for construct = 1:16
+
+    % Define the AP axis
+    APaxis = 0:0.025:1;
+
+    % number of embryos
+    [~,~,numEmbryos] = size(compiledData{construct+1,3});
+    fig_slope = figure;
+
+    % Extract the fitted rate and SD (from confidence intervals)
+    fittedRate_ind = compiledData{construct+1, 3};
+    fittedRate_ind_SD = compiledData{construct+1, 4};
+
+    NC=3; % nc14
+
+    clf
+    clear h
+    hold on
+    for emb=1:numEmbryos % total number of constructs (enhancers)
+        h(emb) = plot(APaxis, fittedRate_ind_SD(:,NC,emb) ,'LineWidth',1)%,'Color',ColorChoice(construct,:))
+    end
+    % plot the averaged one with its STD
+    h(numEmbryos+1) = plot(APaxis, compiledData{construct+1,10}./compiledData{construct+1,9},'-k','LineWidth',2),%'Color',ColorChoice(construct,:))
+
+    % xTicks, yTicks
+    xlim([0.15 0.6])
+    ylim([0 1])
+    xticks([0.2 0.3 0.4 0.5 0.6])
+%     yticks([0 100 200 300 400])
+
+    %set(gca,'yticklabel',[])
+
+    % no title, no-caps on the axis labels
+    xlabel('embryo length')
+    ylabel('coefficient of variation')
+
+    legend([h(end)],constructNames{construct},'Location','NorthEast')
+
+    box on
+
+    StandardFigure(fig_slope, fig_slope.CurrentAxes)
+
+    % Save the plot
+    saveas(gcf,[FigPath,filesep,constructNames{construct},'_CV_individual.tif']); 
+    saveas(gcf,[FigPath,filesep,constructNames{construct},'_CV_individual.pdf']); 
+    %pause(1)
+end
+
+%% Filter out the initial rate fits with C.V of higher than 0.2 
+% ( This part could be moved to the
+% main_compile_InitialSlopes_AllConstructs.m script)
+
+% process the compiledData
+compiledData{1,15} = 'fittedRate_filtered_mean';
+compiledData{1,16} = 'fittedRate_filtered_SEM';
+for construct = 1:16
+    vars = {'fittedRate_ind','fittedRate_ind_SD',...
+            'CV_ind','CV_filter', 'fittedRate_ind_filtered',...
+            'fittedRate_filtered_mean', 'fittedRate_filtered_std', 'fittedRate_filtered_sem'};
+    clear vars
+    % number of embryos
+    [~,~,numEmbryos] = size(compiledData{construct+1,3});
+
+    % Extract the fitted rate and SD (from confidence intervals)
+    fittedRate_ind = squeeze(compiledData{construct+1, 3}(:,3,:));
+    fittedRate_ind_SD = squeeze(compiledData{construct+1, 4}(:,3,:));
+    
+    % Coefficient of variation of individual embryos (error from the
+    % fitting)
+    CV_ind = fittedRate_ind_SD./fittedRate_ind; 
+    CV_filter = CV_ind <0.2;
+    
+    fittedRate_ind_filtered = fittedRate_ind .* CV_filter;
+    % convert the zeros to NaNs (as we filtered out the values using 0/1
+    % matrix, so 0 actually means NaN.
+    fittedRate_ind_filtered(fittedRate_ind_filtered==0) = nan;
+    
+    fittedRate_filtered_mean = nanmean(fittedRate_ind_filtered,2);
+    fittedRate_filtered_std = nanstd(fittedRate_ind_filtered,0,2);
+    fittedRate_filtered_sem = fittedRate_filtered_std./sqrt(numEmbryos);
+    
+    % Save into the compiledData structure
+    compiledData{construct+1,15} = fittedRate_filtered_mean;
+    compiledData{construct+1,16} = fittedRate_filtered_std;
+end
+
+
+%% Plots of initial slope - post filtering (Runt WT versus Runt nulls) - post filtering step
+
 APaxis = 0:0.025:1;
 % 2, 10th rows are [000], WT and Runt null
 fig_slope = figure;
 
+FigPath = [FigureRoot, filesep, 'InitialSlopes', filesep, 'filtered'];
+mkdir(FigPath)
+
 for construct=1:8 % total number of constructs (enhancers)
     clf
     hold on
-    errorbar(APaxis, compiledData{construct+1,9}, compiledData{construct+1,10},'LineWidth',2,'Color',ColorChoice(construct,:))
-    errorbar(APaxis, compiledData{construct+1+8,9}, compiledData{construct+1+8,10},'LineWidth',2,'Color',(ColorChoice(construct,:)+[1 1 1])/2);
+    errorbar(APaxis, compiledData{construct+1,15}, compiledData{construct+1,16},'LineWidth',2,'Color',ColorChoice(construct,:))
+    errorbar(APaxis, compiledData{construct+1+8,15}, compiledData{construct+1+8,16},'LineWidth',2,'Color',(ColorChoice(construct,:)+[1 1 1])/2);
 
     % xTicks, yTicks
     xlim([0.15 0.6])
@@ -115,37 +306,17 @@ for construct=1:8 % total number of constructs (enhancers)
     saveas(gcf,[FigPath,filesep,constructNames{construct},'.pdf']); 
 end
 
-%% Initial slope for all Runt nulls
-APaxis = 0:0.025:1;
-% 2, 10th rows are [000], WT and Runt null
-fig_slope = figure;
 
-hold on
-for construct=1:8 % total number of constructs (enhancers)
-    errorbar(APaxis, compiledData{construct+1+8,9}, compiledData{construct+1+8,10},'LineWidth',2,'Color',(ColorChoice(construct,:)));
-end
 
-% xTicks, yTicks
-xlim([0.15 0.6])
-ylim([0 400])
-xticks([0.2 0.3 0.4 0.5 0.6])
-yticks([0 100 200 300 400])
+%% 
+%% Save the structure, compiledData for future usage (in plotting scripts)
+save('S:\YangJoon\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\compiledData.mat',...
+        'compiledData')
 
-%set(gca,'yticklabel',[])
 
-% no title, no-caps on the axis labels
-xlabel('embryo length')
-ylabel('initial slope (AU)')
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% from the V1 %%%%%%%%%%%%%%%%%%%%%%%%
 
-legend(constructNames{1:8},'Location','NorthEast')
 
-box on
-
-StandardFigure(fig_slope, fig_slope.CurrentAxes)
-
-% Save the plot
-saveas(gcf,[FigPath,filesep,'InitialSlope_AllConstructs_nullsOnly','.tif']); 
-saveas(gcf,[FigPath,filesep,'InitialSlope_AllConstructs_nullsOnly','.pdf']); 
 
 %% Initial Slope (Runt nulls only) - 1 Runt site
 fig_slope = figure;

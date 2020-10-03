@@ -26,6 +26,7 @@ projectsForFit = {'r0-new','r1-new','r2-new','r3-new','r1-close','r1-mid','r2_1+
 % in [000] case.
 for typeIndex = 1:length(DataTypesForFit)
     dataType = projectsForFit{typeIndex};
+    
     projects = getProjectPrefixes(dataType,'onlyApproved');
 
     % for each dataset(Prefix), run the fitting script
@@ -43,7 +44,7 @@ end
 % This is because some traces are dominated by the noise.
 
 for typeIndex = 1:length(projectsForFit)
-    dataType = projectsForFit{typeIndex};
+    dataType = projectsForFit{typeIndex}
     projects = getProjectPrefixes(dataType,'onlyApproved');
 
     % for each dataset(Prefix), run the fitting script
