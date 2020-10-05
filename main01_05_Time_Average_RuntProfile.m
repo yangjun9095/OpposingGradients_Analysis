@@ -12,7 +12,7 @@ function main01_05_Time_Average_RuntProfile
 
 
 %% Load the pre-processed data (before averaging over multiple embryos)
-FilePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
+FilePath = 'S:\YangJoon\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
 
 RuntFemale = load([FilePath, filesep,'Runt_preprocessed_female.mat'])
    
