@@ -73,6 +73,29 @@ Runt = RuntFluo_tAveraged;
 % Transpose to plug in as inputs
 Bcd = Bcd';
 Runt = Runt';
+%% Quick plot to check the input TFs
+% hold on
+% APaxis = 0:0.025:1;
+% yyaxis left
+% errorbar(APaxis, BcdFluo_tAveraged/max(BcdFluo_tAveraged), SDBcdFluo_tAveraged/max(BcdFluo_tAveraged))
+% xlim([0.2 0.6])
+% xticks([0.2 0.3 0.4 0.5 0.6])
+% ylim([0 1.2])
+% 
+% ylabel('Bicoid concentration (Normalized)')
+% yyaxis right
+% errorbar(APaxis, RuntFluo_tAveraged/max(RuntFluo_tAveraged), SERuntFluo_tAveraged/max(RuntFluo_tAveraged))
+% ylim([0 1.2])
+% ylabel('Runt concentration (Normalized)')
+% xlabel('embryo length')
+% 
+% StandardFigure(gcf,gca)
+% % save the plot
+% FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\InputTF';
+% saveas(gcf,[FigPath,filesep,'Bcd_Runt_AP_tAveraged_0_10minNC14_20_60%.tif'])
+% saveas(gcf,[FigPath,filesep,'Bcd_Runt_AP_tAveraged_0_10minNC14_20_60%.pdf'])
+% %saveas(gcf,[figPath,filesep,'Bcd_Runt_AP_tAveraged_0_10minNC14.pdf'])
+
 %% Generate Predictions using different models
 
 %% Model-type1 : direct repression + competitive
@@ -152,11 +175,11 @@ fitRange = APbin1:APbin2;
 
 % set the parameter bounds and initial value for the query
 % params =[Kb, Kr, w_a, w_ap, w_ar, w_rp, p, R_max];
-lb = [0 0 1 1 1 0 0 0];
-ub = [100 100 10 10 1 1 100 1000];
+lb = [0 0 1 1 0 1 0 0];
+ub = [1000 1000 10 10 1 1 100 1000];
 options.Algorithm = 'levenberg-marquardt';
 
-params0 = [10, 20, 1.5, 1.5, 1, 0.5, 10, 200]; % example
+params0 = [10, 20, 1.5, 1.5, 1, 1, 10, 200]; % example
 
 % Fit for the Runt null
 fun = @(params)model_6A1R_direct_repression_V1(Bcd(fitRange), RuntNull(fitRange),...
@@ -183,7 +206,7 @@ params_fit = lsqnonlin(fun,params0, lb, ub, options)
 
 % Generate the model prediction with a set of parameters fitted above.
 
-params_fit = [ 99.9326   1000.0000    1.4867    6.5166    1.0000    0.0005  208.1073];
+%params_fit = [92.9275   1.0000    1.0000    8.0408    1.0000    0.2000    0.0008  327.8060];
 Rate_FittedParams = model_6A1R_direct_repression_V1(Bcd, Runt,...
                         params_fit);    
 % Runt null
@@ -227,8 +250,8 @@ ylabel({'initial RNAP', 'loading rate (AU/min)'})
 StandardFigure(gcf,gca)
 
 % Save the plot
-% saveas(gcf,[FigPath,filesep,constructNames{construct},'_null_fit','.tif']); 
-% saveas(gcf,[FigPath,filesep,constructNames{construct},'_null_fit','.pdf']); 
+saveas(gcf,[FigPath,filesep,constructNames{construct},'_null_fit','.tif']); 
+saveas(gcf,[FigPath,filesep,constructNames{construct},'_null_fit','.pdf']); 
 
 
 %% Third, FC from individual fittings
@@ -263,8 +286,8 @@ ylabel('fold-change')
 StandardFigure(gcf,gca)
 
 % Save the plot
-% saveas(gcf,[FigPath,filesep,constructNames{construct},'_FC_fit','.tif']); 
-% saveas(gcf,[FigPath,filesep,constructNames{construct},'_FC_fit','.pdf']); 
+saveas(gcf,[FigPath,filesep,constructNames{construct},'_FC_fit','.tif']); 
+saveas(gcf,[FigPath,filesep,constructNames{construct},'_FC_fit','.pdf']); 
 
 %% Fit the Fold-change
 
