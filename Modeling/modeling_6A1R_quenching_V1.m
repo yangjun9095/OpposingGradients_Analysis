@@ -308,19 +308,19 @@ fitRange = APbin1:APbin2;
 % params = [Kb, Kr, w_a, w_ap, w_arp, p]; 
 % set w_rp = 1 using minimum and maximum bounds
 lb = [1 1 1 1 0 0];
-ub = [1000 1000 10 10 1 100];
+ub = [100 100 10 10 1 10];
 options.Algorithm = 'levenberg-marquardt';
 
-params0 = [10, 20, 1.5, 1.5, 0.2, 0.001]; % example
+params0 = [5, 5, 1.5, 1.5, 0.2, 0.001]; % example
 
 % Fit for the Runt null
 fun = @(params)model_FC_6A1R_quenching_V1(Bcd(fitRange), Runt(fitRange),...
                         params)  - FC(fitRange);
 params_fit = lsqnonlin(fun,params0, lb, ub, options)
 
-params_fit(6)*params_fit(4).^6
-run = Runt(9)/params_fit(2)
-Runt(9)/params_fit(2).*params_fit(6)*params_fit(4).^6*params_fit(5).^6
+% params_fit(6)*params_fit(4).^6
+% run = Runt(9)/params_fit(2)
+% Runt(9)/params_fit(2).*params_fit(6)*params_fit(4).^6*params_fit(5).^6
 
 %% First, FC fit with data
 
@@ -340,7 +340,8 @@ errorbar(APaxis, FC, FC_SEM,'o','Color',ColorChoice(5,:),'CapSize',0,'MarkerFace
 plot(APaxis, FC_model_fit, 'LineWidth',1.5,'Color',ColorChoice(5,:))
 
 
-xlim([0.1 0.7])
+xlim([0.2 0.6])
+xticks([0.2 0.3 0.4 0.5 0.6])
 ylim([0 1.2])
 yticks([0 0.2 0.4 0.6 0.8 1 1.2])
 
@@ -357,12 +358,15 @@ saveas(gcf,[FigPath,filesep,constructNames{construct},'_FC_fit','.pdf']);
 % R_max
 % constrain the R_max using the 
 Rate_null = compiledData{construct+1+8,9};
-R_max = Rate_null(9); 
+R_max = 200;%Rate_null(9); 
+
+params = [params_fit R_max];
+
 Rate_FittedParams = model_6A1R_quenching_V1(Bcd, Runt,...
-                        params_fit);    
+                        params);    
 % Runt null
 Rate_null_FittedParams = model_6A1R_quenching_V1(Bcd, RuntNull,...
-                        params_fit_null);
+                        params);
 
 %% Second, Runt WT with its model fit      
 % 
@@ -375,8 +379,8 @@ errorbar(APaxis, Rate, Rate_SEM,'o','CapSize',0,'MarkerFaceColor',ColorChoice(1,
 plot(APaxis, Rate_FittedParams, 'LineWidth',1.5,'Color',ColorChoice(1,:))
 
 
-xlim([0.1 0.7])
-xticks([0.1 0.2 0.3 0.4 0.5 0.6 0.7])
+xlim([0.2 0.6])
+xticks([0.2 0.3 0.4 0.5 0.6])
 ylim([0 400])
 yticks([0 100 200 300 400])
 
@@ -388,27 +392,6 @@ StandardFigure(gcf,gca)
 % Save the plot
 % saveas(gcf,[FigPath,filesep,constructNames{construct},'_WT_fit','.tif']); 
 % saveas(gcf,[FigPath,filesep,constructNames{construct},'_WT_fit','.pdf']); 
-%% Second, Runt nulls
-hold on
-
-errorbar(APaxis, Rate_null, Rate_null_SEM,'o','Color',ColorChoice(4,:),'CapSize',0,'MarkerFaceColor',ColorChoice(4,:))
-plot(APaxis, Rate_null_FittedParams, 'LineWidth',1.5,'Color',ColorChoice(4,:))
-
-
-xlim([0.1 0.7])
-ylim([0 400])
-yticks([0 100 200 300 400])
-
-xlabel('embryo length')
-ylabel({'initial RNAP', 'loading rate (AU/min)'})
-
-StandardFigure(gcf,gca)
-
-% Save the plot
-% saveas(gcf,[FigPath,filesep,constructNames{construct},'_null_fit','.tif']); 
-% saveas(gcf,[FigPath,filesep,constructNames{construct},'_null_fit','.pdf']); 
-
-
 
 
 

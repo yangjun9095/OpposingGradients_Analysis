@@ -18,7 +18,7 @@ AverageDatasets_NuclearProtein('Runt-1min-200Hz-Male','savePath','E:\YangJoon\Li
 %% Step2. Background-subtraction.
 %% Load the datasets that are synchronized above.
 % File path for calling the datasets
-FilePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
+FilePath = 'S:\YangJoon\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\AveragedDatasets_Feb2020';
 
 Runt_female = load([FilePath, filesep, 'Runt-1min-200Hz-Female-Averaged.mat']);
 
@@ -154,12 +154,12 @@ legend('male','female','Location','NorthWest')
 StandardFigure(gcf,gca)
 
 % Save the plots
-FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Input dynamics\Finalized';
-saveas(gcf,[FigPath,filesep,'Runt_Time_NC13-14_MaleFemale @ AP =',num2str(APpos),'%','.tif']); 
-saveas(gcf,[FigPath,filesep,'Runt_Time_NC13-14_MaleFemale @ AP =',num2str(APpos),'%','.pdf']); 
+% % FigPath = 'E:\YangJoon\LivemRNA\Data\Dropbox\Garcia Lab\Figures\Opposing Gradients\Data\Input dynamics\Finalized';
+% % saveas(gcf,[FigPath,filesep,'Runt_Time_NC13-14_MaleFemale @ AP =',num2str(APpos),'%','.tif']); 
+% % saveas(gcf,[FigPath,filesep,'Runt_Time_NC13-14_MaleFemale @ AP =',num2str(APpos),'%','.pdf']); 
 %% Runt conc. over Time (male & female) - NC14 only
 % Pick one AP bin
-APbin = 14;
+APbin = 9;
 APpos = (APbin - 1) * 2.5;
 
 hold on
