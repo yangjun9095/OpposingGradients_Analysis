@@ -58,6 +58,7 @@ RuntData = load([FilePath, filesep, 'Runt_TimeAveraged_mixedSex_NC14.mat']);
 
 compiledData = load([FilePath, filesep, 'compiledData.mat']);
 
+compiledData = compiledData.compiledData;
 %% Extract the useful fields from BcdData and RuntData
 % Bcd
 BcdFluo_tAveraged = BcdData.Bcd_timeAveraged_10min_nc14;
@@ -114,13 +115,12 @@ APbin2 = APpos2/2.5 + 1;
 fitRange = APbin1:APbin2;
 
 % set the parameter bounds and initial value for the query
-% params =[Kb, Kr, w_a, w_ap, w_ar, w_rp, p, R_max];
-% set w_rp = 1 using minimum and maximum bounds
-lb = [0 0 1 1 0 1 0 0];
-ub = [100 100 100 100 1 1 100 1000];
+% params =[Kb, Kr, w_b, w_bp, w_brp, p, R_max];
+lb = [0 0 1 1 0 0 0];
+ub = [100 100 100 100 1 1 1000];
 options.Algorithm = 'levenberg-marquardt';
 
-params0 = [10, 5, 2, 2, 0.5, 1, 0.001, 200]; % example
+params0 = [1, 5, 2, 2, 0.5, 0.001, 200]; % example
 
 % Fit for the Runt null
 fun = @(params)model_6A1R_quenching_V1(Bcd(fitRange), RuntNull(fitRange),...
@@ -137,7 +137,7 @@ params_fit = lsqnonlin(fun,params0, lb, ub, options)
 % Import the real data from the compiledData
 % Then, pick one dataset as our starting point.(let's start with one Run site, for example, [001])                
 
-construct = 6; % 5th element in the DataTypes nomenclature structure.
+construct = 5; % 5th element in the DataTypes nomenclature structure.
 
 Rate = compiledData{construct+1,9};
 Rate_SEM = compiledData{construct+1,10};
@@ -146,7 +146,7 @@ Rate_null = compiledData{construct+1+8,9};
 Rate_null_SEM = compiledData{construct+1+8,10};
 
 APpos1 = 20;% [% of embryo length]
-APpos2 = 40;% [% of embryo length]
+APpos2 = 45;% [% of embryo length]
 
 APbin1 = APpos1/2.5 + 1;
 APbin2 = APpos2/2.5 + 1;
@@ -154,13 +154,13 @@ APbin2 = APpos2/2.5 + 1;
 fitRange = APbin1:APbin2;
 
 % set the parameter bounds and initial value for the query
-% params = [Kb, Kr, w_a, w_ap, w_arp, p, R_max]; 
+% params = [Kb, Kr, w_b, w_bp, w_brp, p, R_max]; 
 % set w_rp = 1 using minimum and maximum bounds
 lb = [0 0 1 1 0 0 0];
-ub = [100 1000 10 10 1 1 1000];
+ub = [100 100 3 3 1 1 1000];
 options.Algorithm = 'levenberg-marquardt';
 
-params0 = [10, 20, 1.5, 1.5, 0.2, 1, 200]; % example
+params0 = [1, 2, 1.5, 1.5, 0.2, 0.01, 200]; % example
 
 % Fit for the Runt null
 fun = @(params)model_6A1R_quenching_V1(Bcd(fitRange), RuntNull(fitRange),...
@@ -169,7 +169,7 @@ params_fit_null = lsqnonlin(fun,params0, lb, ub, options)
 
 % set the parameter bounds and initial value for the query
 % params = [Kb, Kr, w_a, w_ap, w_arp, p, R_max]; 
-lb = [params_fit_null(1)  0  params_fit_null(3) params_fit_null(4) 0 params_fit_null(6) params_fit_null(7)];
+lb = [params_fit_null(1)  0.1  params_fit_null(3) params_fit_null(4) 0 params_fit_null(6) params_fit_null(7)];
 ub = [params_fit_null(1) 1000 params_fit_null(3) params_fit_null(4) 1 params_fit_null(6) params_fit_null(7)];
 options.Algorithm = 'levenberg-marquardt';
 
@@ -179,7 +179,7 @@ params1 = [params_fit_null(1) 20 params_fit_null(3) params_fit_null(4) 0.2 param
 
 % Fit for the Runt WT (with more parameters)
 fun = @(params)model_6A1R_quenching_V1(Bcd(fitRange), Runt(fitRange),...
-                        params1)  - Rate(fitRange);
+                        params)  - Rate(fitRange);
 params_fit = lsqnonlin(fun,params0, lb, ub, options)
 %% Check the fitting result
 % generate the predicted rate profile (over AP) based on the fitted
@@ -187,26 +187,61 @@ params_fit = lsqnonlin(fun,params0, lb, ub, options)
 
 % Generate the model prediction with a set of parameters fitted above.
 
-% params_fit = [99.9883   20.0000    1.1606    7.2075    0.2000    0.0006  194.4278];
+% params_fit = [99.9964    0.1000    1.0576    8.7865    0.8447    0.0003  185.5756];
+% params_fit = [99.9964    0.1000    1.0576    8.7865    0.8447    0.0003  185.5756];
+
 Rate_FittedParams = model_6A1R_quenching_V1(Bcd, Runt,...
                         params_fit);    
 % Runt null
-Rate_null_FittedParams = model_6A1R_quenching_V1(Bcd, RuntNull,...
-                        params_fit_null);
+[Rate_null_FittedParams, Z_b, Z_bp, Z_br, Z_brp] =...
+                model_6A1R_quenching_V1(Bcd, RuntNull,params_fit);
 
-%% First, Runt WT with its model fit      
+                   
+% First, Runt nulls
+hold on
+
+errorbar(APaxis, Rate_null, Rate_null_SEM,'o','Color',ColorChoice(4,:),'CapSize',0,'MarkerFaceColor',ColorChoice(4,:))
+plot(APaxis, Rate_null_FittedParams, 'LineWidth',1.5,'Color',ColorChoice(4,:))
+
+
+xlim([0.2 0.6])
+xticks([0.2 0.3 0.4 0.5 0.6])
+ylim([0 400])
+yticks([0 100 200 300 400])
+
+
+xlabel('embryo length')
+ylabel({'initial RNAP', 'loading rate (AU/min)'})
+
+StandardFigure(gcf,gca)
+
+% Save the plot
+% saveas(gcf,[FigPath,filesep,constructNames{construct},'_null_fit','.tif']); 
+% saveas(gcf,[FigPath,filesep,constructNames{construct},'_null_fit','.pdf']); 
+
+% Option : Assessing individual partition funcitons (mini)
+figure
+hold on
+plot(APaxis, Z_b)
+plot(APaxis, Z_bp)
+plot(APaxis, Z_br)
+plot(APaxis, Z_brp)
+% set the y-axis log scale
+legend('b','bp','br','brp')
+%% Second, Runt WT with its model fit      
 % 
 % params_fit = [99.8627   20.0000    1.5207    5.2006    0.01   1.0000    0.0015  428.9363];
 % Rate_FittedParams = model_6A1R_direct_repression_V1(Bcd, Runt,...
-%                         params_fit);    
+%                         params_fit);   
+figure
 hold on
 % Runt WT
 errorbar(APaxis, Rate, Rate_SEM,'o','CapSize',0,'MarkerFaceColor',ColorChoice(1,:))
 plot(APaxis, Rate_FittedParams, 'LineWidth',1.5,'Color',ColorChoice(1,:))
 
 
-xlim([0.1 0.7])
-xticks([0.1 0.2 0.3 0.4 0.5 0.6 0.7])
+xlim([0.2 0.6])
+xticks([0.2 0.3 0.4 0.5 0.6])
 ylim([0 400])
 yticks([0 100 200 300 400])
 
@@ -218,25 +253,6 @@ StandardFigure(gcf,gca)
 % Save the plot
 % saveas(gcf,[FigPath,filesep,constructNames{construct},'_WT_fit','.tif']); 
 % saveas(gcf,[FigPath,filesep,constructNames{construct},'_WT_fit','.pdf']); 
-%% Second, Runt nulls
-hold on
-
-errorbar(APaxis, Rate_null, Rate_null_SEM,'o','Color',ColorChoice(4,:),'CapSize',0,'MarkerFaceColor',ColorChoice(4,:))
-plot(APaxis, Rate_null_FittedParams, 'LineWidth',1.5,'Color',ColorChoice(4,:))
-
-
-xlim([0.1 0.7])
-ylim([0 400])
-yticks([0 100 200 300 400])
-
-xlabel('embryo length')
-ylabel({'initial RNAP', 'loading rate (AU/min)'})
-
-StandardFigure(gcf,gca)
-
-% Save the plot
-% saveas(gcf,[FigPath,filesep,constructNames{construct},'_null_fit','.tif']); 
-% saveas(gcf,[FigPath,filesep,constructNames{construct},'_null_fit','.pdf']); 
 
 
 %% Third, FC from individual fittings
@@ -256,17 +272,23 @@ FC_SEM = sqrt(fracError1.^2 + fracError2.^2).*FC;
 % FC from the model-fit
 FC_model_fit = Rate_FittedParams./Rate_null_FittedParams;
 
+figure
+
 hold on
 errorbar(APaxis, FC, FC_SEM,'o','Color',ColorChoice(5,:),'CapSize',0,'MarkerFaceColor',ColorChoice(5,:))
 plot(APaxis, FC_model_fit, 'LineWidth',1.5,'Color',ColorChoice(5,:))
 
+xlim([0.2 0.6])
+xticks([0.2 0.3 0.4 0.5 0.6])
 
-xlim([0.1 0.7])
 ylim([0 1.2])
 yticks([0 0.2 0.4 0.6 0.8 1 1.2])
 
 xlabel('embryo length')
 ylabel('fold-change')
+
+
+
 
 StandardFigure(gcf,gca)
 
