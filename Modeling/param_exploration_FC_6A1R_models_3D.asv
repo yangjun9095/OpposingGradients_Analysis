@@ -83,6 +83,7 @@ FC_20 = nan(length(K_B),length(K_R),length(W_b),length(W_bp),length(W_br),length
 FC_30 = nan(length(K_B),length(K_R),length(W_b),length(W_bp),length(W_br),length(W_rp),length(W_brp),length(P));
 FC_40 = nan(length(K_B),length(K_R),length(W_b),length(W_bp),length(W_br),length(W_rp),length(W_brp),length(P));
 
+% APbin definition
 APbin1 = 20/2.5+1;
 APbin2 = 30/2.5+1;
 APbin3 = 40/2.5+1;
@@ -159,28 +160,29 @@ ylabel('FC-posterior')
 % The boundary function takes really long to calculate the boundary when
 % the vectors have 10^8 elements. So, we'll sample the boundary with
 % portion of the vectors, then sample again among those sampled-boundaries.
-bound_temp = [];
-for i=1:100
-    % random sampling of 10^8 elements multiple times. We need to show that
-    % the sampling number is enough to sample the whole space.
-    index = randperm(10^8,10^4);
-    bound_temp = unique([bound_temp ; boundary(FC_ant(index)',FC_post(index)')]);
-end
+% bound_temp = [];
+% for i=1:100
+%     % random sampling of 10^8 elements multiple times. We need to show that
+%     % the sampling number is enough to sample the whole space.
+%     index = randperm(10^8,10^4);
+%     bound_temp = unique([bound_temp ; boundary(FC_ant(index)',FC_post(index)')]);
+% end
+% 
+% % bound_temp = unique(bound_temp);
+% 
+% bound_combination = boundary(FC_ant(bound_temp)', FC_post(bound_temp)');
+% 
+% scatter(FC_ant(bound_temp)', FC_post(bound_temp)')
 
-% bound_temp = unique(bound_temp);
-
-bound_combination = boundary(FC_ant(bound_temp)', FC_post(bound_temp)');
-
-scatter(FC_ant(bound_temp)', FC_post(bound_temp)')
-
-%%
+%% Calculate the boundary around the FC_pos1 and FC_pos2
+%(If there are too many samples, )
 bound_combination = boundary(FC_ant', FC_post');
 
 bound_compete = boundary(FC_ant_compete', FC_post_compete');
 bound_direct = boundary(FC_ant_direct', FC_post_direct');
 bound_quench = boundary(FC_ant_quench', FC_post_quench');
 
-%%
+%% plot the boundary in 2D (anterior and posterior)
 hold on
 plot(FC_ant(bound_combination), FC_post(bound_combination),'color', ColorChoice(1,:),'LineWidth',1.5);
 plot(FC_ant_compete(bound_compete), FC_post_compete(bound_compete), 'color', ColorChoice(2,:),'LineWidth',1.5)
@@ -207,9 +209,104 @@ legend('combination','competition','diret','quenching','Location','NorthWest')
 StandardFigure(gcf,gca)
 
 % save the plot
-saveas(gcf,[FigPath,filesep,'params_exploration_ant_post','.pdf']);
+% saveas(gcf,[FigPath,filesep,'params_exploration_ant_post','.pdf']);
 
-%% find the 3D-boundary
+%% 2) anterior and mid (20% and 30%)
+
+%% Calculate the boundary of FC (20% and 30%)
+bound_combination = boundary(FC_ant', FC_mid');
+
+bound_compete = boundary(FC_ant_compete', FC_mid_compete');
+bound_direct = boundary(FC_ant_direct', FC_mid_direct');
+bound_quench = boundary(FC_ant_quench', FC_mid_quench');
+
+%% plot the boundary in 2D (anterior and mid)
+hold on
+plot(FC_ant(bound_combination), FC_mid(bound_combination),'color', ColorChoice(1,:),'LineWidth',1.5);
+plot(FC_ant_compete(bound_compete), FC_mid_compete(bound_compete), 'color', ColorChoice(2,:),'LineWidth',1.5)
+plot(FC_ant_direct(bound_direct), FC_mid_direct(bound_direct), 'color', ColorChoice(4,:),'LineWidth',1.5)
+plot(FC_ant_quench(bound_quench), FC_mid_quench(bound_quench), 'color', ColorChoice(6,:),'LineWidth',1.5)
+
+% real data points
+% define the AP bins
+APbin1 = 20/2.5 + 1;
+APbin2 = 30/2.5 + 1;
+APbin3 = 40/2.5 + 1;
+
+errorbarxy(FC_001(APbin1), FC_001(APbin2),...
+            FC_SEM_001(APbin1), FC_SEM_001(APbin2))
+errorbarxy(FC_010(APbin1), FC_010(APbin2),...
+            FC_SEM_010(APbin1), FC_SEM_010(APbin2))
+errorbarxy(FC_100(APbin1), FC_100(APbin2),...
+            FC_SEM_100(APbin1), FC_SEM_100(APbin2))
+
+xlabel('FC-anterior')
+ylabel('FC-mid')
+
+xlim([0 1.2])
+xticks([0 0.2 0.4 0.6 0.8 1 1.2])
+ylim([0 1.2])
+yticks([0 0.2 0.4 0.6 0.8 1 1.2])
+
+legend('combination','competition','diret','quenching','Location','NorthWest')
+
+StandardFigure(gcf,gca)
+
+% save the plot
+% saveas(gcf,[FigPath,filesep,'params_exploration_ant_mid','.pdf']);
+
+
+
+%% 3) mid and post (30% and 40%)
+
+%% Calculate the boundary of FC (20% and 30%)
+bound_combination = boundary(FC_mid', FC_post');
+
+bound_compete = boundary(FC_mid_compete', FC_post_compete');
+bound_direct = boundary(FC_mid_direct', FC_post_direct');
+bound_quench = boundary(FC_mid_quench', FC_post_quench');
+
+%% plot the boundary in 2D (anterior and mid)
+hold on
+plot(FC_mid(bound_combination), FC_post(bound_combination),'color', ColorChoice(1,:),'LineWidth',1.5);
+plot(FC_mid_compete(bound_compete), FC_post_compete(bound_compete), 'color', ColorChoice(2,:),'LineWidth',1.5)
+plot(FC_mid_direct(bound_direct), FC_post_direct(bound_direct), 'color', ColorChoice(4,:),'LineWidth',1.5)
+plot(FC_mid_quench(bound_quench), FC_post_quench(bound_quench), 'color', ColorChoice(6,:),'LineWidth',1.5)
+
+% real data points
+% define the AP bins
+APbin1 = 20/2.5 + 1;
+APbin2 = 30/2.5 + 1;
+APbin3 = 40/2.5 + 1;
+
+errorbarxy(FC_001(APbin2), FC_001(APbin3),...
+            FC_SEM_001(APbin2), FC_SEM_001(APbin3))
+errorbarxy(FC_010(APbin2), FC_010(APbin3),...
+            FC_SEM_010(APbin2), FC_SEM_010(APbin3))
+errorbarxy(FC_100(APbin2), FC_100(16),...
+            FC_SEM_100(APbin2), FC_SEM_100(16))
+
+xlabel('FC-mid')
+ylabel('FC-posterior')
+
+xlim([0 1.2])
+xticks([0 0.2 0.4 0.6 0.8 1 1.2])
+ylim([0 1.2])
+yticks([0 0.2 0.4 0.6 0.8 1 1.2])
+
+legend('combination','competition','diret','quenching','Location','NorthWest')
+
+StandardFigure(gcf,gca)
+
+% save the plot
+% saveas(gcf,[FigPath,filesep,'params_exploration_ant_mid','.pdf']);
+
+
+
+
+
+
+%% Calculate the 3D-boundary
 
 bound_combination = boundary(FC_ant', FC_mid', FC_post');
 
@@ -224,11 +321,16 @@ trisurf(bound_compete, FC_ant_compete, FC_mid_compete, FC_post_compete, 'Facecol
 trisurf(bound_direct, FC_ant_direct, FC_mid_direct, FC_post_direct, 'Facecolor', ColorChoice(4,:),'FaceAlpha',0.5)
 trisurf(bound_quench, FC_ant_quench, FC_mid_quench, FC_post_quench, 'Facecolor', ColorChoice(6,:),'FaceAlpha',0.5)
 
- view(-40,40)
+ view(-30,40)
 
-plot3(FC_001(APbin1), FC_001(APbin2), FC_001(APbin3),'o','MarkerFaceColor','k', 'MarkerEdgeColor', 'k')
-plot3(FC_010(APbin1), FC_010(APbin2), FC_010(APbin3),'o','MarkerFaceColor','k', 'MarkerEdgeColor', 'k')
-plot3(FC_100(APbin1), FC_100(APbin2), FC_100(16),'o','MarkerFaceColor','k', 'MarkerEdgeColor', 'k')
+% plot3(FC_001(APbin1), FC_001(APbin2), FC_001(APbin3),'o','MarkerFaceColor','k', 'MarkerEdgeColor', 'k')
+% plot3(FC_010(APbin1), FC_010(APbin2), FC_010(APbin3),'o','MarkerFaceColor','k', 'MarkerEdgeColor', 'k')
+% plot3(FC_100(APbin1), FC_100(APbin2), FC_100(16),'o','MarkerFaceColor','k', 'MarkerEdgeColor', 'k')
+
+% Ellipsoid for the data points with error bars
+ellipsoid(FC_001(APbin1), FC_001(APbin2), FC_001(APbin3), FC_SEM_001(APbin1), FC_SEM_001(APbin2), FC_SEM_001(APbin3),500)%,'o','MarkerFaceColor','k', 'MarkerEdgeColor', 'k')
+ellipsoid(FC_010(APbin1), FC_010(APbin2), FC_010(APbin3), FC_SEM_010(APbin1), FC_SEM_010(APbin2), FC_SEM_010(APbin3),500)%, 'o','MarkerFaceColor','k', 'MarkerEdgeColor', 'k')
+%ellipsoid(FC_100(APbin1), FC_100(APbin2), FC_100(16), FC_SEM_100(APbin1), FC_SEM_100(APbin2), FC_SEM_100(16))%,'o','MarkerFaceColor','k', 'MarkerEdgeColor', 'k')
 
 xlabel('FC-anterior')
 ylabel('FC-mid')
@@ -247,6 +349,9 @@ box on
 grid on
 
 StandardFigure(gcf,gca)
-
+gcf.Renderer='Painters';
 % save the plot
-saveas(gcf,[FigPath,filesep,'params_exploration_3D','.pdf']);
+% saveas(gcf,[FigPath,filesep,'params_exploration_3D','.pdf']);
+
+
+

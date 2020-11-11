@@ -34,4 +34,7 @@ saveas(gcf,[figPath,filesep,'name','.tif']);
 saveas(gcf,[figPath,filesep,'name','.pdf']); 
 
 %% Type 2. 3D plot (surface,scatter, etc.)
+plot3
+scatter
 
+%% Type 3. 

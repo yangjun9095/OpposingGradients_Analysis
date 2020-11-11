@@ -80,48 +80,12 @@ RuntNull = zeros(41,1);
 
 %% Model-type : Make this as an input function such that we can pick different model as we want
 
-%% Fit with the real data 
-% Import the real data from the compiledData
-% Then, pick one dataset as our starting point.(let's start with one Run site, for example, [001])                
-
-construct = 5; % 5th element in the DataTypes nomenclature structure.
-
-Rate = compiledData{construct+1,9};
-Rate_null = compiledData{construct+1+8,9};
-
-APpos1 = 20;% [% of embryo length]
-APpos2 = 45;% [% of embryo length]
-
-APbin1 = APpos1/2.5 + 1;
-APbin2 = APpos2/2.5 + 1;
-
-fitRange = APbin1:APbin2;
-
-% set the parameter bounds and initial value for the query
-% params =[Kb, Kr, w_b, w_bp, w_br, w_rp, w_brp, p, R_max];
-lb = [0.1 0.1 1 1 0 0 0 0 0];
-ub = [10 10 100 100 10 1 10 100 1000];
-% options.Algorithm = 'levenberg-marquardt';
-options = optimoptions('lsqnonlin','Display','iter', 'Algorithm', 'trust-region-reflective');
-
-params0 = [10, 5, 2, 2, 1, 1, 0.2, 0.001, 200]; % example
-
-% Fit for the Runt null
-fun = @(params)model_6A1R_combination_all_V1(Bcd(fitRange), RuntNull(fitRange),...
-                        params)  - Rate_null(fitRange);
-params_fit_null = lsqnonlin(fun,params0, lb, ub, options)
-
-% Fit for the Runt WT (with more parameters)
-fun = @(params)model_6A1R_combination_all_V1(Bcd(fitRange), Runt(fitRange),...
-                        params)  - Rate(fitRange);
-params_fit = lsqnonlin(fun,params0, lb, ub, options)
-
 %% Round2 : Recycle the parameters from the Runt null fit
 %% Fit with the real data 
 % Import the real data from the compiledData
 % Then, pick one dataset as our starting point.(let's start with one Run site, for example, [001])                
 
-construct = 6; % N-th element in the DataTypes nomenclature structure.
+construct = 5; % N-th element in the DataTypes nomenclature structure.
 
 Rate = compiledData{construct+1,9};
 Rate_SEM = compiledData{construct+1,10};
@@ -130,7 +94,7 @@ Rate_null = compiledData{construct+1+8,9};
 Rate_null_SEM = compiledData{construct+1+8,10};
 
 APpos1 = 20;% [% of embryo length]
-APpos2 = 40;% [% of embryo length]
+APpos2 = 45;% [% of embryo length]
 
 APbin1 = APpos1/2.5 + 1;
 APbin2 = APpos2/2.5 + 1;
@@ -144,26 +108,26 @@ ub = [100 100 10 10 1 1 10 1 1000];
 % options.Algorithm = 'levenberg-marquardt';
 options = optimoptions('lsqnonlin','Display','iter', 'Algorithm', 'trust-region-reflective');
 
-params0 = [100   0.1    1.0000    10    0.8    1.0000    0.51    0.1  181.1421]; % example
+params0 = [10   1    1.0000    10    0.8    1   0.51    0.1  181.1421]; % example
 
 % Fit for the Runt null
 fun = @(params)model_6A1R_combination_all_V1(Bcd(fitRange), RuntNull(fitRange),...
                         params)  - Rate_null(fitRange);
-params_fit_null = lsqnonlin(fun,params0, lb, ub, options)
+params_fit_null = lsqnonlin(fun, params0, lb, ub, options)
 
 % set the parameter bounds and initial value for the query
 % params =[Kb, Kr, w_b, w_bp, w_br, w_rp, w_brp, p, R_max];
-lb = [params_fit_null(1) 0 params_fit_null(3) params_fit_null(4) 0 0 0 params_fit_null(8) params_fit_null(9)];
+lb = [params_fit_null(1) 0.1 params_fit_null(3) params_fit_null(4) 0 0 0 params_fit_null(8) params_fit_null(9)];
 ub = [params_fit_null(1) 100 params_fit_null(3) params_fit_null(4) 10 1 1 params_fit_null(8) params_fit_null(9)];
 
 % recycle the parameters for the activation, then start with some range of
 % paramter for an initial conditon.
-params1 = [params_fit_null(1) 20 params_fit_null(3) params_fit_null(4) 1 0.5 1 params_fit_null(8) params_fit_null(9)];
+params1 = [params_fit_null(1) 10 params_fit_null(3) params_fit_null(4) 1 0.5 1 params_fit_null(8) params_fit_null(9)];
 
 % Fit for the Runt WT (with more parameters)
 fun = @(params)model_6A1R_combination_all_V1(Bcd(fitRange), Runt(fitRange),...
                         params1)  - Rate(fitRange);
-params_fit = lsqnonlin(fun,params0, lb, ub, options)
+params_fit = lsqnonlin(fun, params1, lb, ub, options)
 
 %% Check the fitting result
 % generate the predicted rate profile (over AP) based on the fitted
@@ -172,7 +136,7 @@ params_fit = lsqnonlin(fun,params0, lb, ub, options)
 % Generate the model prediction with a set of parameters fitted above.
 
 % params_fit = [100   0.1    1.0000    10    3.5    1.0000    0.51    0.0002  181.1421];
-params_fit = [100   0.1    1.0000    10    3.5    1.0000    0.51    0.0002  181.1421];
+params_fit = [98.1263   1.0000    1.0000    9.9770    0.9    0.5000    0.95    0.0002  366.1176];
 
 Rate_FittedParams = model_6A1R_combination_all_V1(Bcd, Runt,...
                         params_fit);    

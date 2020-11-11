@@ -11,10 +11,6 @@
 % 4) input TF data should be read into a matrix with different columns for
 % different TFs (Bcd, Runt, and Runt nulls)
 
-
-
-
-
 %% 
 options = optimoptions('lsqnonlin','Display','iter', 'Algorithm', 'trust-region-reflective');
 

@@ -267,7 +267,7 @@ StandardFigure(gcf,gca)
 %% Second, Runt WT with its model fit    
 
 % Tune the parameters if needed
-params_fit =[85.2969    100.0000    1.0000    7.5320    0.0500    0.0005  193.3277];
+params_fit =[85.2969    1000.0000    1.0000    7.5320    0.1000    0.0005  193.3277];
 
 % Runt WT
 Rate_FittedParams = model_6A1R_direct_repression_V1(Bcd, Runt,...

@@ -5,11 +5,11 @@ clear
 close all
 addpath('../utilities')
 % set ID variables
-DropboxFolder = 'S:/YangJoon/Dropbox/OpposingGradient';
+DropboxFolder = 'S:\YangJoon\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\AveragedDatasets_Feb2020';
 FigureRoot = 'S:/YangJoon/Dropbox/OpposingGradientsFigures/PipelineOutput';
 
 % load data structure
-load([DropboxFolder,filesep,'OpposingGradients_ProcessedData',filesep,'compiledData.mat'])
+load([DropboxFolder,filesep,'compiledData.mat'])
 
 FigPath = [FigureRoot, filesep, 'DurationTime'];
 mkdir(FigPath)
@@ -80,7 +80,7 @@ APaxis = 0:0.025:1;
 % 2, 10th rows are [000], WT and Runt null
 fig_slope = figure;
 
-for construct=7%1:8 % total number of constructs (enhancers)
+for construct=1:8 % total number of constructs (enhancers)
     clf
     hold on
     errorbar(APaxis, compiledData{construct+1,13}, compiledData{construct+1,14},'LineWidth',2,'Color',ColorChoice(construct,:))
@@ -148,4 +148,6 @@ for construct=1:8 % total number of constructs (enhancers)
     saveas(gcf,[FigPath,filesep,constructNames{construct},'_FC.tif']); 
     saveas(gcf,[FigPath,filesep,constructNames{construct},'_FC.pdf']); 
 end
+
+%% Part2. generate plots of T_on and T_off over the AP axis for each construct (Runt Null vs. Runt WT)
 

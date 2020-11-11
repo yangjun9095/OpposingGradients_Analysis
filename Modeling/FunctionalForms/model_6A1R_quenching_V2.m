@@ -1,5 +1,4 @@
-function [output, Z_b, Z_bp, Z_br, Z_brp] = ...
-                model_6A1R_quenching_V1(Bcd, Runt, params) 
+function [output] = model_6A1R_quenching_V2(params, TF) 
 
 %% Definition of parameters
 % [Kb, Kr, w_b, w_bp, w_brp, p, R_max] = params;
@@ -13,6 +12,11 @@ w_brp = params(5);
 p = params(6);
 R_max = params(7);
 
+% TF inputs : Read a matrix of TF, each column represent different TFs
+Bcd = TF(:,1);
+Runt = TF(:,2);
+
+% scale with the dissociation constant
 b = Bcd./Kb;
 r = Runt./Kr;
 
