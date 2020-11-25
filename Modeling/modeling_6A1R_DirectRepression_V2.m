@@ -52,28 +52,30 @@ mkdir(FigPath)
 
 FilePath = 'S:\YangJoon\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\AveragedDatasets_Feb2020';
 
-BcdData = load([FilePath, filesep, 'Bcd_NC14_TimeAveraged.mat']);
-
-RuntData = load([FilePath, filesep, 'Runt_TimeAveraged_mixedSex_NC14.mat']);
-
 compiledData = load([FilePath, filesep, 'compiledData.mat']);
 
+% Load the TF info
+% BcdData = load([FilePath, filesep, 'Bcd_NC14_TimeAveraged.mat']);
+
+% RuntData = load([FilePath, filesep, 'Runt_TimeAveraged_mixedSex_NC14.mat']);
+% 
+% TFData = load([FilePath, filesep, 'TFinput.mat']);
 %% Extract the useful fields from BcdData and RuntData
-% Bcd
-BcdFluo_tAveraged = BcdData.Bcd_timeAveraged_10min_nc14;
-SDBcdFluo_tAveraged = BcdData.Bcd_timeAveraged_10min_nc14_SD;
-% Runt
-RuntFluo_tAveraged = RuntData.AveragedFluo_tAveraged_mixed(2,:); % 0-10 mins into NC14
-SERuntFluo_tAveraged = RuntData.SEFluo_tAveraged_mixed(2,:);% 0-10 mins into NC14
-
-%% Define Bcd and Runt using these time-averaged vectors
-Bcd = BcdFluo_tAveraged;
-Runt = RuntFluo_tAveraged;
-
-% Transpose to plug in as inputs
-Bcd = Bcd';
-Runt = Runt';
-RuntNull = zeros(41,1);
+% % Bcd
+% BcdFluo_tAveraged = BcdData.Bcd_timeAveraged_10min_nc14;
+% SDBcdFluo_tAveraged = BcdData.Bcd_timeAveraged_10min_nc14_SD;
+% % Runt
+% RuntFluo_tAveraged = RuntData.AveragedFluo_tAveraged_mixed(2,:); % 0-10 mins into NC14
+% SERuntFluo_tAveraged = RuntData.SEFluo_tAveraged_mixed(2,:);% 0-10 mins into NC14
+% 
+% %% Define Bcd and Runt using these time-averaged vectors
+% Bcd = BcdFluo_tAveraged;
+% Runt = RuntFluo_tAveraged;
+% 
+% % Transpose to plug in as inputs
+% Bcd = Bcd';
+% Runt = Runt';
+% RuntNull = zeros(41,1);
 %% If the above steps are done, then just import the output
 TFData = load([FilePath, filesep, 'TFinput.mat']);
 TFdata = TFData.TFinput;

@@ -29,6 +29,7 @@ Bcd_PATSER_score = [3.62 4.62 3.61 3.56 4.53 3.85 3.42 3.78 3.49 4.53];
 %% 4) SOLEXA
 
 
+%% generate plots
 enhancer_length = 294;
 % Bcd_width_perc = Bcd_width/enhancer_length;
 

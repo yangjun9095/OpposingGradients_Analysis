@@ -1,0 +1,70 @@
+function SS = SumofSquaresFunction_InitialSlopeMCMC(data, params)
+% Log likelihood probability function for MCMC fitting.
+% Currently the model infers values for . 
+% This is for use in the MCMCstat package and returns the sum-of-squares function. 
+
+% Parameters
+% ----------
+% construct: string.
+% String specifying the construct used.
+% data: structure
+% data (MCMCdata) has fields like below. Note that they are already
+% pre-processed as the AP range given in the main script.
+% xdata : [APbins APbins]
+% ydata : [Rate_null Rate_WT]
+% Bcd : [Bcd Bcd]
+% Run : [RunNull Run]
+
+% params: array
+% Vector of fit parameters (Kb, Kr, w_b, w_bp, p, R_max, w_br, w_rp, w_brp)
+
+% Return
+% ------
+% SS: sum-of-squares residual
+
+% Note that this assumes our sampling assumes Gaussian error with fixed
+% variance/standard deviation for each measurement.
+
+%% Extract fit parameters and data
+
+% Create the interpolated AP bins for fitting
+APbins = data.xdata;
+% APbins = data.APbins;
+% dx = median(diff(APbins))/10; % make 1/10 AP binning, thus 0.25% per bin
+% APbins_interp = APbins(1):dx:APbins(end);
+
+%Extract the Rate values
+% Rate_null = data.Rate_null;
+% Rate_WT = data.Rate_WT;
+% We will use the pre-defined range of xdata and ydata for the fitting.
+Rate = data.ydata;
+
+Kb = params(1); % dissociation constant of Bcd
+Kr = params(2); % dissociation constant of Run
+w_b = params(3); % interaction between Bcd molecules
+w_bp = x(4); % interaction between Bicoid and RNAP
+p = x(5); % 
+R_max = x(6); %
+% repression terms
+w_br = 1; %
+w_rp = x(8); %
+w_brp = 1; %
+
+%% Set up posterior function for MCMC
+%Calculate the simulated Rate (initial slope)
+PolPos = ConstantElongationSim(v,ton,R_full,t_interp); %Simulated polymerase positions
+Rate = model
+
+%Interpolate the simulated fluorescence signals back to experimental time
+%resolution
+MS2 = interp1(t_interp,MS2,t);
+PP7 = interp1(t_interp,PP7,t);
+fluorSim = [MS2,PP7]; %Simulated fluorescences
+
+%% Compute sum-of-squares
+% Calculate the residuals of experimental and theoretical predictions
+residuals = fluorExp - fluorSim;
+
+% Compute the sum-of-squares function
+SS = nansum(residuals.^2);
+end
