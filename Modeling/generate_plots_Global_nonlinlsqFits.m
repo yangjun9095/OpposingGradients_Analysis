@@ -6,6 +6,10 @@ FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\ModelingV
 mkdir(FigPath)
 
 FilePath = 'S:\YangJoon\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\AveragedDatasets_Feb2020';
+
+%% Load the fitting results
+% FitResult as well as which fitting method was used
+
 %% Color module
 % This is defining the line color
 % We have 8 distinct datasets, with or without Runt protein.
@@ -84,7 +88,7 @@ for construct = [2,5,6]
     ylabel({'initial RNAP', 'loading rate (AU/min)'})
 
     StandardFigure(gcf,gca)
-    pause
+    pause(0.2)
 %   %Save the plot
 %     saveas(gcf,[FigPath,filesep,'fit_direct_V3_',constructNames{construct},'.tif']); 
 %     saveas(gcf,[FigPath,filesep,'fit_direct_V3_',constructNames{construct},'.pdf']); 

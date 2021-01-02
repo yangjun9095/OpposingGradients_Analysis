@@ -4,9 +4,9 @@ function [params_fit, Res, Jacobian, CI, STD, Ypred, delta] = ...
 
 % Set the parameter bounds and initial value for the query
 
-% options = optimoptions('lsqnonlin','Display','iter', 'Algorithm', 'trust-region-reflective')
+% options = optimoptions('FunctionTolerance', 10^(-4),'Display','iter', 'Algorithm', 'trust-region-reflective');
 
-optimoptions = optimset('TolFun',1E-6, 'MaxIter', 1E6, 'MaxFunEvals', 1E5);
+optimoptions = optimset('TolFun',1E-8, 'MaxIter', 1E8, 'MaxFunEvals', 1E5);
                    
 % fit using the lsqcurvefit
 [params_fit,~,Res,~,~,~,Jacobian] =...

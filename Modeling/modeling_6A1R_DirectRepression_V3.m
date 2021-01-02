@@ -68,14 +68,14 @@ constructNames = {'000','100','011','111','001','010','110','101',...
 TFData = load([FilePath, filesep, 'TFinput.mat']);
 TFdata = TFData.TFinput;
 
-Bcd = TFdata(:,1);
-Run = TFdata(:,2);
-RunNull = TFdata(:,3);
+Bicoid = TFdata(:,1);
+Runt = TFdata(:,2);
+RuntNull = TFdata(:,3);
 
 % Make a matrix whose each column is each TF
-TF(:,1) = Bcd;
-TF(:,2) = Run;
-TF(:,3) = RunNull;
+TF(:,1) = Bicoid;
+TF(:,2) = Runt;
+TF(:,3) = RuntNull;
 %% Generate Predictions using different models
 
 %% Model-type1 : direct repression
@@ -88,7 +88,7 @@ TF(:,3) = RunNull;
 data = [];
 input_combined =[];
 
-construct = 2; % 5th element in the DataTypes nomenclature structure.
+construct = 5; % N-th element in the DataTypes nomenclature structure.
 
 Rate = compiledData{construct+1,9};
 Rate_SEM = compiledData{construct+1,10};
@@ -98,7 +98,7 @@ Rate_null_SEM = compiledData{construct+1+8,10};
 
 % Define the range of fitting
 APpos1 = 20;% [% of embryo length]
-APpos2 = 40;% [% of embryo length]
+APpos2 = 45;% [% of embryo length]
 
 APbin1 = APpos1/2.5 + 1;
 APbin2 = APpos2/2.5 + 1;
@@ -108,8 +108,8 @@ fitRange = APbin1:APbin2;
 % Trim the data of WT and Null into one vector
 data = [Rate_null(fitRange); Rate(fitRange)];
 
-input_combined(:,1) = [Bcd(fitRange); Bcd(fitRange)];
-input_combined(:,2) = [RunNull(fitRange); Run(fitRange)];
+input_combined(:,1) = [Bicoid(fitRange); Bicoid(fitRange)];
+input_combined(:,2) = [RuntNull(fitRange); Runt(fitRange)];
 
 
 
@@ -171,8 +171,8 @@ StandardFigure(gcf,gca)
 
 % Save the plot
 FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\ModelingV2_generalizedThermo\lsqcurvefit_V3\Direct';
-saveas(gcf,[FigPath,filesep,'fit_direct_V3_',constructNames{construct},'.tif']); 
-saveas(gcf,[FigPath,filesep,'fit_direct_V3_',constructNames{construct},'.pdf']); 
+% saveas(gcf,[FigPath,filesep,'fit_direct_V3_',constructNames{construct},'.tif']); 
+% saveas(gcf,[FigPath,filesep,'fit_direct_V3_',constructNames{construct},'.pdf']); 
 
 %% Plot the parameters
 
@@ -288,284 +288,5 @@ StandardFigure(gcf,gca)
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Part 2 : Fit the Fold-change first, then use the parameters to recover 
-% the rate profiles for the Runt WT and Runt nulls.
-
-construct = 5; % N-th element in the DataTypes nomenclature structure.
-
-Rate = compiledData{construct+1,9};
-Rate_null = compiledData{construct+1+8,9};
-
-FC_data = Rate./Rate_null;
-
-APpos1 = 20;% [% of embryo length]
-APpos2 = 45;% [% of embryo length]
-
-APbin1 = APpos1/2.5 + 1;
-APbin2 = APpos2/2.5 + 1;
-
-fitRange = APbin1:APbin2;
-
-% Pick a model from different modes
-mdlo = @model_FC_6A1R_direct_repression_V2;
-mdl = @(params, TF) model_FC_6A1R_direct_repression_V2(params, TF);
-
-% set the parameter bounds and initial value for the query
-% params =[Kb, Kr, w_a, w_ap, w_rp, p];
-lb = [0.1 0.1 1 1 0 0];
-ub = [100 100 100 100 1 1];
-%options.Algorithm = 'levenberg-marquardt';
-
-params0 = [5, 5, 1.5, 1.5, 0.5, 0.001]; % example
-
-% Fit for the Runt null
-[params_FC_fit,~,Res,~,~,~,Jacobian] =...
-                    lsqcurvefit(mdlo, params0, TF(fitRange,1:2), FC_data(fitRange), lb, ub, optimoptions);
-
-%% Calculate the CI of the model fit and parameters
-% First, get the CI for the fitted parameters
-CI_FC = nlparci(params_FC_fit, Res, 'jacobian', Jacobian);
-
-% Second, calculate the CI for the predicted fit using nlpredci
-[Ypred_FC,delta_FC] = nlpredci(mdl,TF(:,1:2),params_FC_fit,Res,'Jacobian',full(Jacobian));
-
-% Convert the delta in the APbins outside of the "fitRange" to NaNs, as
-% those are not fitted.
-
-numAPbins = 41;
-index = ones(1,numAPbins);
-
-index(fitRange)=0;
-
-delta_FC = delta_FC.*~index';
-
-%% generate plots for the FC data and fits
-% calculate the fold-change, FC
-FC = Rate./Rate_null;
-% calculate the joint error first, using the fractional error
-fracError1 = Rate_SEM./Rate;
-fracError2 = Rate_null_SEM./Rate_null;
-FC_SEM = sqrt(fracError1.^2 + fracError2.^2).*FC;
-
-% FC from the model-fit
-FC_model_fit = Ypred_FC;
-FC_model_fit_error = delta_FC;
-
-hold on
-errorbar(APaxis, FC, FC_SEM,'o','Color',ColorChoice(5,:),'CapSize',0,'Color',ColorChoice(5,:),'MarkerFaceColor',ColorChoice(5,:))
-shadedErrorBar(APaxis, FC_model_fit, FC_model_fit_error, 'lineProps',{'color',ColorChoice(5,:),'markerfacecolor',ColorChoice(5,:)})
-
-
-xlim([0.2 0.6])
-xticks([0.2 0.3 0.4 0.5 0.6])
-ylim([0 1.2])
-yticks([0 0.2 0.4 0.6 0.8 1 1.2])
-
-xlabel('embryo length')
-ylabel('fold-change')
-
-StandardFigure(gcf,gca)
-
-%% generate the Rate profiles of Rate introducing one free parameter R_max value
-R_max = 750;
-
-% re-define the parameter input by adding the R_max value
-params = [params_FC_fit, R_max];
-Rate_WT_pred = model_6A1R_direct_repression_V2(params, TF(:,1:2));
-Rate_null_pred = model_6A1R_direct_repression_V2(params, TF(:,1:2:end));
-
-hold on
-errorbar(APaxis, Rate, Rate_SEM,'o','Color',ColorChoice(1,:),'CapSize',0,'MarkerFaceColor',ColorChoice(1,:))
-errorbar(APaxis, Rate_null, Rate_null_SEM,'o','Color',ColorChoice(4,:),'CapSize',0,'MarkerFaceColor',ColorChoice(4,:))
-
-% plot fitted-predictions
-plot(APaxis, Rate_WT_pred, 'Color',ColorChoice(1,:))
-plot(APaxis, Rate_null_pred, 'Color',ColorChoice(4,:))
-
-xlim([0.2 0.6])
-%% Check the fitting result
-% generate the predicted rate profile (over AP) based on the fitted
-% parameters, for both Runt WT and Runt nulls.
-
-params_fit_FC = [100    0.1    1    10    0.6104    0.0002];
-
-% Runt WT
-% FC_FittedParams = model_FC_6A1R_direct_repression_V1(Bcd, Runt,...
-%                         params_fit_FC);    
-
-hold on
-% Runt WT
-%plot(APaxis, FC_data)
-plot(APaxis, FC_FittedParams)
-
-
-
-
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Part3. Fitting the Runt null and Runt WT simultaneously 
-
-%% Fit with the real data 
-% Import the real data from the compiledData
-% Then, pick one dataset as our starting point.(let's start with one Run site, for example, [001])                
-
-construct = 6; % 5th element in the DataTypes nomenclature structure.
-
-Rate = compiledData{construct+1,9};
-Rate_SEM = compiledData{construct+1,10};
-
-Rate_null = compiledData{construct+1+8,9};
-Rate_null_SEM = compiledData{construct+1+8,10};
-
-APpos1 = 20;% [% of embryo length]
-APpos2 = 45;% [% of embryo length]
-
-APbin1 = APpos1/2.5 + 1;
-APbin2 = APpos2/2.5 + 1;
-
-fitRange = APbin1:APbin2;
-
-% set the parameter bounds and initial value for the query
-% params = [Kb, Kr, w_a, w_ap, w_rp, p, R_max];
-lb = [0.1 0.1 1 1 0 0 50];
-ub = [100 100 10 10 1 1 1000];
-% options.Algorithm = 'levenberg-marquardt';
-options = optimoptions('lsqnonlin','Display','iter', 'Algorithm', 'trust-region-reflective')
-
-params0 = [1, 5, 2, 2, 0.2, 0.001, 200]; % example
-
-% Fit for the Runt null
-fun = @(params)abs(model_6A1R_direct_repression_V1(Bcd(fitRange), RunNull(fitRange),...
-                        params)  - Rate_null(fitRange)) + ...
-               abs(model_6A1R_direct_repression_V1(Bcd(fitRange), Run(fitRange),...
-                        params)  - Rate(fitRange));
-% find the set of parameters that minimizes the lsq sum of two functions
-% with shared parameters
-params_fit = lsqnonlin(fun, params0, lb, ub, options)
-
-
-
-
-%% Calculate the fit using the fitted parameters
-% Runt null
-Rate_null_FittedParams = model_6A1R_direct_repression_V1(Bcd, RunNull,...
-                        params_fit);
-               
-% Runt WT
-Rate_FittedParams = model_6A1R_direct_repression_V1(Bcd, Run,...
-                        params_fit);    
-
-%% First, Runt nulls
-figure
-hold on
-
-errorbar(APaxis, Rate_null, Rate_null_SEM,'o','Color',ColorChoice(4,:),'CapSize',0,'MarkerFaceColor',ColorChoice(4,:))
-plot(APaxis, Rate_null_FittedParams, 'LineWidth',1.5,'Color',ColorChoice(4,:))
-
-
-xlim([0.2 0.6])
-xticks([0.2 0.3 0.4 0.5 0.6])
-ylim([0 400])
-yticks([0 100 200 300 400])
-
-xlabel('embryo length')
-ylabel({'initial RNAP', 'loading rate (AU/min)'})
-
-StandardFigure(gcf,gca)
-
-% Save the plot
-% saveas(gcf,[FigPath,filesep,constructNames{construct},'_null_fit','.tif']); 
-% saveas(gcf,[FigPath,filesep,constructNames{construct},'_null_fit','.pdf']); 
-
-
-%% Second, Runt WT with its model fit         
-figure
-hold on
-% Runt WT
-errorbar(APaxis, Rate, Rate_SEM,'o','CapSize',0,'MarkerFaceColor',ColorChoice(1,:))
-plot(APaxis, Rate_FittedParams, 'LineWidth',1.5,'Color',ColorChoice(1,:))
-
-
-xlim([0.2 0.6])
-xticks([ 0.2 0.3 0.4 0.5 0.6])
-ylim([0 400])
-yticks([0 100 200 300 400])
-
-xlabel('embryo length')
-ylabel({'initial RNAP', 'loading rate (AU/min)'})
-
-StandardFigure(gcf,gca)
-
-% Save the plot
-% saveas(gcf,[FigPath,filesep,constructNames{construct},'_WT_fit','.tif']); 
-% saveas(gcf,[FigPath,filesep,constructNames{construct},'_WT_fit','.pdf']); 
-
-
-%% Third, FC from individual fittings
-
-% calculate the fold-change, FC
-FC = Rate./Rate_null;
-% calculate the joint error first, using the fractional error
-fracError1 = Rate_SEM./Rate;
-fracError2 = Rate_null_SEM./Rate_null;
-FC_SEM = sqrt(fracError1.^2 + fracError2.^2).*FC;
-
-% FC from the model-fit
-FC_model_fit = Rate_FittedParams./Rate_null_FittedParams;
-
-hold on
-errorbar(APaxis, FC, FC_SEM,'o','Color',ColorChoice(5,:),'CapSize',0,'MarkerFaceColor',ColorChoice(5,:))
-plot(APaxis, FC_model_fit, 'LineWidth',1.5,'Color',ColorChoice(5,:))
-% plot(APaxis, FC_competition, 'LineWidth',1.5,'Color',ColorChoice(2,:))
-% plot(APaxis, FC_quenching, 'LineWidth',1.5,'Color',ColorChoice(1,:))
-% plot(APaxis, FC_direct, 'LineWidth',1.5,'Color',ColorChoice(4,:))
-
-xlim([0.2 0.6])
-xticks([0.2 0.3 0.4 0.5 0.6])
-ylim([0 1.2])
-yticks([0 0.2 0.4 0.6 0.8 1 1.2])
-
-xlabel('embryo length')
-ylabel('fold-change')
-
-StandardFigure(gcf,gca)
-
-% Save the plot
-% saveas(gcf,[FigPath,filesep,constructNames{construct},'_FC_fit','.tif']); 
-% saveas(gcf,[FigPath,filesep,constructNames{construct},'_FC_fit','.pdf']); 
-
-%% Define the fitting models in here
-% Note. All V2. models are for the lsqcurvefit
-%% 1) Direct repression 
-function [Output] = model_6A1R_direct_repression_V2(params,TF) 
-
-% Definition of parameters
-% [Kb, Kr, w_a, w_ap, w_rp, p, R_max] = params;
-Kb = params(1);
-Kr = params(2);
-w_b = params(3);
-w_bp = params(4);
-w_rp = params(5);
-p = params(6);
-R_max = params(7);
-
-% TF inputs : Read a matrix of TF, each column represent different TFs
-Bcd = TF(:,1);
-Runt = TF(:,2);
-
-% scale with the dissociation constant
-b = Bcd./Kb;
-r = Runt./Kr;
-
-% Calculate the partition function
-Z_b = (1-1/w_b) + 1/w_b * (1+w_b*b).^6;
-Z_bp = p*(1-1/w_b) + p/w_b*(1+w_b*b*w_bp).^6;
-Z_br = r*(1-1/w_b) + r./w_b .*(1+w_b*b).^6;
-Z_brp = r*p*(1-w_rp/w_b) + w_rp*r*p/w_b.*(1+w_b*b*w_bp).^6;
-
-% Calculate the P_bound
-P_bound = (Z_bp + Z_brp)./ (Z_b + Z_bp + Z_br + Z_brp);
-
-Output = P_bound*R_max;
-end
 
 end

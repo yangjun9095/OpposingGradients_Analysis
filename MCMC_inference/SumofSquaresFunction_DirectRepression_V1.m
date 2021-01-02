@@ -1,4 +1,4 @@
-function SS = SumofSquaresFunction_InitialSlopeMCMC(data, params)
+function SS = SumofSquaresFunction_DirectRepression_V1(data, params)
 % Log likelihood probability function for MCMC fitting.
 % Currently the model infers values for . 
 % This is for use in the MCMCstat package and returns the sum-of-squares function. 
@@ -44,11 +44,13 @@ Kb = params(1); % dissociation constant of Bcd
 Kr = params(2); % dissociation constant of Run
 w_b = params(3); % interaction between Bcd molecules
 w_bp = params(4); % interaction between Bicoid and RNAP
-p = params(5); % 
-R_max = params(6); %
+w_rp = params(5); %
+p = params(6); % 
+R_max = params(7); %
+
+
 % repression terms
 % w_br = 1; %
-w_rp = params(7); %
 % w_brp = 1; %
 
 % Construct a parameter_set for the model input : this should be

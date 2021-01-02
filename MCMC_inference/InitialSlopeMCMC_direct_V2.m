@@ -1,4 +1,4 @@
-function InitialSlopeMCMC_V2(varargin)
+function InitialSlopeMCMC_direct_V2(varargin)
 
 %% Description
 % Fits the initial slope profile over the AP axis for Runt WT/Null (or both simultaneously) 
@@ -10,7 +10,6 @@ function InitialSlopeMCMC_V2(varargin)
 % readme and in the manuscript, and are initialized with default values if
 % not specified by the user.
 
-
 %Variable arguments:
 %   'fileDir', fileDir: directory of dataset files (default = root
 %   directory)
@@ -21,9 +20,6 @@ function InitialSlopeMCMC_V2(varargin)
 %   'n_burn', n_burn: number of burn-in steps in MCMC algorithm (default = 10000)
 %   'n_steps', n_steps: number of steps in MCMC algorithm including burn-in (default =
 %   20000)
-%   'loadPrevious', true/false: option to load previous inference results
-%   to retain inferred elongation rate for hierarchical fit (see Liu et al,
-%   Section S3.2
 %   'construct', construct: option to specify which enhancer construct to
 %   fit.
 
@@ -33,8 +29,8 @@ FilePath = 'S:\YangJoon\Dropbox\OpposingGradient\OpposingGradients_ProcessedData
 
 fileDir = pwd;
 saveLoc = pwd;
-numParPools = 8;
-% n_burn = 50000;
+numParPools = 16;
+% n_burn = 5000;
 n_steps = 10^6;
 % ratePriorWidth = 50;
 AP_start = 20; % [% of embryo length]
@@ -46,50 +42,39 @@ globalFit = 1;
 % realized in utilizing different forms and input parameters of
 % SumOfSquares function below. % competition, direct repression, quenching,
 % and combination are the options.
-Model = 'default'; 
-
-for i=1:length(varargin)
-    if strcmpi(varargin{i},'fileDir')
-        fileDir = varargin{i+1};
-    end
-    if strcmpi(varargin{i},'saveLoc')
-        saveLoc = varargin{i+1};
-    end
-    if strcmpi(varargin{i},'numParPools')
-        numParPools = varargin{i+1};
-    end
-    if strcmpi(varargin{i},'n_burn')
-        n_burn = varargin{i+1};
-    end
-    if strcmpi(varargin{i},'n_steps')
-        n_steps = varargin{i+1};
-    end
-%     if strcmpi(varargin{i},'ratePriorWidth')
-%         ratePriorWidth = varargin{i+1};
+% Model = 'default'; 
+% 
+% for i=1:length(varargin)
+%     if strcmpi(varargin{i},'fileDir')
+%         fileDir = varargin{i+1};
 %     end
-    if strcmpi(varargin{i},'AP_start')
-        AP_start = varargin{i+1};
-    end
-    if strcmpi(varargin{i},'AP_end')
-        AP_end = varargin{i+1};
-    end
-    if strcmpi(varargin{i},'loadPrevious')
-        loadPrevious = true;
-    end
-    if strcmpi(varargin{i},'Model')
-         % one of the categories : "direct", "competition", "quenching", or
-         % combination of all three (or more).
-        Model = varargin{i+1};
-    end
-    if strcmpi(varargin{i},'construct')
-         % one of the enhancer constructs 
-        construct = varargin{i+1};
-    end
-    if strcmpi(varargin{i},'globalFit')
-         % global fit (fitting Runt WT and null simultaneously) 
-        globalFit = 1;
-    end
-end
+%     if strcmpi(varargin{i},'saveLoc')
+%         saveLoc = varargin{i+1};
+%     end
+%     if strcmpi(varargin{i},'numParPools')
+%         numParPools = varargin{i+1};
+%     end
+%     if strcmpi(varargin{i},'n_burn')
+%         n_burn = varargin{i+1};
+%     end
+%     if strcmpi(varargin{i},'n_steps')
+%         n_steps = varargin{i+1};
+%     end
+
+%     if strcmpi(varargin{i},'Model')
+%          % one of the categories : "direct", "competition", "quenching", or
+%          % combination of all three (or more).
+%         Model = varargin{i+1};
+%     end
+%     if strcmpi(varargin{i},'construct')
+%          % one of the enhancer constructs 
+%         construct = varargin{i+1};
+%     end
+%     if strcmpi(varargin{i},'globalFit')
+%          % global fit (fitting Runt WT and null simultaneously) 
+%         globalFit = 1;
+%     end
+% end
 
 %% Load dataset
 % We need another separate script to process the data for inputs in this
@@ -97,16 +82,17 @@ end
 % Ideas : compiledData.mat -> extract the initial slope (Rate) as mean or
 % from individual embryos 
 
-load([FilePath, filesep, 'PreProcessedData_ForMCMC.mat'])
+preprocessedData = load([FilePath, filesep, 'PreProcessedData_ForMCMC.mat']);
+data = preprocessedData.data;
 % this load a structure named "data"
 
 % Load the input TF data
 load([FilePath, filesep, 'TFinput.mat'])
 
-Bcd = TFinput(:,1);
-Run = TFinput(:,2);
-RunNull = TFinput(:,3);
-%% Optional : Extracting specific constructs, redefine as "Data"
+Bicoid = TFinput(:,1);
+Runt = TFinput(:,2);
+RuntNull = TFinput(:,3);
+%% Extracting specific constructs, redefine as "Data"
 
 % Loop through all constructs (data), to compare the constructName with our
 % input, "construct", then extract the cells in that row.
@@ -116,67 +102,79 @@ for i=1:length(data)
     end
 end
 
-%% Set up data to be saved in structure
-MCMCchain = struct('Kb_chain',{},'Kr_chain',{},'w_b_chain',{},'w_bp_chain',{},...
-    'p_chain',{},'R_max_chain',{},'w_rp_chain',{});
-MCMCresults = struct('mean_Kb',{},'sigma_Kb',{},'mean_Kr',{},'sigma_Kr',{},...
-    'mean_w_b',{},'sigma_w_b',{},'mean_w_bp',{},'sigma_w_bp',{},...
-    'mean_p',{},'sigma_p',{},'mean_R_max',{},'sigma_R_max',{},...
-    'mean_w_rp',{},'sigma_w_rp',{});
-MCMCplot = struct('Rate_plot',{},'simRate',{});
+% APbinRanges = {{[20,42.5]},{20,45},{20,45}}
+% k=1; % counter
+% for construct = [2,5,6]
 
-% DatasetName = data_all(k).data(1).name; %Assuming all the cells come from the same dataset
+%% Pull the construct of our interest (for the parameter inference)
 
-%% MCMC analysis on the initial slope (averaged over embryos)
+% Choose a construct 
+construct = 5;
+% Pick the dataset from the data.mat
+Data = data(construct);
 
+% MCMC analysis on the initial slope (averaged over embryos)
 % initialize the AP bins
 APaxis = Data.APbins;
 
 %Truncate APbins to user-specified range (input was optional argument in
 %this function.
+NoNaN_index_null = ~isnan(Data.Rate_null);
+NoNaN_index_WT = ~isnan(Data.Rate_WT);
+% calculate the AP bins that are not NaNs in both WT and Null datasets
+NoNaN_index = NoNaN_index_null.*NoNaN_index_WT;
 
-% AP_start = 20; % [% of embryo length]
-% AP_end = 45;   % [% of embryo length]
-% Convert the [% of embryo length to the index of AP bins]
-APbin_start = AP_start/2.5 + 1;
-APbin_end = AP_end/2.5 + 1;
+NoNaNindices = find(NoNaN_index);
+
+% Range that is set as an initial guess. We will get a common set of
+% APbins that does not have NaN values in these AP bins.
+APbin_start = 20/2.5 + 1;
+APbin_end = 45/2.5 + 1;
+
+APbinRange = (APbin_start:APbin_end)';
+
+% find the common elements of AP bins between Not-NaNs, and also the
+% pre-set range (20-45%)
+APbins_fit = intersect(NoNaNindices, APbinRange);
 
 % initialize the initial rate (slope)
 Rate_WT = Data.Rate_WT;
 Rate_null = Data.Rate_null;
 
 % Truncate the vectors using the range of AP bins
-APaxis = APaxis(APbin_start:APbin_end);
-Rate_WT = Rate_WT(APbin_start:APbin_end);
-Rate_null = Rate_null(APbin_start:APbin_end);
+APbins = APaxis(APbins_fit);
+Rate_WT = Rate_WT(APbins_fit);
+Rate_null = Rate_null(APbins_fit);
 
-Bcd = Bcd(APbin_start:APbin_end);
-Run = Run(APbin_start:APbin_end);
-RunNull = RunNull(APbin_start:APbin_end);
+Bcd = Bicoid(APbins_fit);
+Run = Runt(APbins_fit);
+RunNull = RuntNull(APbins_fit);
 
-% MCMC data structure initialization
-MCMCdata = [];
-MCMCdata.APbins = APaxis; %Time data
-MCMCdata.Rate_WT = Rate_WT;
-MCMCdata.Rate_null = Rate_null;
-
-% Input TF info
-MCMCdata.Bcd = Bcd;
-MCMCdata.Run = Run;
-MCMCdata.RunNull = RunNull;
-
-%% Decide whether we want to fit the Runt null/WT data together or not.
+% Decide whether we want to fit the Runt null/WT data together or not.
 % depending on this, we will set the xdata and ydata for the fitting.
-if globalFit
-    MCMCdata.xdata = [APaxis' ; APaxis'];
-    MCMCdata.ydata = [Rate_null ; Rate_WT];
-    MCMCdata.Bcd = [Bcd ; Bcd];
-    MCMCdata.Run = [RunNull ; Run];
-else
-%     MCMCdata.xdata = [APaxis];
-%     MCMCdata.ydata1 = [Rate_null];
-%     MCMCdata.ydata2 = [Rate_WT];
-end
+MCMCdata = struct;
+MCMCdata.APdata = [APbins' ; APbins'];
+MCMCdata.ydata = [Rate_null ; Rate_WT];
+% input TF
+MCMCdata.Bcd = [Bcd ; Bcd];
+MCMCdata.Run = [RunNull ; Run];
+MCMCdata.xdata = [MCMCdata.Bcd, MCMCdata.Run];
+
+MCMCdata.R_max = max(MCMCdata.ydata);
+MCMCdata.R_min = min(MCMCdata.ydata);
+
+%% Set up data to be saved in structure
+MCMCchain = struct('Kb_chain',{},'Kr_chain',{},'w_b_chain',{},'w_bp_chain',{},...
+    'w_rp_chain',{},'p_chain',{},'R_max_chain',{});
+MCMCresults = struct('mean_Kb',{},'sigma_Kb',{},'mean_Kr',{},'sigma_Kr',{},...
+    'mean_w_b',{},'sigma_w_b',{},'mean_w_bp',{},'sigma_w_bp',{},...
+    'mean_w_rp',{},'sigma_w_rp',{},...
+    'mean_p',{},'sigma_p',{},'mean_R_max',{},'sigma_R_max',{});
+MCMCplot = struct('Rate_plot',{},'simRate',{});
+
+% DatasetName = data_all(k).data(1).name; %Assuming all the cells come from the same dataset
+
+
 %% MCMC analysis loop through single embryos
 
 %% Setup MCMC Fit
@@ -196,8 +194,8 @@ end
 
 % Initialize MCMC parameters.
 
-Kb0 = 50;   % 100*rand;
-Kr0 = 1;     % 100*rand;
+Kb0 = 100;   % 100*rand;
+Kr0 = 10;     % 100*rand;
 w_b0 = 1;    % 10*rand;
 w_bp0 = 5;   % 10*rand;
 p0 = 0.001; %
@@ -205,10 +203,10 @@ R_max0 = 500; %500*rand;
 
 % repression (0< w <1)
 % w_br0 = rand;
-w_rp0 = rand;
+w_rp0 = 0.2;
 % w_brp0 = rand;
 
-params0 = [Kb0, Kr0, w_b0, w_bp0, p0, R_max0, w_rp0];
+params0 = [Kb0, Kr0, w_b0, w_bp0, w_rp0, p0, R_max0, ];
 
 sigma2_0 = 1; %Initial guess for error variance
 
@@ -218,8 +216,8 @@ sigma2_0 = 1; %Initial guess for error variance
 
 Kb_step = 1;
 Kr_step = 1;
-w_b_step = 0.05;
-w_bp_step = 0.05;
+w_b_step = 0.1;
+w_bp_step = 0.1;
 p_step = 0.0001;
 R_max_step = 1;
 
@@ -228,7 +226,7 @@ R_max_step = 1;
 w_rp_step = 0.01;
 % w_brp_step = 0.01;
 
-% Initial covariance matrix
+% Initialize the covariance matrix
 J0 = diag([Kb_step, Kr_step, w_b_step, w_bp_step,...
     p_step, R_max_step, w_rp_step]);
 
@@ -254,17 +252,17 @@ J0 = diag([Kb_step, Kr_step, w_b_step, w_bp_step,...
 %             {'R_max', params0(6), 0, 1000, 500, 200}
 %             {'w_rp', params0(7), 0, 1}
 %             };
-        
+
 % params with a uniform prior
-params = {  {'Kb', params0(1), 10^(-2), 10^5}
-            {'Kr', params0(2),  10^(-2), 10^5}
-            {'w_b', params0(3),  1, 10^2}
-            {'w_bp', params0(4), 1, 10^2}
-            {'p', params0(5), 0, 0.1}
+params = {  {'Kb', params0(1), 10^(-1), 10^4}
+            {'Kr', params0(2),  10^(-1), 10^4}
+            {'w_b', params0(3),  1, 10^3}
+            {'w_bp', params0(4), 1, 10^3}
+            {'w_rp', params0(5), 0, 1}
             {'R_max', params0(6), 0, 1000}
-            {'w_rp', params0(7), 0, 1}
+            {'p', params0(7), 0, 0.1}
             };
-        
+
 
 model = [];
 model.ssfun = ssfun;
@@ -300,9 +298,9 @@ Kb_chain = chain(n_burn:end,1);
 Kr_chain = chain(n_burn:end,2);
 w_b_chain = chain(n_burn:end,3);
 w_bp_chain = chain(n_burn:end,4);
-p_chain = chain(n_burn:end,5);
+w_rp_chain = chain(n_burn:end,5);
 R_max_chain = chain(n_burn:end,6);
-w_rp_chain = chain(n_burn:end,7);
+p_chain = chain(n_burn:end,7);
 
 
 %Mean/STD results
@@ -359,11 +357,12 @@ plot(APaxis, Rate_fit(:,2))
 chainstats(chain,results)
 
 %% generate plots with error bars of the output (similar to the nlpredci)
-mdl = @model_6A1R_direct_repression_V1;
-out = mcmcpred(results,chain,[],MCMCdata, mdl);
+mdl = @(params, TF) model_6A1R_direct_repression_V2;
+xdata = [MCMCdata.Bcd, MCMCdata.Run];
+out = mcmcpred(results,chain,[],xdata, mdl);
 
 %% generate cornerplots
-mcmcplot(chain,[],results,'pairs', .5);
+mcmcplot(chain,[],results,'pairs');
 
 %% generate plots of inferred parameters
 params_inferred = [mean_Kb mean_Kr mean_w_b mean_w_bp mean_w_rp mean_p mean_R_max];

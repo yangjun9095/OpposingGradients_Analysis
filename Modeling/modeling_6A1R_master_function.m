@@ -6,7 +6,8 @@ function modeling_6A1R_master_function(varargin)
 % Assumptions : 
 
 %% Step0. Set up the directories
-
+% file to save
+SavePath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\ModelingV2_generalizedThermo';
 %% Step1. Get the actual input TF and output data
 % Here, I'll use the time-averaged Bcd and Runt profiles processed by
 % main01_04/05 scripts.
@@ -32,14 +33,14 @@ constructNames = {'000','100','011','111','001','010','110','101',...
 TFData = load([FilePath, filesep, 'TFinput.mat']);
 TFdata = TFData.TFinput;
 
-Bcd = TFdata(:,1);
-Run = TFdata(:,2);
-RunNull = TFdata(:,3);
+Bicoid = TFdata(:,1);
+Runt = TFdata(:,2);
+RuntNull = TFdata(:,3);
 
 % Make a matrix whose each column is each TF
-TF(:,1) = Bcd;
-TF(:,2) = Run;
-TF(:,3) = RunNull;
+TF(:,1) = Bicoid;
+TF(:,2) = Runt;
+TF(:,3) = RuntNull;
 
 %% Model-type1 : direct repression
 
@@ -86,12 +87,12 @@ for construct = [2,5,6]
     % Trim the data of WT and Null into one vector
     data = [Rate_null(fitRange); Rate(fitRange)];
 
-    input_combined(:,1) = [Bcd(fitRange); Bcd(fitRange)];
-    input_combined(:,2) = [RunNull(fitRange); Run(fitRange)];
+    input_combined(:,1) = [Bicoid(fitRange); Bicoid(fitRange)];
+    input_combined(:,2) = [RuntNull(fitRange); Runt(fitRange)];
     
 
     % save into a structure
-    data_model_input(k).construtName = DataTypes(construct)
+    data_model_input(k).construtName = DataTypes(construct);
     data_model_input(k).APbins = APaxis(fitRange);
     data_model_input(k).input = input_combined;
     data_model_input(k).output = data;
@@ -99,32 +100,9 @@ for construct = [2,5,6]
 
 end   
 
-%% (Optional) : Interpolation that could be done in the above for loop)
-%     % interplate to see if this makes our inference of parameters better
-%     AP_interp = APaxis(fitRange(1)):0.025/10:APaxis(fitRange(end));
-%     AP_interp = AP_interp'; % transpose
-%     APbins_interp = [AP_interp ; AP_interp];
-%     
-%     % interpolate the input TF data
-%     Bcd_interp = interp1(APaxis(fitRange), Bcd(fitRange), AP_interp);
-%     RunNull_interp= interp1(APaxis(fitRange), RunNull(fitRange), AP_interp);
-%     Run_interp = interp1(APaxis(fitRange), Run(fitRange), AP_interp);
-%     
-%     % combine those interpolated inputs into a matrix
-%     input_combined_interp(:,1) = [Bcd_interp ; Bcd_interp];
-%     input_combined_interp(:,2) = [RunNull_interp ; Run_interp];
-%     
-%     % interpolate the output data
-%     Rate_null_interp = interp1(APaxis(fitRange), Rate_null(fitRange), AP_interp);
-%     Rate_interp = interp1(APaxis(fitRange), Rate(fitRange), AP_interp);
-%     data_interp = [Rate_null_interp ; Rate_interp];
-
-
-%     data_model_input(construct).APbins =  AP_interp;
-%     data_model_input(construct).input = input_combined_interp;
-%     data_model_input(construct).output = data_interp;
     
 %% Fitting process using the global_fit_construct_generalThermoV2.m
+% Model : Direct repression
 % Inputs : xdata, ydata, and model for the fitting
 
 % Pick a model from different modes
@@ -135,13 +113,11 @@ mdl = @(params, TF) model_6A1R_direct_repression_V2(params, TF);
 
 % Define the parameter bounds for the fitting
 % params = [Kb, Kr, w_a, w_ap, w_rp, p, R_max];
-lb = [10^(-2) 10^(-2) 1 1 0 10^(-4) 50];
-ub = [10^5 10^5 10^2 10^2 1 10 1000];
-
-% options = optimoptions('lsqnonlin','Display','iter', 'Algorithm', 'trust-region-reflective');
+lb = [10^(-1) 10^(-1) 1 1 10^(-6) 10^(-3) 50];
+ub = [2*10^3 10^2 10^2 10^2 1 1 1000];
 
 % initial input of parameter guess
-params0 = [1, 5, 2, 2, 0.2, 0.001, 300]; % example
+params0 = [1000, 2, 2, 5, 0.2, 0.004, 300]; % example
 
 % Initialize the FitResult structure
 FitResult = struct;
@@ -180,6 +156,61 @@ end
 %% Save the fitting results into structures
 save('S:\YangJoon\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\generalThermoFit_direct_V3.mat',...
         'data_model_input', 'FitResult')
+    
+%% check the fitted parameters by pluggin back into the model,
+% to see whether the fit matches well with the data
+
+%% plot the fitting results
+APaxis = 0:0.025:1;
+
+% counter
+k=1;
+for construct = [2,5,6]
+    clf
+    
+    % initialize the variables
+    Rate = [];
+    Rate_SEM = [];
+    Rate_null = [];
+    Rate_null_SEM = [];
+    
+    % Pull the relevant data from the compiledData
+    Rate = compiledData{construct+1,9};
+    Rate_SEM = compiledData{construct+1,10};
+
+    Rate_null = compiledData{construct+1+8,9};
+    Rate_null_SEM = compiledData{construct+1+8,10};
+    
+    % pull the fitted result and error bar (Ypred and delta) from the
+    % lsqcurvefit fitting.
+    APrange = data_model_input(k).APbins;
+    Ypred = FitResult(k).Ypred;
+    delta = FitResult(k).delta;
+    k=k+1;
+    
+    hold on
+    % Runt nulls
+    errorbar(APaxis, Rate_null, Rate_null_SEM,'o','Color',ColorChoice(4,:),'CapSize',0,'MarkerFaceColor',ColorChoice(4,:))
+    shadedErrorBar(APrange, Ypred(1:length(APrange)), delta(1:length(APrange)),'lineProps',{'markerfacecolor',ColorChoice(4,:)})
+    % Runt WT
+    errorbar(APaxis, Rate, Rate_SEM,'o','Color',ColorChoice(1,:),'CapSize',0,'MarkerFaceColor',ColorChoice(1,:))
+    shadedErrorBar(APrange, Ypred(length(APrange)+1:end), delta(length(APrange)+1:end),'lineProps',{'markerfacecolor',ColorChoice(1,:)})
+
+
+    xlim([0.2 0.6])
+    xticks([0.2 0.3 0.4 0.5 0.6])
+    ylim([0 400])
+    yticks([0 100 200 300 400])
+
+    xlabel('embryo length')
+    ylabel({'initial RNAP', 'loading rate (AU/min)'})
+
+    StandardFigure(gcf,gca)
+    pause
+%   %Save the plot
+%     saveas(gcf,[FigPath,filesep,'fit_direct_V3_',constructNames{construct},'.tif']); 
+%     saveas(gcf,[FigPath,filesep,'fit_direct_V3_',constructNames{construct},'.pdf']); 
+end
 %% Covariance of parameters
 % CovB = inv(J'*J).*MSE;
 % covfig = figure;
@@ -202,13 +233,13 @@ mdl = @(params, TF) model_6A1R_competition_V2(params, TF);
 
 % Define the parameter bounds for the fitting
 % params = [Kb, Kr, w_a, w_ap, w_br, p, R_max];
-lb = [10^(-2) 10^(-2) 1 1 0 10^(-4) 50];
-ub = [10^3 10^3 10^2 10^2 1 10 1000];
+lb = [10^(-1) 10^(-1) 1 1 10^(-6) 0 50];
+ub = [2*10^3 10^3 10^3 10^3 1 10 1000];
 
 % options = optimoptions('lsqnonlin','Display','iter', 'Algorithm', 'trust-region-reflective');
 
 % initial input of parameter guess
-params0 = [1, 5, 2, 2, 0.2, 0.001, 300]; % example
+params0 = [10, 5, 2, 2, 0.2, 0.001, 300]; % example
 
 % Initialize the FitResult structure
 FitResult = struct;
@@ -290,10 +321,10 @@ for construct = [2,5,6]
     ylabel({'initial RNAP', 'loading rate (AU/min)'})
 
     StandardFigure(gcf,gca)
-
+    pause
 %   %Save the plot
-    saveas(gcf,[FigPath,filesep,'fit_competition_V3_',constructNames{construct},'.tif']); 
-    saveas(gcf,[FigPath,filesep,'fit_competition_V3_',constructNames{construct},'.pdf']); 
+%     saveas(gcf,[FigPath,filesep,'fit_competition_V3_',constructNames{construct},'.tif']); 
+%     saveas(gcf,[FigPath,filesep,'fit_competition_V3_',constructNames{construct},'.pdf']); 
 end
 %% Plot the parameters
 
@@ -329,4 +360,116 @@ save('S:\YangJoon\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\gener
         'data_model_input', 'FitResult')
 %% Part3. Quenching
 
+
+
+
+
+%% Part4. Simpler model - Hill function
+%% Fitting process using the global_fit_construct_generalThermoV2.m
+
+% Pick a model from different modes
+% Define anonymous function from the given model input. (either direct,
+% competition, quenching, etc.)
+% params = [K_b, K_r, w, R_max, R_min]
+mdl0 = @model_6A1R_HillModel;
+mdl = @(params, TF) model_6A1R_HillModel(params, TF);
+
+% Define the parameter bounds for the fitting
+% params = [Kb, Kr, w_a, w_ap, w_br, p, R_max];
+lb = [10^(-2) 10^(-2) 0 50 0];
+ub = [2*10^3 10^3 1 1000 100];
+
+% options = optimoptions('lsqnonlin','Display','iter', 'Algorithm', 'trust-region-reflective');
+
+% initial input of parameter guess
+params0 = [10, 5, 0.1, 300, 50]; % example
+
+% Initialize the FitResult structure
+FitResult = struct;
+k=1; % counter
+
+for construct = [2,5,6]
+    % initialize the variables
+    params_fit = [];
+    Res = [];
+    Jacobian = [];
+    CI = [];
+    STD = [];
+    Ypred = [];
+    delta = [];
+    
+    % define the inputs for the fitting
+    inputTF = data_model_input(k).input;
+    data = data_model_input(k).output;
+    
+    [params_fit, Res, Jacobian, CI, STD, Ypred, delta] = ...
+                global_fit_construct_generalThermoV2(inputTF, data, mdl0, mdl, params0, lb, ub);
+            
+    % save the fit results (parameters and Jacobian, etc.) into the FitResult structure.        
+    FitResult(k).constructName = DataTypes(construct);
+    FitResult(k).params_fit = params_fit;
+    FitResult(k).Res = Res;
+    FitResult(k).Jacobian = Jacobian;
+    FitResult(k).CI = CI;
+    FitResult(k).STD = STD;
+    FitResult(k).Ypred = Ypred;
+    FitResult(k).delta = delta;
+
+    k=k+1;
+end
+
+%% plot the fitting results
+APaxis = 0:0.025:1;
+
+% counter
+k=1;
+for construct = [2,5,6]
+    clf
+    
+    % initialize the variables
+    Rate = [];
+    Rate_SEM = [];
+    Rate_null = [];
+    Rate_null_SEM = [];
+    
+    % Pull the relevant data from the compiledData
+    Rate = compiledData{construct+1,9};
+    Rate_SEM = compiledData{construct+1,10};
+
+    Rate_null = compiledData{construct+1+8,9};
+    Rate_null_SEM = compiledData{construct+1+8,10};
+    
+    % pull the fitted result and error bar (Ypred and delta) from the
+    % lsqcurvefit fitting.
+    APrange = data_model_input(k).APbins;
+    Ypred = FitResult(k).Ypred;
+    delta = FitResult(k).delta;
+    k=k+1;
+    
+    hold on
+    % Runt nulls
+    errorbar(APaxis, Rate_null, Rate_null_SEM,'o','Color',ColorChoice(4,:),'CapSize',0,'MarkerFaceColor',ColorChoice(4,:))
+    shadedErrorBar(APrange, Ypred(1:length(APrange)), delta(1:length(APrange)),'lineProps',{'markerfacecolor',ColorChoice(4,:)})
+    % Runt WT
+    errorbar(APaxis, Rate, Rate_SEM,'o','Color',ColorChoice(1,:),'CapSize',0,'MarkerFaceColor',ColorChoice(1,:))
+    shadedErrorBar(APrange, Ypred(length(APrange)+1:end), delta(length(APrange)+1:end),'lineProps',{'markerfacecolor',ColorChoice(1,:)})
+
+
+    xlim([0.2 0.6])
+    xticks([0.2 0.3 0.4 0.5 0.6])
+    ylim([0 400])
+    yticks([0 100 200 300 400])
+
+    xlabel('embryo length')
+    ylabel({'initial RNAP', 'loading rate (AU/min)'})
+
+    StandardFigure(gcf,gca)
+    pause
+%   %Save the plot
+    saveas(gcf,[FigPath,filesep,'fit_Hill_V2_',constructNames{construct},'.tif']); 
+    saveas(gcf,[FigPath,filesep,'fit_Hill_V2_',constructNames{construct},'.pdf']); 
+end
+%% Save the fitting results into structures
+save('S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\ModelingV2_generalizedThermo\Hill_V2\Hill_V2_direct.mat',...
+        'data_model_input', 'FitResult')
 end

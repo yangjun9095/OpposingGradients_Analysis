@@ -1,5 +1,5 @@
 function [Output, Z_b, Z_bp, Z_br, Z_brp] = ...
-                    model_6A1R_direct_repression_V1(Bcd, Runt,params) 
+                    model_6A1R_direct_repression_V1(Bcd, Runt, params) 
 
 %% Definition of parameters
 % [Kb, Kr, w_a, w_ap, w_rp, p, R_max] = params;

@@ -215,7 +215,7 @@ R_max0 = 500; %500*rand;
 w_rp0 = rand;
 % w_brp0 = rand;
 
-params0 = [Kb0, Kr0, w_b0, w_bp0, p0, R_max0, w_rp0];
+params0 = [Kb0, Kr0, w_b0, w_bp0, w_rp0, R_max0, p0];
 
 sigma2_0 = 1; %Initial guess for error variance
 
@@ -227,17 +227,17 @@ Kb_step = 1;
 Kr_step = 1;
 w_b_step = 0.05;
 w_bp_step = 0.05;
-p_step = 0.0001;
+w_rp_step = 0.01;
 R_max_step = 1;
+p_step = 0.0001;
 
 % repression
 % w_br_step = 0.01;
-w_rp_step = 0.01;
 % w_brp_step = 0.01;
 
 % Initial covariance matrix
 J0 = diag([Kb_step, Kr_step, w_b_step, w_bp_step,...
-    p_step, R_max_step, w_rp_step]);
+    w_rp_step, R_max_step, p_step]);
 
 %% Setup MCMC parameters and options
 % put the initial parameters and bounds in a form that the mcmc function
@@ -257,9 +257,9 @@ params = {  {'Kb', params0(1), 10^(-2), 10^5}
             {'Kr', params0(2),  10^(-2), 10^5}
             {'w_b', params0(3),  1, 10^2}
             {'w_bp', params0(4), 1, 10^2}
-            {'p', params0(5), 0, 0.1}
+            {'w_rp', params0(5), 0, 1}
             {'R_max', params0(6), 0, 1000}
-            {'w_rp', params0(7), 0, 1}
+            {'p', params0(7), 0, 0.1}
             };
 
 model = [];
