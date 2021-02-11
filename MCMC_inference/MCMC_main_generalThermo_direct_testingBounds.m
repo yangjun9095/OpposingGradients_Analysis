@@ -9,7 +9,7 @@ FilePath = 'S:\YangJoon\Dropbox\OpposingGradient\OpposingGradients_ProcessedData
 % saveLoc = pwd;
 numParPools = 8;
 % n_burn = 5000;
-n_steps = 10^5;
+n_steps = 2*10^5;
 n_simu = n_steps;
 % ratePriorWidth = 50;
 AP_start = 20; % [% of embryo length]
@@ -110,165 +110,219 @@ model.modelfun = mdl;  %use mcmcrun generated ssfun
 names = {'K_{b}','K_{r}','w_{b}','w_{bp}','w_{rp}','p','R_{max}'};
 params = cell(1, length(names));
 
-% Initialize MCMC parameters.
-% [001]
-% Kb0 = 10;   % 100*rand;
-% Kr0 = 10;     % 100*rand;
-% w_b0 = 2;    % 10*rand;
-% w_bp0 = 5;   % 10*rand;
-% % repression (0< w <1)
-% w_rp0 = 0.1;
-% p0 = 0.004; %
-% R_max0 = MCMCdata.R_max; %500*rand;
-
-% [010]
+% Initialize the MCMC parameters.
 Kb0 = 20;   % 100*rand;
 Kr0 = 5;     % 100*rand;
 w_b0 = 20;    % 10*rand;
 w_bp0 = 2;   % 10*rand;
 % repression (0< w <1)
-w_rp0 = 0.44;
+w_rp0 = 0.5;
 p0 = 0.1; %
 R_max0 = MCMCdata.R_max; %500*rand;
 
 
 params0 = [Kb0, Kr0, w_b0, w_bp0, w_rp0, p0, R_max0];
 
-% Bounds of the parameters
-LB = [0.1, 0.1, 1, 1, 10^(-6), 0, 50];
-UB = [10^2, 10^2, 10^6, 10^2, 1, 10, 10^3];
+% Define the vector for the upper/lower limits of the parameters, for now,
+% we will only vary the K_{b} and K_{r}.
+maxBound = [10^2, 10^3, 10^4, 10^5, 10^6, 10^7];
 
-for i = 1:length(names)
-    pri_mu = NaN; %default prior gaussian mean
-    pri_sig = Inf; %default prior gaussian variance
-    localflag = 0; %is this local to this dataset or shared amongst batches?
-    targetflag = 1; %is this optimized or not? if this is set to 0, the parameter stays at a constant value equal to the initial value.
-    
-    if i==7
-        pri_mu = MCMCdata.R_max;
-        pri_sig = 20;
-%         targetflag = 0; % Fix this parameter
-    else
-%         pri_mu = NaN;
-%         pri_sig = Inf;
+for j=1:length(maxBound)
+    % Bounds of the parameters
+    LB = [0.1, 0.1, 1, 1, 10^(-6), 0, 50];
+    UB = [maxBound(j), 10^2, 10^3, 10^3, 1, 10, 10^3];
+
+    for i = 1:length(names)
+        pri_mu = NaN; %default prior gaussian mean
+        pri_sig = Inf; %default prior gaussian variance
+        localflag = 0; %is this local to this dataset or shared amongst batches?
+        targetflag = 1; %is this optimized or not? if this is set to 0, the parameter stays at a constant value equal to the initial value.
+
+        if i==7
+            pri_mu = MCMCdata.R_max;
+            pri_sig = 20;
+    %         targetflag = 0; % Fix this parameter
+        else
+    %         pri_mu = NaN;
+    %         pri_sig = Inf;
+        end
+        params{1, i} = {names{i},params0(i), LB(i), UB(i), pri_mu, pri_sig, targetflag, localflag};
+
     end
-    params{1, i} = {names{i},params0(i), LB(i), UB(i), pri_mu, pri_sig, targetflag, localflag};
+
+    %This is the variance in the parameter proposal distribution. Change these
+    %to change the proposal acceptance rate, or if the convergence doesn't look
+    %good.
+
+    Kb_step = 10;
+    Kr_step = 1;
+    w_b_step = 0.1;
+    w_bp_step = 0.1;
+    p_step = 0.001;
+    R_max_step = 1;
+
+    % repression
+    w_rp_step = 0.01;
+
+
+    % Initialize the covariance matrix
+    J0 = diag([Kb_step, Kr_step, w_b_step, w_bp_step,...
+        w_rp_step, p_step, R_max_step]);
+
+
+    %% MCMC - Options
+    options = [];
+    n_steps = 2*10^5;
+    options.nsimu = n_steps; %n_steps; %Number of steps
+    options.updatesigma = 1; %Update error variance
+    options.qcov = J0; %Initial covariance
+    % options.burnintime = 0.5*n_steps; %Burn in time
+    options.adaptint = 100;
+    options.method = 'dram';
+    options.verbosity = 0; %Decrease text output
+
+    % AR options
+    % options.drscale = 5; % a high value (5) is important for multimodal parameter spaces
+    % options.waitbar = wb; %the waitbar is rate limiting sometimes
+    % options.nsimu = nSimu; %should be between 1E3 and 1E6
+    % options.updatesigma = 1; %honestly don't know what this does
+
+    %% Run the MCMC (this whole block can be inserted inside the for loop above,
+    % to run the MCMC for different constructs.
+
+    %we're gonna run this three times and use the initial results of one
+    %run as conditions for the next. this is an alternative when common least
+    %squares gives results too poor to initialize with
+    results = [];
+    [results,~,~,~]=mcmcrun(model,MCMCdata,params,options,results);
+    [results,~,~,~]=mcmcrun(model,MCMCdata,params,options,results);
+    %[results,~,~,~]=mcmcrun(model,MCMCdata,params,options,results);
+    [results,chain,s2chain,~]=mcmcrun(model,MCMCdata,params,options,results);
     
+    MCMCResults_testBounds(j).results = results;
+    MCMCResults_testBounds(j).chain = chain;
+    MCMCResults_testBounds(j).maxBound = maxBound(j);
 end
 
-%This is the variance in the parameter proposal distribution. Change these
-%to change the proposal acceptance rate, or if the convergence doesn't look
-%good.
+%% Check the MCMC result
+figure
+for j=3:length(maxBound)
 
-Kb_step = 10;
-Kr_step = 1;
-w_b_step = 0.1;
-w_bp_step = 0.1;
-p_step = 0.001;
-R_max_step = 1;
+    chain = MCMCResults_testBounds(j).chain;
+    results = MCMCResults_testBounds(j).results;
+    %% Diagnose the MCMC result
+    % stats = chainstats(chain,results);
+    n_burn = 0.5*n_steps;
+    chainstats(chain(n_burn+1:end,:),results);
 
-% repression
-w_rp_step = 0.01;
+    %% generate corner plots
+    clf
+    n_burn = 0.5*n_steps; %0.5*n_steps;% 0.5*10^4;
+        m = [chain(n_burn:end,1), chain(n_burn:end,2), chain(n_burn:end,3), chain(n_burn:end,4), chain(n_burn:end,5), chain(n_burn:end,6)];%, chain(n_burn:end,7)];
+        corner = figure;
+        names = {'Kb','Kr','w_b','w_{bp}','w_{rp}','p','R_{max}'};
+        ecornerplot(m,'names',names);
 
+    % Save the plot
+        FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_ThermoModelV2';
+        saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct},'max_bound_K_b_' num2str(maxBound(j))  ,'.tif']); 
+        saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct},'max_bound_K_b_' num2str(maxBound(j))  ,'.pdf']); 
+end
 
-% Initialize the covariance matrix
-J0 = diag([Kb_step, Kr_step, w_b_step, w_bp_step,...
-    w_rp_step, p_step, R_max_step]);
+%% Extract the parameters from different bounds
+for j=1:length(maxBound)
+    %% pull the chain and results from the main cell/structure
+    chain = MCMCResults_testBounds(j).chain;
+    results = MCMCResults_testBounds(j).results;
+   
+    
+    %% Extract chain results into individual parameters
+    n_burn = n_steps*0.5;
+    params_fit(j,:) = mean(chain(n_burn+1:end,:));
+    params_fit_std(j,:) = std(chain(n_burn+1:end,:));
 
+end
 
-%% MCMC - Options
-options = [];
-n_steps = 2*10^4;
-options.nsimu = n_steps; %n_steps; %Number of steps
-options.updatesigma = 1; %Update error variance
-options.qcov = J0; %Initial covariance
-% options.burnintime = 0.5*n_steps; %Burn in time
-options.adaptint = 100;
-options.method = 'dram';
-options.verbosity = 0; %Decrease text output
+%% Color module
+% This is defining the line color
+% We have 8 distinct datasets, with or without Runt protein.
+% I think selecting 8 distinguishable color sets, then changing the
+% brightness by either adding/subtracting white would be a better idea than
+% selecting 16 different color sets.
 
-% AR options
-% options.drscale = 5; % a high value (5) is important for multimodal parameter spaces
-% options.waitbar = wb; %the waitbar is rate limiting sometimes
-% options.nsimu = nSimu; %should be between 1E3 and 1E6
-% options.updatesigma = 1; %honestly don't know what this does
+colorDict = struct();
+colorDict.blue = [115,143,193]/255; %[115,143,170]/255;
+colorDict.red =  [213,108,85]/255; %[200,108,85]/255;
+colorDict.yellow = [234,194,100]/255;
+colorDict.purple = [171,133,172]/255;
+colorDict.cyan = [108,188,233]/255;
+colorDict.green =  [122,169,116]/255; %[122,150,116]/255;
+colorDict.brown = [179,155,142]/255;
+colorDict.darkgreen = [126,157,144]/255;
 
-%% Run the MCMC (this whole block can be inserted inside the for loop above,
-% to run the MCMC for different constructs.
+%colorDict.magenta = [208,109,171]/255;
+%colorDict.lightBlue = [115,142,193]/255;
+colorDict.lightgreen = [205,214,209]/255;
+colorDict.pink = [232,177,157]/255;
+colorDict.thickpink = [132,27,69]/255;
 
-%we're gonna run this three times and use the initial results of one
-%run as conditions for the next. this is an alternative when common least
-%squares gives results too poor to initialize with
-results = [];
-[results,~,~,~]=mcmcrun(model,MCMCdata,params,options,results);
-[results,~,~,~]=mcmcrun(model,MCMCdata,params,options,results);
-%[results,~,~,~]=mcmcrun(model,MCMCdata,params,options,results);
-[results,chain,s2chain,~]=mcmcrun(model,MCMCdata,params,options,results);
+% Define a color matrix, 8 colors right now.
+ColorChoice = [colorDict.blue; colorDict.green;...
+                colorDict.yellow; colorDict.red; colorDict.brown;...
+                colorDict.purple; colorDict.darkgreen; colorDict.thickpink]; 
 
-%% Diagnose the MCMC result
-% stats = chainstats(chain,results);
-n_burn = 0.5*n_steps+1;
-chainstats(chain(n_burn:end,:),results);
+% For now, I'll add white (color+[1 1 1])/2 to make thinner color (for the
+% Runt nulls)
+%% generate MCMC fits for the raw initial slope data
 
+figure
+hold on
+% 1) Data
+construct = 5;
+% Runt Null
+errorbar(APaxis, compiledData{construct+1+8,9}, compiledData{construct+1+8,10}, 'o', 'Color',ColorChoice(4,:),'LineWidth', 1)
+% Runt WT
+errorbar(APaxis, compiledData{construct+1,9}, compiledData{construct+1,10}, 'o', 'Color',ColorChoice(1,:),'LineWidth', 1)
 
-%% Repeat the MCMC run until we have convergence for the most of the parameters
-% stats(:,5) = 0;
-% 
-% results = [];
-% k=1; % counter
-% while mean(stats(:,5))<0.9 && k<1000
-%     [results,chain,s2chain,~]=mcmcrun(model,MCMCdata,params,options,results);
-%     k=k+1;
-%     stats = chainstats(chain,results);
-% end
-%% generate corner plots
-%n_burn = 1;%0.5*n_steps;% 0.5*10^4;
-m = [chain(n_burn:end,1), chain(n_burn:end,2), chain(n_burn:end,3), chain(n_burn:end,4), chain(n_burn:end,5), chain(n_burn:end,6)];%, chain(n_burn:end,7)];
-corner = figure;
-names = {'Kb','Kr','w_b','w_{bp}','w_{rp}','p','R_{max}'};
-ecornerplot(m,'names',names);
+% 2) MCMC fits
+for j=1:length(maxBound)
 
-% Save the plot
-FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_ThermoModelV2';
-saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct}  ,'.tif']); 
-saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct} ,'.pdf']);  
-%%
-%% Extract chain results into individual parameters
-% n_burn = n_steps*0.25;
-Kb_chain = chain(n_burn+1:end,1);
-Kr_chain = chain(n_burn+1:end,2);
-w_b_chain = chain(n_burn+1:end,3);
-w_bp_chain = chain(n_burn+1:end,4);
-w_rp_chain = chain(n_burn+1:end,5);
-p_chain = chain(n_burn+1:end,6);
-R_max_chain = chain(n_burn+1:end,7);
+    fit = model_6A1R_direct_repression_V2(params_fit(j,:), MCMCdata.xdata);
+    
+    % define the color index, note that we have to avoid 1 or 4 as those
+    % are used for the data plots.
+    if j==1
+        cindex = 7;
+    elseif j==4
+        cindex = 8;
+    else
+        cindex = j;
+    end
+    % Runt Null
+    plot(APaxis(APbinRange), fit(1:length(APbinRange)),'Color',ColorChoice(cindex,:),'LineWidth',2)
+    % Runt WT
+    plot(APaxis(APbinRange), fit(1+length(APbinRange):end),'Color',ColorChoice(cindex,:),'LineWidth',2)
 
-%Mean/STD results
-mean_Kb = mean(Kb_chain);
-sigma_Kb = std(Kb_chain,1);
+    % plot(APaxis(APbinRange), MCMCdata.ydata(1:length(APbinRange)), 'Color',ColorChoice(4,:))
+    % plot(APaxis(APbinRange), MCMCdata.ydata(1+length(APbinRange):end),'Color',ColorChoice(1,:))
 
-mean_Kr = mean(Kr_chain);
-sigma_Kr = std(Kr_chain,1);
+    xlim([0.2 0.6])
+    xticks([0.2 0.3 0.4 0.5 0.6])
+    ylim([0 400])
+    yticks([0 100 200 300 400])
 
-mean_w_b = mean(w_b_chain);
-sigma_w_b = std(w_b_chain,1);
+    xlabel('embryo length')
+    ylabel({'initial RNAP', 'loading rate (AU/min)'})
+    legend('Runt null','Runt WT')
 
-mean_w_bp = mean(w_bp_chain);
-sigma_w_bp = std(w_bp_chain,1);
+    box on
+    StandardFigure(gcf,gca)
+    pause
+    % Save the plot
+    % saveas(gcf,[FigPath,filesep,'raw_data_slope_fits_', construct ,'.tif']); 
+    % saveas(gcf,[FigPath,filesep,'raw_data_slope_fits_', construct ,'.pdf']);  
 
-mean_w_rp = mean(w_rp_chain);
-sigma_w_rp = std(w_rp_chain,1);
-
-mean_p = mean(p_chain);
-sigma_p = std(p_chain,1);
-
-mean_R_max = mean(R_max_chain);
-sigma_R_max = std(R_max_chain,1);
-
-
-mean_sigma = sqrt(mean(s2chain));
-sigma_sigma = std(sqrt(s2chain),1);
-
+end
 %% Optional - hierarchical running of the MCMC
 % In here, we use the fact that most of the parameters converge easily
 % except the "p".

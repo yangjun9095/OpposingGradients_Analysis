@@ -35,10 +35,6 @@ Bicoid = TFinput(:,1);
 Runt = TFinput(:,2);
 RuntNull = TFinput(:,3);
 
-
-% Name of constructs so that we can label plots and files
-constructNames = {'000','100','011','111','001','010','110','101',...
-                    '000, null','100, null','011, null','111, null','001, null','010, null','110, null','101, null'};
 %% Pull the construct of our interest (for the parameter inference)
 
 % Choose a construct 
@@ -178,7 +174,7 @@ J0 = diag([Kb_step, Kr_step, w_b_step, w_bp_step,...
 
 %% MCMC - Options
 options = [];
-n_steps = 2*10^4;
+n_steps = 2*10^6;
 options.nsimu = n_steps; %n_steps; %Number of steps
 options.updatesigma = 1; %Update error variance
 options.qcov = J0; %Initial covariance
@@ -228,10 +224,6 @@ corner = figure;
 names = {'Kb','Kr','w_b','w_{bp}','w_{rp}','p','R_{max}'};
 ecornerplot(m,'names',names);
 
-% Save the plot
-FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_ThermoModelV2';
-saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct}  ,'.tif']); 
-saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct} ,'.pdf']);  
 %%
 %% Extract chain results into individual parameters
 % n_burn = n_steps*0.25;

@@ -1,5 +1,5 @@
 %% predict_6A2R_cases
-function predict_6A2R_HillV3
+function predict_6A2R_HillV3_quenching
 %% Description
 % This script is to predict the level of hbP2 + 2Run sites
 
@@ -9,21 +9,21 @@ function predict_6A2R_HillV3
 % 
 % 
 %% FilePaths
-FilePath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\Predict_HillV3';
-FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\Predict_HillV3';
+FilePath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Competition';
+FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Competition';
 
 %% Load the data (Bcd, Run, and output)
 
-% First, output : [001], [010], [100], load all of the data and parameters inferred
-preprocessedData = load([FilePath, filesep, 'PreProcessedData_ForMCMC.mat']);
-data = preprocessedData.data;
-
-% Second, the input TF data : Bcd, Run
-load([FilePath, filesep, 'TFinput.mat'])
-
-Bicoid = TFinput(:,1);
-Runt = TFinput(:,2);
-RuntNull = TFinput(:,3);
+% % First, output : [001], [010], [100], load all of the data and parameters inferred
+% preprocessedData = load([FilePath, filesep, 'PreProcessedData_ForMCMC.mat']);
+% data = preprocessedData.data;
+% 
+% % Second, the input TF data : Bcd, Run
+% load([FilePath, filesep, 'TFinput.mat'])
+% 
+% Bicoid = TFinput(:,1);
+% Runt = TFinput(:,2);
+% RuntNull = TFinput(:,3);
 
 %% Fit the "Runt null" only to extract the Bcd dependent parameters
 % Kb, w_bp, p, R_max
@@ -34,7 +34,7 @@ options = [];
 n_steps = 2*10^4;
 options.nsimu = n_steps; %n_steps; %Number of steps
 options.updatesigma = 1; %Update error variance
-options.qcov = J0; %Initial covariance
+% options.qcov = J0; %Initial covariance
 % options.burnintime = 0.5*n_steps; %Burn in time
 options.adaptint = 100;
 options.method = 'dram';
@@ -105,7 +105,7 @@ for construct = [3, 7, 8] % indices from the data.mat
     MCMCdata.R_min = min(MCMCdata.ydata);
 
     % Pick a model for the fitting
-    mdl = @(TF, params) model_6A2R_HillModel_V3(params, TF);
+    mdl = @(TF, params) model_6A1R_HillModel_V3(params, TF);
 
     %leaving this here in case it'll be useful in the future
     model.ssfun = @(params, data) sum((data.ydata-mdl(data.xdata, params)).^2);
@@ -115,19 +115,19 @@ for construct = [3, 7, 8] % indices from the data.mat
     % Define the parameters for the model
     % put the initial parameters and bounds in a form that the mcmc function
     % accepts
-    names = {'K_{b}', 'w_{bp}', 'p', 'R_max', 'K_{r1}', 'K_{r2}', 'w_{rp1}', 'w_{rp2}'};
+    names = {'K_{b}', 'w_{bp}', 'p', 'R_max', 'K_{r1}', 'K_{r2}', 'w_{br1}', 'w_{br2}'};
     params = cell(1, length(names));
 
     % Initialize MCMC parameters.
     Kb0 = 10;   % 100*rand;
     Kr0 = 5;     % 100*rand;
     w_bp0 = 40;
-    w_rp0 = 0.2;
+    w_br0 = 0.2;
     p0 = 0.1;
     R_max0 = MCMCdata.R_max; 
     % R_min0 = MCMCdata.R_min;
 
-    params0 = [Kb0, w_bp0, p0, R_max0, Kr0, Kr0, w_rp0, w_rp0];
+    params0 = [Kb0, w_bp0, p0, R_max0, Kr0, Kr0, w_br0, w_br0];
 
     % Bounds of the parameters
     LB = [0.1, 1, 0, 50, 0.1, 0.1, 0, 0];
@@ -196,20 +196,28 @@ for construct = [3, 7, 8] % indices from the data.mat
     k = k+1; 
 end
 
+%% Grab the parameters (params_temp) for each construct
+for i=1:3
+    params_temp(i,:) = mean(MCMC_2RunSites(i).chain(n_burn+1:end, :));
+end
 %% Check the MCMC result for the Bcd dependent parameters
-datanum = 1;
+datanum = 2;
 chain = MCMC_2RunSites(datanum).chain;
 results = MCMC_2RunSites(datanum).results;
 
 %% Check the raw fit quickly (for the Runt nulls)
 datanum = 1;
 chain = MCMC_2RunSites(datanum).chain;
-params_bcd = mean(chain_temp(n_burn+1:end,:)); % [Kb, w_bp, p, R_max];
-% params_temp = [params_bcd, 10, 10, 1, 1];
-% params_temp = [86.9719   48.7446    0.6287  174.8984   10.0000   10.0000    1.0000    1.0000]
-params_temp = [86.9719   48.7446    0.3287  174.8984   10.0000   10.0000    1.0000    1.0000]
+params_bcd = mean(chain(n_burn+1:end,:)); % [Kb, w_bp, p, R_max];
 
-Rate_null_fit = model_6A2R_HillModel_V3(params_temp, MCMCdata.xdata);
+if datanum>1
+    params_temp = [params_bcd, 10, 10, 1, 1];
+    % params_temp = [86.9719   48.7446    0.6287  174.8984   10.0000   10.0000    1.0000    1.0000]
+else
+    params_temp = [86.9719   48.7446    0.3287  174.8984   10.0000   10.0000    1.0000    1.0000];
+end
+
+Rate_null_fit = model_6A2R_HillModel_V3_competition(params_temp, MCMCdata.xdata);
 
 % data
 constructs_list = [3,7,8];
@@ -222,33 +230,34 @@ hold on
 errorbar(APaxis, Rate_null, Rate_null_SEM,'o','Color',ColorChoice(4,:),'CapSize',0,'MarkerFaceColor',ColorChoice(4,:))
 % Runt null fit
 plot(APaxis(APbins_fit), Rate_null_fit)
-%% Diagnose the MCMC result
-% stats = chainstats(chain,results);
-n_burn = 0.5*n_steps;
-chainstats(chain(n_burn+1:end,:),results);
 
-%% generate corner plots
-%n_burn = 1;%0.5*n_steps;% 0.5*10^4;
-m = [chain(n_burn:end,1), chain(n_burn:end,2), chain(n_burn:end,3), chain(n_burn:end,4)];
-corner = figure;
-names = {'K_{b}','\omega_{bp}', 'p','R_{max}'};
-ecornerplot(m,'names',names);
+xlim([0.2 0.6])
+ylim([0 400])
 
-
-% Save the plot
-% FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3';
-% saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct}  ,'.tif']); 
-% saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct} ,'.pdf']);  
+%% Save the MCMC results for the Bcd-dependent parameters
+% Let's save the parameters that have worked for the Runt nulls
+% 3 (constructs) x [K_{b} w_{bp} p R_max] 
+params_temp = [86.9719   48.7446    0.3287  174.8984
+   79.9320   59.5436    0.5201  231.0627
+   74.9226   77.2563    0.1388  309.2185];
+% FilePath = '';
+save([FilePath,filesep,'MCMC_result_2RunSites_BcdParams','.mat'],'params_2RunSites_Bcd');
 
 %% Load the Runt dependent parameters (chain) from the MCMC - 1Run site cases
 modelName = 'HillV3';
-FilePath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct';
-load([FilePath,filesep,'MCMCresult_',modelName,'_','params_1RunSite','.mat'],'MCMCResult', 'params_MCMC', 'params_MCMC_std');
+FilePath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Quenching';
+MCMC_Results_1RunSite = load([FilePath,filesep,'MCMCResult_HillV3_quenching','.mat'], 'MCMCResult');
 
+MCMC_1RunSite_results = MCMC_Results_1RunSite.MCMCResult;
 % Use the params_MCMC for the K_r and w_rp
+for i=1:3
+    params_MCMC(i,:) = mean(MCMC_1RunSite_results(i).chain(n_burn+1:end,:));
+end
+
+
 %% Predict the level for the Runt WT
-% Use a custom-function for the model : model_6A2R_HillV3
-% [Kb, w_bp, p, R_max, Kr1, Kr2, w_rp1, w_rp2] = params
+% Use a custom-function for the model : model_6A2R_HillV3_competition
+% [Kb, w_bp, p, R_max, Kr1, Kr2, w_br1, w_br2] = params
 
 n_simu = length(MCMC_2RunSites(1).chain);
 n_burn = 0.5*n_simu;
@@ -256,11 +265,16 @@ n_burn = 0.5*n_simu;
 % r2-new : [011]
 % r2-close : [110]
 % r2-far : [101]
+
+% initialize the Prediction matrix
+Prediction = [];
+
 % Predict the cases of 2 binding sites
 for i=1:3
-    chain_temp = MCMC_2RunSites(i).chain;
-    params_Bcd = mean(chain_temp(n_burn+1:end,:)); % [Kb, w_bp, p, R_max];
-    
+%     chain_temp = MCMC_2RunSites(i).chain;
+%     params_Bcd = mean(chain_temp(n_burn+1:end,:)); % [Kb, w_bp, p, R_max];
+    params_Bcd = [];
+    params_Bcd = params_temp(i,:);
     if i==1 % r2-new : [011]
         params_temp1 = params_MCMC(2,:); %[001]
         params_temp2 = params_MCMC(3,:); %[010]
@@ -278,7 +292,7 @@ for i=1:3
     
     params_6A2R = [params_Bcd, Kr1, Kr2, w_rp1, w_rp2];
     
-    Prediction(i,:) = model_6A2R_HillModel_V3(params_6A2R, TF_combined);
+    Prediction(i,:) = model_6A2R_HillModel_V3_quenching(params_6A2R, TF_combined);
 end
 
 %% generate plots of Prediction versus Data (2 Run sites)
@@ -327,8 +341,9 @@ for i=1:3
 
     StandardFigure(gcf,gca)
 %   %Save the plot
-%     saveas(gcf,[FigPath,filesep,'Prediction_HillV3_',constructNames{construct},'.tif']); 
-%     saveas(gcf,[FigPath,filesep,'Prediction_HillV3_',constructNames{construct},'.pdf']);
+    FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Quenching';
+    saveas(gcf,[FigPath,filesep,'Prediction_HillV3_',constructNames{construct},'.tif']); 
+    saveas(gcf,[FigPath,filesep,'Prediction_HillV3_',constructNames{construct},'.pdf']);
     pause
 end
 
