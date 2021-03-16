@@ -35,166 +35,206 @@ Bicoid = TFinput(:,1);
 Runt = TFinput(:,2);
 RuntNull = TFinput(:,3);
 
-%% Pull the construct of our interest (for the parameter inference)
-
-% Choose a construct 
-construct = 5;
-% Pick the dataset from the data.mat
-Data = data(construct);
-
-% MCMC analysis on the initial slope (averaged over embryos)
-% initialize the AP bins
-APaxis = Data.APbins;
-
-%Truncate APbins to user-specified range (input was optional argument in
-%this function.
-NoNaN_index_null = ~isnan(Data.Rate_null);
-NoNaN_index_WT = ~isnan(Data.Rate_WT);
-% calculate the AP bins that are not NaNs in both WT and Null datasets
-NoNaN_index = NoNaN_index_null.*NoNaN_index_WT;
-
-NoNaNindices = find(NoNaN_index);
-
-% Range that is set as an initial guess. We will get a common set of
-% APbins that does not have NaN values in these AP bins.
-APbin_start = 20/2.5 + 1;
-APbin_end = 45/2.5 + 1;
-
-APbinRange = (APbin_start:APbin_end)';
-
-% find the common elements of AP bins between Not-NaNs, and also the
-% pre-set range (20-45%)
-APbins_fit = intersect(NoNaNindices, APbinRange);
-
-% initialize the initial rate (slope)
-Rate_WT = Data.Rate_WT;
-Rate_null = Data.Rate_null;
-
-% Truncate the vectors using the range of AP bins
-APbins = APaxis(APbins_fit);
-Rate_WT = Rate_WT(APbins_fit);
-Rate_null = Rate_null(APbins_fit);
-
-Bcd = Bicoid(APbins_fit);
-Run = Runt(APbins_fit);
-RunNull = RuntNull(APbins_fit);
-
-% Decide whether we want to fit the Runt null/WT data together or not.
-% depending on this, we will set the xdata and ydata for the fitting.
-MCMCdata = struct;
-MCMCdata.APdata = [APbins' ; APbins'];
-MCMCdata.ydata = [Rate_null ; Rate_WT];
-% input TF
-MCMCdata.Bcd = [Bcd ; Bcd];
-MCMCdata.Run = [RunNull ; Run];
-MCMCdata.xdata = [MCMCdata.Bcd, MCMCdata.Run];
-
-MCMCdata.R_max = max(MCMCdata.ydata);
-MCMCdata.R_min = min(MCMCdata.ydata);
-
-
 %% Load the pre-processed MCMCdata that has incorporated [100], [001], and [101] datasets
 % MCMCdata_1RunSite.mat has MCMCdata structure for this.
 FilePath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3';
 load([FilePath, filesep,'MCMCdata_1RunSite.mat'],'MCMCdata')
 %%  Pick a model for the fitting
-mdl = @(TF, params) model_6A1R_HillModel_V3(params, TF);
+mdl = @(TF, params) model_6A1R_HillModel_V3_direct(params, TF);
 model.modelfun = mdl;
 
 %leaving this here in case it'll be useful in the future
 model.ssfun = @(params, InputData) sum((InputData.ydata-mdl(InputData.xdata, params)).^2);
 
+%% MCMC inference for all 6A1R constructs : 
 
-%% Define the parameters for the model
-% put the initial parameters and bounds in a form that the mcmc function
-% accepts
-names = {'K_{b}', 'K_{r}', 'w_bp', 'w_rp', 'p', 'R_{max}'};
-params = cell(1, length(names));
+% initialize the structure : MCMC_6A1R_global
+MCMC_6A1R_global = struct;
+% initialize the counter : m
+m=1;
 
-% Initialize MCMC parameters.
-Kb0 = 10;   % 100*rand;
-Kr0 = 5;     % 100*rand;
-w_bp0 = 40;
-w_rp0 = 0.2;
-p0 = 0.1;
-R_max0 = 300;
-% R_max0 = MCMCdata(2).R_max; 
-% R_min0 = MCMCdata.R_min;
+for construct = [2,5,6]
+    % Pick the dataset from the data.mat
+    Data = data(construct);
 
-params0 = [Kb0, Kr0, w_bp0, w_rp0, p0, R_max0];
+    % MCMC analysis on the initial slope (averaged over embryos)
+    % initialize the AP bins
+    APaxis = Data.APbins;
 
-% Bounds of the parameters
-LB = [0.1, 0.1, 1, 0, 0, 50];
-UB = [10^2, 10, 10^2, 1.2, 1, 500];
+    %Truncate APbins to user-specified range (input was optional argument in
+    %this function.
+    NoNaN_index_null = ~isnan(Data.Rate_null);
+    NoNaN_index_WT = ~isnan(Data.Rate_WT);
+    % calculate the AP bins that are not NaNs in both WT and Null datasets
+    NoNaN_index = NoNaN_index_null.*NoNaN_index_WT;
+
+    NoNaNindices = find(NoNaN_index);
+
+    % Range that is set as an initial guess. We will get a common set of
+    % APbins that does not have NaN values in these AP bins.
+    APbin_start = 20/2.5 + 1;
+    APbin_end = 50/2.5 + 1;
+
+    APbinRange = (APbin_start:APbin_end)';
+
+    % find the common elements of AP bins between Not-NaNs, and also the
+    % pre-set range (20-45%)
+    APbins_fit = intersect(NoNaNindices, APbinRange);
+
+    % initialize the initial rate (slope)
+    Rate_WT = Data.Rate_WT;
+    Rate_null = Data.Rate_null;
+
+    % Truncate the vectors using the range of AP bins
+    APbins = APaxis(APbins_fit);
+    Rate_WT = Rate_WT(APbins_fit);
+    Rate_null = Rate_null(APbins_fit);
+
+    Bcd = Bicoid(APbins_fit);
+    Run = Runt(APbins_fit);
+    RunNull = RuntNull(APbins_fit);
+
+    % Decide whether we want to fit the Runt null/WT data together or not.
+    % depending on this, we will set the xdata and ydata for the fitting.
+    MCMCdata = struct;
+    MCMCdata.APdata = [APbins' ; APbins'];
+    MCMCdata.ydata = [Rate_null ; Rate_WT];
+    % input TF
+    MCMCdata.Bcd = [Bcd ; Bcd];
+    MCMCdata.Run = [RunNull ; Run];
+    MCMCdata.xdata = [MCMCdata.Bcd, MCMCdata.Run];
+
+    MCMCdata.R_max = max(MCMCdata.ydata);
+    MCMCdata.R_min = min(MCMCdata.ydata);
 
 
-for i = 1:length(names)
-    % default values
-    pri_mu = NaN; %default prior gaussian mean
-    pri_sig = Inf; %default prior gaussian variance
-    targetflag = 1; %is this optimized or not? if this is set to 0, the parameter stays at a constant value equal to the initial value.    
-    localflag = 0; %is this local to this dataset or shared amongst batches?
-    
-    if i==6
-        pri_mu = R_max0;
-        pri_sig = 100;
-%         targetflag = 0; % Fix this parameter
-%     elseif i==2
-%         pri_mu = NaN;
-%         pri_sig = Inf;
-%         localflag = 1; % keep this parameter consistent across batches (different constructs of 1 Run site)
-    else
-        pri_mu = NaN;
-        pri_sig = Inf;
+    %% Define the parameters for the model
+    % put the initial parameters and bounds in a form that the mcmc function
+    % accepts
+    names = {'K_{b}', 'K_{r}', 'w_bp', 'w_rp', 'p', 'R_{max}'};
+    params = cell(1, length(names));
+
+    % Initialize MCMC parameters.
+    Kb0 = 60;   % 100*rand;
+    Kr0 = 5;     % 100*rand;
+    w_bp0 = 40;
+    w_rp0 = 0.2;
+    p0 = 0.1;
+    R_max0 = MCMCdata.R_max;
+    % R_max0 = MCMCdata(2).R_max; 
+    % R_min0 = MCMCdata.R_min;
+
+    params0 = [Kb0, Kr0, w_bp0, w_rp0, p0, R_max0];
+
+    % Bounds of the parameters
+    LB = [0.01, 0.01, 0, 0, 0, 50];
+    UB = [10^2, 50, 2*10^2, 2, 1, 500];
+
+
+    for i = 1:length(names)
+        % default values
+        pri_mu = NaN; %default prior gaussian mean
+        pri_sig = Inf; %default prior gaussian variance
+        targetflag = 1; %is this optimized or not? if this is set to 0, the parameter stays at a constant value equal to the initial value.    
+        localflag = 0; %is this local to this dataset or shared amongst batches?
+
+        if i==6
+            pri_mu = R_max0;
+            pri_sig = 100;
+    %         targetflag = 0; % Fix this parameter
+    %     elseif i==2
+    %         pri_mu = NaN;
+    %         pri_sig = Inf;
+    %         localflag = 1; % keep this parameter consistent across batches (different constructs of 1 Run site)
+%         elseif i==2
+%             pri_mu = 10;
+%             pri_sig = 100;
+        else
+            pri_mu = NaN;
+            pri_sig = Inf;
+        end
+        % give a pretty narrow prior
+    %     pri_mu = params0(i);
+    %     pri_sig = pri_mu*0.1;
+        params{1, i} = {names{i}, params0(i), LB(i), UB(i), pri_mu, pri_sig, targetflag, localflag};
+
     end
-    % give a pretty narrow prior
-%     pri_mu = params0(i);
-%     pri_sig = pri_mu*0.1;
-    params{1, i} = {names{i}, params0(i), LB(i), UB(i), pri_mu, pri_sig, targetflag, localflag};
+
+    %This is the variance in the parameter proposal distribution. Change these
+    %to change the proposal acceptance rate, or if the convergence doesn't look
+    %good.
+
+    Kb_step = 0.1;
+    Kr_step = 0.1;
+    w_bp_step = 0.1;
+    w_rp_step = 0.01;
+    p_step = 0.01;
+    R_max_step = 1;
+
+
+    % Initialize the covariance matrix
+    J0 = diag([Kb_step, Kr_step, w_bp_step, w_rp_step, p_step, R_max_step]);
+
+
+    %% MCMC - Options
+    options = [];
+    n_steps = 2*10^4;
+    n_burn = 0.5*n_steps;
+    options.nsimu = n_steps; %n_steps; %Number of steps
+    options.updatesigma = 1; %Update error variance
+%     options.qcov = J0; %Initial covariance
+    % options.burnintime = 0.5*n_steps; %Burn in time
+    options.adaptint = 100;
+    options.method = 'dram';
+    options.verbosity = 0; %Decrease text output
+
+    %% Run the MCMC (this whole block can be inserted inside the for loop above,
+    % to run the MCMC for different constructs.
+
+    %we're gonna run this three times and use the initial results of one
+    %run as conditions for the next. this is an alternative when common least
+    %squares gives results too poor to initialize with
+    % index = find([2,5,6]==construct);
+
+    results = [];
+    [results,~,~,~]=mcmcrun(model,MCMCdata,params,options,results);
+    [results,~,~,~]=mcmcrun(model,MCMCdata,params,options,results);
+    %[results,~,~,~]=mcmcrun(model,MCMCdata,params,options,results);
+    [results,chain,s2chain,~]=mcmcrun(model,MCMCdata,params,options,results);
+    
+    %% calculate the mean and std of the inferred parameters (note that I'm
+    % taking out the n_burn steps at the beginning).
+    params_inferred = [];
+    params_inferred_sigma = [];
+    
+    for k=1:length(names)
+        params_inferred(1,k) = mean(chain(n_burn+1:end,k));
+        params_inferred_sigma(1,k) = std(chain(n_burn+1:end,k));
+    end
+
+    MCMC_6A1R_global(m).name = constructNames{construct};
+    MCMC_6A1R_global(m).results = results;
+    MCMC_6A1R_global(m).chain = chain;
+    MCMC_6A1R_global(m).s2chain = s2chain;
+    
+    MCMC_6A1R_global(m).params_inferred = params_inferred;
+    MCMC_6A1R_global(m).params_inferred_std = params_inferred_sigma;
+    
+    % update the counter 
+    m=m+1;
     
 end
 
-%This is the variance in the parameter proposal distribution. Change these
-%to change the proposal acceptance rate, or if the convergence doesn't look
-%good.
-
-Kb_step = 0.1;
-Kr_step = 0.1;
-w_bp_step = 0.1;
-w_rp_step = 0.01;
-p_step = 0.01;
-R_max_step = 1;
-
-
-% Initialize the covariance matrix
-J0 = diag([Kb_step, Kr_step, w_bp_step, w_rp_step, p_step, R_max_step]);
-
-
-%% MCMC - Options
-options = [];
-n_steps = 2*10^4;
-options.nsimu = n_steps; %n_steps; %Number of steps
-options.updatesigma = 1; %Update error variance
-% options.qcov = J0; %Initial covariance
-% options.burnintime = 0.5*n_steps; %Burn in time
-options.adaptint = 100;
-options.method = 'dram';
-options.verbosity = 0; %Decrease text output
-
-%% Run the MCMC (this whole block can be inserted inside the for loop above,
-% to run the MCMC for different constructs.
-
-%we're gonna run this three times and use the initial results of one
-%run as conditions for the next. this is an alternative when common least
-%squares gives results too poor to initialize with
-index = find([2,5,6]==construct);
-
-results = [];
-[results,~,~,~]=mcmcrun(model,MCMCdata(index),params,options,results);
-[results,~,~,~]=mcmcrun(model,MCMCdata(index),params,options,results);
-%[results,~,~,~]=mcmcrun(model,MCMCdata,params,options,results);
-[results,chain,s2chain,~]=mcmcrun(model,MCMCdata(index),params,options,results);
-
+%% post-processing
+for i=1:3
+    chain = MCMC_6A1R_global(i).chain;
+    for k=1:length(names)
+        params_inferred(1,k) = mean(chain(n_burn+1:end,k));
+        params_inferred_sigma(1,k) = std(chain(n_burn+1:end,k));
+    end
+    MCMC_6A1R_global(i).params_inferred = params_inferred;
+    MCMC_6A1R_global(i).params_inferred_std = params_inferred_sigma;
+end
 %% Diagnose the MCMC result
 % stats = chainstats(chain,results);
 n_burn = 0.5*n_steps;

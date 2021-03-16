@@ -1,15 +1,17 @@
-function [Rate] = model_6A1R_HillModel_V3_direct(params,TF) 
+function [Rate] = model_6A1R_HillModel_V3_direct_fixedBcdRNAPparams(params, TF, params_fixed) 
 
 %% Definition of parameters
 % [Kb, Kr, w_bp, w_rp, p, R_max] = params;
-Kb = params(1);
-Kr = params(2);
-% w_b = params(3);
-w_bp = params(3);
-w_rp = params(4);
+
+% params that we want to infer
+Kr = params(1);
+w_rp = params(2);
+
+% params_fixed (from the Runt null datasets)
+Kb = params_fixed(1);
+w_bp = params_fixed(2);
 p = params(5);
 R_max = params(6);
-% R_min = params(5);
 
 % TF inputs : Read a matrix of TF, each column represent different TFs
 Bcd = TF(:,1);

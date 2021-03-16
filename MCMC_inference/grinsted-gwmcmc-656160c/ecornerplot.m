@@ -129,6 +129,8 @@ for r=1:M
             fill(X,F,p.color,'edgecolor','none')
             set(gca,'ytick',[],'YLim',[0 max(F)*1.1])
             set(gca,'XGrid',p.grid)
+%              % making the font size 12
+%             set(gca, 'fontsize', 12)
         else
             if p.scatter
                 plot(m(:,c),m(:,r),'.','color',p.color)
@@ -155,6 +157,8 @@ for r=1:M
                 %                 shading interp
             end
             set(gca,'XGrid',p.grid,'YGrid',p.grid)
+%          % making the font size 12
+%             set(gca, 'fontsize', 12)
             if diff(p.range(1:2,r))>0, set(gca,'Ylim',p.range(1:2,r)); end
         end
         if r==M, xlabel(['^{ }' p.names{c} '_{ }']);end

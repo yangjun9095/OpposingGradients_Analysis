@@ -42,8 +42,8 @@ numParPools = 8;
 n_steps = 2*10^4;
 n_simu = n_steps;
 % ratePriorWidth = 50;
-AP_start = 20; % [% of embryo length]
-AP_end = 50;   % [% of embryo length]
+% AP_start = 20; % [% of embryo length]
+% AP_end = 50;   % [% of embryo length]
 % loadPrevious = false;
 % globalFit = 1;
 
@@ -69,16 +69,16 @@ for construct=1:length(data)
     %Truncate APbins to user-specified range (input was optional argument in
     %this function.
     NoNaN_index_null = ~isnan(Data.Rate_null);
-    NoNaN_index_WT = ~isnan(Data.Rate_WT);
+%     NoNaN_index_WT = ~isnan(Data.Rate_WT);
     % calculate the AP bins that are not NaNs in both WT and Null datasets
-    NoNaN_index = NoNaN_index_null.*NoNaN_index_WT;
+    NoNaN_index = NoNaN_index_null;%.*NoNaN_index_WT;
 
     NoNaNindices = find(NoNaN_index);
 
     % Range that is set as an initial guess. We will get a common set of
     % APbins that does not have NaN values in these AP bins.
     APbin_start = 20/2.5 + 1;
-    APbin_end = 45/2.5 + 1;
+    APbin_end = 50/2.5 + 1;
 
     APbinRange = (APbin_start:APbin_end)';
 
@@ -92,21 +92,21 @@ for construct=1:length(data)
 
     % Truncate the vectors using the range of AP bins
     APbins = APaxis(APbins_fit);
-    Rate_WT = Rate_WT(APbins_fit);
-    Rate_null = Rate_null(APbins_fit);
+%     Rate_WT = Rate_WT(APbins_fit);
+    Rate_null_forFit = Rate_null(APbins_fit);
 
     Bcd = Bicoid(APbins_fit);
-    Run = Runt(APbins_fit);
-    RunNull = RuntNull(APbins_fit);
+%     Run = Runt(APbins_fit);
+%     RunNull = RuntNull(APbins_fit);
 
     % Decide whether we want to fit the Runt null/WT data together or not.
     % depending on this, we will set the xdata and ydata for the fitting.
     MCMCdata = struct;
     MCMCdata.APdata = [APbins'];
-    MCMCdata.ydata = [Rate_null];
+    MCMCdata.ydata = [Rate_null_forFit];
     % input TF
     MCMCdata.Bcd = [Bcd];
-    MCMCdata.Run = [RunNull];
+%     MCMCdata.Run = [RunNull];
     MCMCdata.xdata = [MCMCdata.Bcd];
 
     MCMCdata.R_max = max(MCMCdata.ydata);
@@ -120,15 +120,16 @@ for construct=1:length(data)
 
     % Initialize MCMC parameters.
     Kb0 = 10;   % 100*rand;
-    w_bp0 = 40;
+    w_bp0 = 50;
     p0 = 0.1;
     R_max0 = MCMCdata.R_max;
+    R_min0 = MCMCdata.R_min;
     % R_min0 = MCMCdata.R_min;
 
     params0 = [Kb0, w_bp0, p0, R_max0];
 
     % Bounds of the parameters
-    LB = [0.1, 1, 0, 50];
+    LB = [0.1, 0, 0, 50];
     UB = [10^2, 10^2, 1, 500];
 
 
@@ -147,6 +148,12 @@ for construct=1:length(data)
     %         pri_mu = NaN;
     %         pri_sig = Inf;
     %         localflag = 1; % keep this parameter consistent across batches (different constructs of 1 Run site)
+        elseif i==3
+            pri_mu = R_min0/(R_max0 - R_min0);
+            pri_sig = 1;
+%         elseif i==2
+%             pri_mu = w_bp0;
+%             pri_sig = 30;
         else
             pri_mu = NaN;
             pri_sig = Inf;
@@ -163,7 +170,7 @@ for construct=1:length(data)
     %good.
 
     Kb_step = 0.1;
-    w_bp_step = 0.1;
+    w_bp_step = 1;
     p_step = 0.01;
     R_max_step = 1;
 
@@ -235,6 +242,208 @@ end
 %     MCMC_6A0R_RuntNulls(construct).params_inferred_std = params_inferred_std;
 % end
 
+%% generate raw fits 
+APaxis = 0:0.025:1;
+% APbin_start;
+% APbin_end;
+Bcd = Bicoid(APbin_start:APbin_end); 
+
+for construct = 1:length(data)
+    params = MCMC_6A0R_RuntNulls(construct).params_inferred;
+    output = model_6A0R_HillModel_V3(params, Bcd);
+    
+    % data
+    Rate_null = compiledData{construct+9,9};
+    Rate_null_SEM = compiledData{construct+9,10};
+    
+    clf
+    hold on
+    errorbar(APaxis, Rate_null, Rate_null_SEM)
+    plot(APaxis(APbin_start:APbin_end), output)
+    xlim([0.2 0.5])
+    xticks([0.2 0.3 0.4 0.5])
+%     ylim([0 400])
+%     yticks([0 100 200 300 400])
+    
+    xlabel('embryo length')
+    ylabel('initial rate (AU/min)')
+    
+    box on
+    legend('data','MCMC fit')
+    StandardFigure(gcf,gca)
+%     
+    saveas(gcf,[FigPath,filesep,'raw_fits_yLimFree_', constructNames{construct}  ,'.tif']); 
+    saveas(gcf,[FigPath,filesep,'raw_fits_yLimFree_', constructNames{construct} ,'.pdf']); 
+end
+
+%% generate corner plots
+for construct = 1:length(data)
+%     clf
+    chain = MCMC_6A0R_RuntNulls(construct).chain;
+    n_burn = 0.5*n_steps;
+    m = [chain(n_burn+1:end,1), chain(n_burn+1:end,2), chain(n_burn+1:end,3), chain(n_burn+1:end,4)];
+    corner = figure;
+    names = {'K_{b}','\omega_{bp}','p','R_{max}'};
+    ecornerplot(m,'names',names);
+    
+    saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct}  ,'.tif']); 
+    saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct} ,'.pdf']); 
+end
+
 %% generate plots of inferred parameters
+hold on
+for construct = 1:length(data)
+    params_inferred = MCMC_6A0R_RuntNulls(construct).params_inferred;
+    params_inferred_std = MCMC_6A0R_RuntNulls(construct).params_inferred_std;
+    errorbar(1:4, params_inferred, params_inferred_std,'o','LineWidth',2,'Color',ColorChoice(construct,:))
+end
+
+xlim([0 7])
+xticks([1,2,3,4])
+xticklabels({'K_{b}','\omega_{bp}','p','R_{max}'})
+yticks([0 100 200 300 400])
+% xlabel('')
+ylabel('inferred parameters')
+legend('000','100','011','111','001','010','110','101', 'Location', 'NorthEast')
+
+box on
+StandardFigure(gcf,gca)
+
+% % save the plots
+saveas(gcf,[FigPath,filesep, 'MCMCfit_6A0R_RuntNull_AllConstructs','.tif']);
+saveas(gcf,[FigPath,filesep, 'MCMCfit_6A0R_RuntNull_AllConstructs','.pdf']);
+
+%% generate the plot of inferred parameters (log scale)
+hold on
+for construct = 1:length(data)
+    params_inferred = MCMC_6A0R_RuntNulls(construct).params_inferred;
+    params_inferred_std = MCMC_6A0R_RuntNulls(construct).params_inferred_std;
+    errorbar(1:4, params_inferred, params_inferred_std,'o','LineWidth',2,'Color',ColorChoice(construct,:))
+end
+
+xlim([0 7])
+xticks([1,2,3,4])
+xticklabels({'K_{b}','\omega_{bp}','p','R_{max}'})
+% yticks([0 100 200 300 400])
+set(gca,'YScale','log')
+% xlabel('')
+ylabel('inferred parameters')
+legend('000','100','011','111','001','010','110','101', 'Location', 'NorthEast')
+
+box on
+StandardFigure(gcf,gca)
+
+% save the plots
+saveas(gcf,[FigPath,filesep, 'MCMCfit_6A0R_RuntNull_AllConstructs_LogScale','.tif']);
+saveas(gcf,[FigPath,filesep, 'MCMCfit_6A0R_RuntNull_AllConstructs_LogScale','.pdf']);
+
+%% generate the plot for C.V. of inferred parameters
+
+% calculate the Coefficient of Variation (C.V.) of inferred parameters
+% across constructs (different enhancers).
+for construct = 1:length(data)
+    params_inferred_all(construct,:) = MCMC_6A0R_RuntNulls(construct).params_inferred;
+    params_inferred_error_all(construct,:) = MCMC_6A0R_RuntNulls(construct).params_inferred_std;
+end
+
+% calculate the mean and std of parameters "over constructs".
+params_mean = mean(params_inferred_all);
+params_std = std(params_inferred_all);
+% params_error = sqrt(sum(params_inferred_error_all.^2)/length(data))
+n_boots = 100;
+parms_std_boostrap = bootstrp(n_boots, @std, params_inferred_all)
+params_SEM = std(parms_std_boostrap)./sqrt(n_boots-1);
+
+params_CV = params_std./params_mean;
+params_CV_error = params_SEM./params_mean;
+
+errorbar(1:4, params_CV, params_CV_error,'o','LineWidth',2)
+
+xlim([0 5])
+xticks([1,2,3,4])
+xticklabels({'K_{b}','\omega_{bp}','p','R_{max}'})
+% yticks([0 100 200 300 400])
+ylim([0 1])
+% set(gca,'YScale','log')
+% xlabel('')
+ylabel('Coefficient of Variation')
+
+box on
+StandardFigure(gcf,gca)
+
+% save the plots
+saveas(gcf,[FigPath,filesep, 'CV_parameters','.tif']);
+saveas(gcf,[FigPath,filesep, 'CV_parameters','.pdf']);
+%% test the sensitivity of certain parameters (for the case of [011] or [111], where the raw fits don't quite look great.
+% construct = 4;
+% params = MCMC_6A0R_RuntNulls(construct).params_inferred;
+% output = model_6A0R_HillModel_V3(params, Bcd);
+% 
+% % data
+% Rate_null = compiledData{construct+9,9};
+% Rate_null_SEM = compiledData{construct+9,10};
+% 
+% figure
+% hold on
+% errorbar(APaxis, Rate_null, Rate_null_SEM)
+% plot(APaxis(9:19), output)
+
+%% generate a plot of Rate/Rate_max over AP axis for all construts : to see if the plots are collapsed
+hold on
+for construct = 1:length(data)
+    Rate_null = compiledData{construct+9,9};
+    Rate_null_SEM = compiledData{construct+9,10};
+    
+    % extract the R_max parameter from the MCMC inference
+    R_max = MCMC_6A0R_RuntNulls(construct).params_inferred(4);
+    
+    Rate_null_norm = Rate_null./R_max;
+    Rate_null_SEM_norm = Rate_null_SEM./R_max;
+    
+    errorbar(APaxis, Rate_null_norm, Rate_null_SEM_norm, 'o','LineWidth',2, 'Color',ColorChoice(construct,:))
+end
+
+xlim([0.2 0.5])
+xticks([0.2 0.3 0.4 0.5])
+ylim([0 1.2])
+yticks([0 0.2 0.4 0.6 0.8 1 1.2])
+
+xlabel('embryo length')
+ylabel('normalized rate')
+legend('000','100','011','111','001','010','110','101', 'Location', 'NorthEast')
+
+box on
+StandardFigure(gcf,gca)
+
+saveas(gcf,[FigPath,filesep,'normalized_raw_fits' ,'.tif']); 
+saveas(gcf,[FigPath,filesep,'normalized_raw_fits' ,'.pdf']); 
+
+%% generate a plot of Rate/Rate_max over AP axis for all construts : to see if the plots are collapsed
+hold on
+for construct = 1:length(data)
+    Rate_null = compiledData{construct+9,9};
+    Rate_null_SEM = compiledData{construct+9,10};
+    
+    errorbar(APaxis, Rate_null, Rate_null_SEM, 'o','LineWidth',2, 'Color',ColorChoice(construct,:))
+end
+
+xlim([0.2 0.5])
+xticks([0.2 0.3 0.4 0.5])
+ylim([0 400])
+yticks([0 100 200 300 400])
+
+xlabel('embryo length')
+ylabel('normalized rate')
+legend('000','100','011','111','001','010','110','101', 'Location', 'NorthEast')
+
+box on
+StandardFigure(gcf,gca)
+
+saveas(gcf,[FigPath,filesep,'raw_initial_slope', constructNames{construct} ,'.tif']); 
+saveas(gcf,[FigPath,filesep,'raw_initial_slope', constructNames{construct} ,'.pdf']); 
+    
+%% save the result into mat files (MCMC_6A0R_RuntNulls)
+FilePath = FigPath;
+save([FilePath, filesep, 'MCMC_6A0R_RuntNulls_BcdParams.mat'],'MCMC_6A0R_RuntNulls')
 
 end

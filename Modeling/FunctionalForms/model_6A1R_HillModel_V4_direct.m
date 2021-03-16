@@ -1,4 +1,4 @@
-function [Rate] = model_6A1R_HillModel_V3_direct(params,TF) 
+function [Rate] = model_6A1R_HillModel_V4_direct(params,TF) 
 
 %% Definition of parameters
 % [Kb, Kr, w_bp, w_rp, p, R_max] = params;
@@ -20,8 +20,9 @@ b = Bcd./Kb;
 r = Runt./Kr;
 
 % Calculate the P_bound, and Rate
-P_bound = p*(1+b.^6*w_bp + r*w_rp + b.^6.*r*w_bp*w_rp)./...
-            (1 + p + b.^6 + r + b.^6.*r + b.^6*p*w_bp + r*p*w_rp + b.^6.*r*p*w_bp*w_rp);
+% P_bound = p*(1+b.^6*w_bp + r*w_rp + b.^6.*r*w_bp*w_rp)./...
+%             (1 + p + b.^6 + r + b.^6.*r + b.^6*p*w_bp + r*p*w_rp + b.^6.*r*p*w_bp*w_rp);
+P_bound = (p*w_rp + b.^6.*p*w_bp*w_rp )./ (1 + b.^6 + p*w_rp + b.^6*p*w_rp*w_bp);
         
 Rate = R_max* P_bound;
 
