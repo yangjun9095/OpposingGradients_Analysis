@@ -10,8 +10,8 @@ w_rp = params(2);
 % params_fixed (from the Runt null datasets)
 Kb = params_fixed(1);
 w_bp = params_fixed(2);
-p = params(3);
-R_max = params(4);
+p = params_fixed(3);
+R_max = params_fixed(4);
 
 % TF inputs : Read a matrix of TF, each column represent different TFs
 Bcd = TF(:,1);

@@ -41,11 +41,11 @@ tempPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_Hil
 load([tempPath, filesep, 'MCMC_6A0R_RuntNulls_BcdParams.mat'],'MCMC_6A0R_RuntNulls')
 
 %% Load the 6A1R MCMC inference result for the Run-dependent parameters (Make sure to import the 6A1R, Hill.V3 result)
-tempPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\Posterior_dist_Bcd_params_fromRunNulls';
-A = load([tempPath, filesep, 'MCMC_6A1R_RuntWT_params.mat'])
-MCMC_6A1R_RuntWT = A.MCMC_6A1R_RuntWT;
+% tempPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\Posterior_dist_Bcd_params_fromRunNulls';
+% A = load([tempPath, filesep, 'MCMC_6A1R_RuntWT_params.mat'])
+% MCMC_6A1R_RuntWT = A.MCMC_6A1R_RuntWT;
 
-
+% Load the 6A1R MCMC inference done for fixed K_r, and local w_rp
 %% Set up the MCMC inference
 % Note that we don't have any parameters regarding the repressor, thus we
 % will just use the simpler form of the model, "model_6A0R_HillModel_V3.m"

@@ -33,9 +33,6 @@ FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_Hill
 %% If for regenerating plots, just load the result file
 load('S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\RuntNulls\MCMC_6A0R_RuntNulls_BcdParams.mat')
 
-% with weakly informed prior
-% FilePath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\RuntNulls\w_bp_0-100_WeakPrior_w_bp'
-% load([FilePath, filesep, 'MCMC_6A0R_RuntNulls_BcdParams.mat'])
 %% Set up the MCMC inference
 % Note that we don't have any parameters regarding the repressor, thus we
 % will just use the simpler form of the model, "model_6A0R_HillModel_V3.m"
@@ -252,11 +249,11 @@ end
 
 %% generate raw fits 
 APaxis = 0:0.025:1;
-APbin_start=9;
-APbin_end=21;
+% APbin_start;
+% APbin_end;
 Bcd = Bicoid(APbin_start:APbin_end); 
 
-for construct = 5%1:length(data)
+for construct = 2%1:length(data)
     params = MCMC_6A0R_RuntNulls(construct).params_inferred;
     output = model_6A0R_HillModel_V3(params, Bcd);
     
@@ -285,7 +282,7 @@ for construct = 5%1:length(data)
 end
 
 %% generate corner plots
-for construct = 2 %1:length(data)
+for construct = 5 %1:length(data)
 %     clf
     chain = MCMC_6A0R_RuntNulls(construct).chain;
     n_burn = 0.5*n_steps;
@@ -307,9 +304,8 @@ for construct = 5 %1:length(data)
 %     m = [chain(n_burn+1:end,1), chain(n_burn+1:end,2), chain(n_burn+1:end,3), chain(n_burn+1:end,4)];
 %     corner = figure;
     names = {'K_{b}','\omega_{bp}','p','R_{max}'};
-    filenames = {'K_b', 'w_bp', 'p', 'R_max'};
     for i=1:4
-%         chain_temp = [];
+        chain_temp = [];
         chain_temp = chain(n_burn+1:end,i);
         mean_posterior = mean(chain_temp);
         std_posterior = std(chain_temp);
@@ -318,17 +314,17 @@ for construct = 5 %1:length(data)
         % histogram of posterior
         histogram(chain_temp,50,'Normalization','probability')
         % mean and std of posterior
-        xline(mean_posterior,'LineWidth',2)
-        xline(mean_posterior-std_posterior,'--','LineWidth',2)
-        xline(mean_posterior+std_posterior,'--','LineWidth',2)
+        xline(mean_posterior,'LineWidth',2,'k')
+        xline(mean_posterior-std_posterior,'LineWidth',2,'--')
+        xline(mean_posterior+std_posterior,'LineWidth',2,'--')
         xlabel(names(i))
         ylabel('frequency')
         legend('postrior','mean')
         
         box on
         StandardFigure(gcf,gca)
-        saveas(gcf,[FigPath,filesep, 'histogram_mean_',filenames{i},'.tif']);
-        saveas(gcf,[FigPath,filesep, 'histogram_mean_',filenames{i},'.pdf']);
+        saveas(gcf,[FigPath,filesep, 'histogram_mean_',names(i),'.tif']);
+        saveas(gcf,[FigPath,filesep, 'histogram_mean_',names(i),'.pdf']);
     end
     
     

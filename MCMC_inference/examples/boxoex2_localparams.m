@@ -43,7 +43,7 @@ params = {
 %      name,  init,        min, max, mu,  sig, target?, local?
     {'k1mean', 1.0,        0,  Inf,  NaN, Inf,   1,      0}
     {'E1'    , 0.01,       0,  Inf,  NaN, Inf,   1,      0}
-    {'k2mean', 1.0,        0,  Inf,  NaN, Inf,   1,      0}
+    {'k2mean', 1.0,        0,  Inf,  NaN, Inf,   1,      1}
     {'E2',     0.01,       0,  Inf,  NaN, Inf,   1,      0}
     {'Tmean',  300,      -Inf, Inf,  NaN, Inf,   0,      0}
     {'Temp' ,  [283 313],  0,  0,    NaN, Inf,   0,      1}
@@ -70,5 +70,5 @@ options.stats       = 1;  % save extra statistics in results
 %% MCMC run
 results = [];
 [results,chain,s2chain,sschain]=mcmcrun(model,data,params,options,results);
-[results,chain,s2chain,sschain]=mcmcrun(model,data,params,options,results);
-[results,chain,s2chain,sschain]=mcmcrun(model,data,params,options,results);
+% [results,chain,s2chain,sschain]=mcmcrun(model,data,params,options,results);
+% [results,chain,s2chain,sschain]=mcmcrun(model,data,params,options,results);
