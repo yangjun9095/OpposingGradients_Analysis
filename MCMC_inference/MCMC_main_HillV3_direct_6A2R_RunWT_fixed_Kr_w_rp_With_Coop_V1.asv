@@ -69,15 +69,17 @@ params_Run_std = MCMC_6A1R_RuntWT.params_inferred_sigma;
 % will just use the simpler form of the model, "model_6A0R_HillModel_V3.m"
 
 %% Pick a model for the MCMC inference
-mdl = @(TF, params, params_fixed) model_6A2R_HillModel_V3_direct_fixed_Kr_Bcd_RNAPparams(params, TF, params_fixed);
+% params_fixed = [Kb, w_bp, p, R_max, K_r, w_rp1, w_rp2];
+% params = [omega_rr, omega_ho];
+mdl = @(TF, params, params_fixed) model_6A2R_HillModel_V3_direct_fixed_Kr_Bcd_RNAP_w_rp_params(params, TF, params_fixed);
 model.modelfun = mdl;
 
 %leaving this here in case it'll be useful in the future
-% model.ssfun = @(params, InputData) sum((InputData.ydata-mdl(InputData.xdata, params)).^2);
-model.ssfun = @model_6A2R_HillV3_direct_batch_SS;
+model.ssfun = @(params, InputData) sum((InputData.ydata-mdl(InputData.xdata, params, InputData.params_fixed)).^2);
+% model.ssfun = @model_6A2R_HillV3_direct_batch_SS;
 %% MCMC - Options
 options = [];
-n_steps = 2*10^4;
+n_steps = 2*10^5;
 options.nsimu = n_steps; %n_steps; %Number of steps
 options.updatesigma = 1; %Update error variance
 %     options.qcov = J0; %Initial covariance
@@ -86,7 +88,9 @@ options.adaptint = 100;
 options.method = 'dram';
 options.verbosity = 0; %Decrease text output
 %% Loop over all constructs to perform the MCMC inference
-% [Kb, w_bp, p, R_max, Kr1, Kr2, w_rp1, w_rp2] = params;
+
+% params_fixed = [Kb, w_bp, p, R_max, K_r, w_rp1, w_rp2];
+% params = [omega_rr, omega_ho];
 
 % initialize the structure to save the MCMC result
 MCMC_6A2R_RuntWT = struct;
@@ -145,12 +149,12 @@ for index=1:3 % [100, 001, 010]
 
     % Decide whether we want to fit the Runt null/WT data together or not.
     % depending on this, we will set the xdata and ydata for the fitting.
-    MCMCdata{index}.APdata = [APbins'];
-    MCMCdata{index}.ydata = [Rate_WT_forFit];
+    MCMCdata.APdata = [APbins'];
+    MCMCdata.ydata = [Rate_WT_forFit];
     % input TF
-    MCMCdata{index}.Bcd = [Bcd];
-    MCMCdata{index}.Run = [Run];
-    MCMCdata{index}.xdata = [Bcd , Run];
+    MCMCdata.Bcd = [Bcd];
+    MCMCdata.Run = [Run];
+    MCMCdata.xdata = [Bcd , Run];
 
 %     MCMCdata{index}.R_max = max(Rate_WT_forFit);
 %     MCMCdata{index}.R_min = min(Rate_WT_forFit);
@@ -158,98 +162,85 @@ for index=1:3 % [100, 001, 010]
     % parameters for the Bicoid and RNAP (inferred from the Runt null
     % datasets for the same construct.)
     params_Bcd = MCMC_6A0R_RuntNulls(construct).params_inferred;
-    MCMCdata{index}.params_fixed = params_Bcd;
+    
+    % Runt parameters
+    if index==1 % r2-new : [011]
+        params_Run = [K_r, w_rp2, w_rp3];
+    elseif index==2 % r2-close : [110]
+        params_Run = [K_r, w_rp1, w_rp3];
+    elseif index==3 % r2-far : [101]
+        params_Run = [K_r, w_rp1, w_rp2];
+    end
+
+    MCMCdata.params_fixed = [params_Bcd, params_Run];
+    
+    %% Define the parameters for the model
+    % put the initial parameters and bounds in a form that the mcmc function
+    % accepts
+    names = {'w_{rr}', 'w_{ho}'};
+    params = cell(1, length(names));
+
+
+    params0 = [1,1];
+    % params0_std
+
+    % Bounds of the parameters
+    LB = [0,0];
+    UB = [10^(1), 10^(2)];
+
+    for i = 1:length(names)
+        % default values
+        pri_mu = NaN; %default prior gaussian mean
+        pri_sig = Inf; %default prior gaussian variance
+        targetflag = 1; %is this optimized or not? if this is set to 0, the parameter stays at a constant value equal to the initial value.    
+        localflag = 0; %is this local to this dataset or shared amongst batches?
+
+        % For all parameters, define the priors from the posteriors from
+        % the previous rounds of MCMC (either on Runt nulls or 6A1R cases)
+%         if i==2 % w_ho
+%             targetflag = 0; % fix the parameter
+%         end
+        
+        params{1, i} = {names{i}, params0(i), LB(i), UB(i), pri_mu, pri_sig, targetflag, localflag};
+
+    end
+    
+    %% Run the MCMC (this whole block can be inserted inside the for loop above,
+    % to run the MCMC for different constructs.
+
+    %we're gonna run this three times and use the initial results of one
+    %run as conditions for the next. this is an alternative when common least
+    %squares gives results too poor to initialize with
+
+
+    results = [];
+    [results,~,~,~]=mcmcrun(model,MCMCdata,params,options,results);
+    [results,~,~,~]=mcmcrun(model,MCMCdata,params,options,results);
+    %[results,~,~,~]=mcmcrun(model,MCMCdata,params,options,results);
+    [results,chain,s2chain,~]=mcmcrun(model,MCMCdata,params,options,results);
+
+    %% Extract chain results into individual parameters
+    params_inferred = []; 
+    params_inferred_sigma = [];
+    n_burn = 0.5*n_steps;
+
+    for k=1:2
+        params_inferred(1,k) = mean(chain(n_burn+1:end,k));
+        params_inferred_sigma(1,k) = std(chain(n_burn+1:end,k));
+    end
+
+    %% Save the MCMC result into a structure for future usage
+    MCMC_6A2R_RuntWT(index).name = 'fixed_Kr_w_rp_coop'
+    MCMC_6A2R_RuntWT(index).results = results;
+    MCMC_6A2R_RuntWT(index).chain = chain;
+    MCMC_6A2R_RuntWT(index).s2chain = s2chain;
+
+    % inferred parameters
+    MCMC_6A2R_RuntWT(index).params_inferred = params_inferred;
+    MCMC_6A2R_RuntWT(index).params_inferred_sigma = params_inferred_sigma;
+
 end 
     
-    
-%% MCMC settings
-%% Define the parameters for the model
-% put the initial parameters and bounds in a form that the mcmc function
-% accepts
-names = {'K_{r}', 'w_rp1','w_rp2','w_rp3'};
-params = cell(1, length(names));
-
-
-params0 = [K_r, w_rp1, w_rp2, w_rp3];
-% params0_std
-
-% Bounds of the parameters
-LB = [0.1, 0, 0, 0];
-UB = [10^2, 1.2, 1.2, 1.2];
-
-for i = 1:length(names)
-    % default values
-    pri_mu = NaN; %default prior gaussian mean
-    pri_sig = Inf; %default prior gaussian variance
-    targetflag = 1; %is this optimized or not? if this is set to 0, the parameter stays at a constant value equal to the initial value.    
-    localflag = 0; %is this local to this dataset or shared amongst batches?
-
-    % For all parameters, define the priors from the posteriors from
-    % the previous rounds of MCMC (either on Runt nulls or 6A1R cases)
-    if i==1
-        targetflag = 0; % fix the parameter
-    end
-%     elseif i==2
-%         pri_mu = w_rp1;
-%         pri_sig = params_Run_std(2);
-%     elseif i==3
-%         pri_mu = w_rp2;
-%         pri_sig = params_Run_std(3);
-%     elseif i==4
-%         pri_mu = w_rp3;
-%         pri_sig = params_Run_std(4);
-%     end
-        
-
-
-%     elseif i==2
-%         pri_mu = NaN;
-%         pri_sig = Inf;
-%         localflag = 1; % keep this parameter consistent across batches (different constructs of 1 Run site)
-    % give a pretty narrow prior
-%     pri_mu = params0(i);
-%     pri_sig = pri_mu*0.1;
-
-    params{1, i} = {names{i}, params0(i), LB(i), UB(i), pri_mu, pri_sig, targetflag, localflag};
-
-end
-
-%% Run the MCMC (this whole block can be inserted inside the for loop above,
-% to run the MCMC for different constructs.
-
-%we're gonna run this three times and use the initial results of one
-%run as conditions for the next. this is an alternative when common least
-%squares gives results too poor to initialize with
-
-
-results = [];
-[results,~,~,~]=mcmcrun(model,MCMCdata,params,options,results);
-[results,~,~,~]=mcmcrun(model,MCMCdata,params,options,results);
-%[results,~,~,~]=mcmcrun(model,MCMCdata,params,options,results);
-[results,chain,s2chain,~]=mcmcrun(model,MCMCdata,params,options,results);
-
-
-%% Extract chain results into individual parameters
-params_inferred = []; 
-params_inferred_sigma = [];
-n_burn = 0.5*n_steps;
-
-for k=1:3
-    params_inferred(1,k) = mean(chain(n_burn+1:end,k));
-    params_inferred_sigma(1,k) = std(chain(n_burn+1:end,k));
-end
-
-%% Save the MCMC result into a structure for future usage
-MCMC_6A2R_RuntWT.name = 'fixed_Kr_local_w_rp_with_prior'
-MCMC_6A2R_RuntWT.results = results;
-MCMC_6A2R_RuntWT.chain = chain;
-MCMC_6A2R_RuntWT.s2chain = s2chain;
-
-% inferred parameters
-MCMC_6A2R_RuntWT.params_inferred = params_inferred;
-MCMC_6A2R_RuntWT.params_inferred_sigma = params_inferred_sigma;
-
-
 %% generate raw fits 
 APaxis = 0:0.025:1;
 APbin_start = 9;
@@ -275,30 +266,33 @@ for index = 1:3
 %     params_Bcd = MCMC_6A0R_RuntNulls(construct).params_inferred;
 %     params_Run = MCMC_6A1R_RuntWT(index).params_inferred;
     
-    % extract individual parameters to construct the input parameter
-%     Kb = params_Bcd(1);
-%     w_bp = params_Bcd(2);
-%     p = params_Bcd(3);
-%     R_max = params_Bcd(4);
-%     Kr = params_Run(1);
-%     w_rp = params_Run(2);
-%   
     % point estimates from the Runt nulls
     params_Bcd = MCMC_6A0R_RuntNulls(construct).params_inferred;
     % MCMC inferred parameters for the Runt WT 
     % : [K_r, w_rp1, w_rp2, w_rp3];
-    params_temp = MCMC_6A2R_RuntWT.params_inferred;
-    % combine the two sets of parameters
-    if construct==3
-        params_MCMC = [K_r, params_temp([2,3])];
-    elseif construct==7
-        params_MCMC = [K_r, params_temp([1,3])];
-    elseif construct==8
-        params_MCMC = [K_r, params_temp([1,2])];
+        % Runt parameters
+    if index==1 % r2-new : [011]
+        params_Run = [K_r, w_rp2, w_rp3];
+    elseif index==2 % r2-close : [110]
+        params_Run = [K_r, w_rp1, w_rp3];
+    elseif index==3 % r2-far : [101]
+        params_Run = [K_r, w_rp1, w_rp2];
     end
-
+    params_fixed = [params_Bcd, params_Run];
     
-    output = model_6A2R_HillModel_V3_direct_fixed_Kr_Bcd_RNAPparams(params_MCMC, TF, params_Bcd);
+    % grab the inferred parameters from this MCMC
+    params_MCMC = MCMC_6A2R_RuntWT(index).params_inferred;
+    
+%     % fixing the w_rr = 1;
+%     params_MCMC(1) = 1;
+    
+    % when the w_ho is set to be 1 using the targetflag
+    if length(params_MCMC)==1
+        params_MCMC = [params_MCMC, 1];
+    else
+    end
+    
+    output = model_6A2R_HillModel_V3_direct_fixed_Kr_Bcd_RNAP_w_rp_params(params_MCMC, TF, params_fixed);
     % Runt nulls
     fit_nulls = model_6A0R_HillModel_V3(params_Bcd, TF);
     
@@ -329,23 +323,57 @@ for index = 1:3
     legend('data(null)','data(WT)','Fit (null)', 'Fit (WT)')
     StandardFigure(gcf,gca)
     pause
-    saveas(gcf,[FigPath,filesep,'raw_fits_null_WT_', constructNames{construct}  ,'.tif']); 
-    saveas(gcf,[FigPath,filesep,'raw_fits_null_WT_', constructNames{construct} ,'.pdf']); 
+%     saveas(gcf,[FigPath,filesep,'raw_fits_null_WT_', constructNames{construct}  ,'.tif']); 
+%     saveas(gcf,[FigPath,filesep,'raw_fits_null_WT_', constructNames{construct} ,'.pdf']); 
 end
 
 %% generate corner plots
 
-chain = MCMC_6A2R_RuntWT.chain;
-n_burn = 0.5*n_steps;
-m = [chain(n_burn+1:end,1), chain(n_burn+1:end,2), chain(n_burn+1:end,3)];
-corner = figure;
-%     names = {'K_{b}','\omega_{bp}','p','R_{max}'};
-names = {'\omega_{rp1}', '\omega_{rp2}', '\omega_{rp3}'};
-ecornerplot(m,'names',names);
-    
-saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct}  ,'.tif']); 
-saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct} ,'.pdf']); 
+for index = 1:3
+    construct = constructIndex(index);
+    chain = MCMC_6A2R_RuntWT(index).chain;
+    n_burn = 0.5*n_steps;
+    m = [chain(n_burn+1:end,1), log10(chain(n_burn+1:end,2))];
+    corner = figure;
+    %     names = {'K_{b}','\omega_{bp}','p','R_{max}'};
+    names = {'\omega_{rr}', '\omega_{ho}'};
+    ecornerplot(m,'names',names);
+%     histogram(chain(n_burn+1:end),50,'Normalization','probability')
 
+%     saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct} ,'.tif']); 
+%     saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct} ,'.pdf']); 
+end
+
+%% generate histogram for w_rr ONLY case
+
+for index = 1:3
+    construct = constructIndex(index);
+    chain = MCMC_6A2R_RuntWT(index).chain;
+    n_burn = 0.5*n_steps;
+    
+    chain_temp = chain(n_burn+1:end,1);
+    mean_posterior = mean(chain_temp);
+    std_posterior = std(chain_temp);
+    
+    % histogram of posterior
+    histogram(chain_temp,50,'Normalization','probability')
+    % mean and std of posterior
+    xline(mean_posterior,'LineWidth',2)
+    xline(mean_posterior-std_posterior,'--','LineWidth',2)
+    xline(mean_posterior+std_posterior,'--','LineWidth',2)
+    
+    ylim([0 0.04])
+    
+    xlabel('\omega_{rr}')
+    ylabel('frequency')
+    legend('postrior','mean')
+
+    box on
+    StandardFigure(gcf,gca)
+
+    saveas(gcf,[FigPath,filesep,'histogram_', constructNames{construct} ,'.tif']); 
+    saveas(gcf,[FigPath,filesep,'histogram_', constructNames{construct} ,'.pdf']); 
+end
 
 %% generate plots of inferred parameters
 hold on
@@ -418,12 +446,15 @@ constructIndex = [3,7,8];
 
 for index = 1:3
     construct = constructIndex(index);
+    
     % params from the Runt null
     params_inferred_null(index,:) = MCMC_6A0R_RuntNulls(construct).params_inferred;
     params_inferred_std_null(index,:) = MCMC_6A0R_RuntNulls(construct).params_inferred;
+    
     % params from the Runt WT
     params_inferred_all(index,:) = MCMC_6A2R_RuntWT(index).params_inferred;
     params_inferred_error_all(index,:) = MCMC_6A2R_RuntWT(index).params_inferred_sigma;
+    
 end
 
 % calculate the mean and std of parameters "over constructs".
@@ -468,19 +499,6 @@ StandardFigure(gcf,gca)
 % save the plots
 saveas(gcf,[FigPath,filesep, 'CV_parameters','.tif']);
 saveas(gcf,[FigPath,filesep, 'CV_parameters','.pdf']);
-%% test the sensitivity of certain parameters (for the case of [011] or [111], where the raw fits don't quite look great.
-% construct = 4;
-% params = MCMC_6A0R_RuntNulls(construct).params_inferred;
-% output = model_6A0R_HillModel_V3(params, Bcd);
-% 
-% % data
-% Rate_null = compiledData{construct+9,9};
-% Rate_null_SEM = compiledData{construct+9,10};
-% 
-% figure
-% hold on
-% errorbar(APaxis, Rate_null, Rate_null_SEM)
-% plot(APaxis(9:19), output)
 
 %% save the result into mat files (MCMC_6A0R_RuntNulls)
 FilePath = FigPath;

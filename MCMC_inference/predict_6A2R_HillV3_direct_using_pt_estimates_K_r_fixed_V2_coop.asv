@@ -1,5 +1,5 @@
 %% predict_6A2R_cases
-function predict_6A2R_HillV3_direct_using_pt_estimates_K_r_fixed
+function predict_6A2R_HillV3_direct_using_pt_estimates_K_r_fixed_V2_coop
 %% Description
 % This script is to predict the level of hbP2 + 2Run sites
 
@@ -125,9 +125,9 @@ end
 %% (optional) calculate the RMSE values across constructs
 
 %% Predict the Rates with Run-Run cooperativity
-% mnodel_6A2R_HillModelV3_RunCoop.m
+% model_6A2R_HillModelV3_RunCoop.m
 % w_rr > 1 : stronger repression than independent Runt binding.
-w_rr = [10^(-6), 1, 10^6, 10^12, 10^18, 10^24];
+w_rr = [10^(-12), 10^(-6), 1, 10^6, 10^12, 10^24, 10^(48)];
 
 % Predict the level for the Runt WT
 % Use a custom-function for the model : model_6A2R_HillV3
@@ -140,7 +140,7 @@ n_burn = 0.5*n_simu;
 % r2-close : [110]
 % r2-far : [101]
 % Predict the cases of 2 binding sites
-Prediction_Run_Run_coop_compete = zeros(3, length(w_rr), length(TF));
+Prediction_Run_Run_coop_direct = zeros(3, length(w_rr), length(TF));
 
 % Loop over constructs (2 Run sites)
 for i=1:3
@@ -161,13 +161,20 @@ for i=1:3
 
         params_6A2R_Run_coop = [params_6A2R, omega_rr];
 
-        Prediction_Run_Run_coop_compete(i,j,:) = model_6A2R_HillModel_V3_competition_RunCoop(params_6A2R_Run_coop, TF);
+        Prediction_Run_Run_coop_direct(i,j,:) = model_6A2R_HillModel_V3_competition_RunCoop(params_6A2R_Run_coop, TF);
     end
+    
+    % Runt null data (MCMC fit)
+%     fit_nulls(i,:) = model_6A0R_HillModel_V3(params_6A2R, TF);
 end
 
-%% 
+%% generate plots for Runt-Runt cooperativity
 
+% pick a colormap that is linearly scaled
 cmap = colormap('viridis');
+
+% w_rr : take logarithm
+log10(w_rr)
 
 for i=1:3
     % construct define
@@ -195,7 +202,7 @@ for i=1:3
     
     % Run-Run interaction strength
     for j=1:length(w_rr)
-        cIndex = floor((log10(w_rr(j))-(-6))/30*256);
+        cIndex = floor((log10(w_rr(j))-(-12))/60*256);
         if cIndex ==0
             cIndex = cIndex + 1;
         end
@@ -205,7 +212,7 @@ for i=1:3
         % Runt null
         plot(APaxis(9:21),fit_nulls(i,:),'Color',ColorChoice(4,:), 'LineWidth', 2)
         % Runt WT
-        plot(APaxis(9:21), squeeze(Prediction_Run_Run_coop_compete(i,j,:)),'Color',color, 'LineWidth', 2)
+        plot(APaxis(9:21), squeeze(Prediction_Run_Run_coop_direct(i,j,:)),'Color',color, 'LineWidth', 2)
 %         pause
     end
 
@@ -219,12 +226,15 @@ for i=1:3
     
     box on
     colorbar
+%     cbh = colorbar('XTickLabel',{'10^(-12)','10^(-6)','1','10^6','10^12','10^24','10^(48)'},...
+%                     'XTick', [-12, -6, 0, 6, 12, 24, 48]);
+    
     StandardFigure(gcf,gca)
-    pause
+
 %   %Save the plot
-%     saveas(gcf,[FigPath,filesep,'Prediction_HillV3_',constructNames{construct},'.tif']); 
-%     saveas(gcf,[FigPath,filesep,'Prediction_HillV3_',constructNames{construct},'.pdf']);
-%     pause
+    saveas(gcf,[FigPath,filesep,'Prediction_HillV3_',constructNames{construct},'.tif']); 
+    saveas(gcf,[FigPath,filesep,'Prediction_HillV3_',constructNames{construct},'.pdf']);
+    pause
 end
 
 

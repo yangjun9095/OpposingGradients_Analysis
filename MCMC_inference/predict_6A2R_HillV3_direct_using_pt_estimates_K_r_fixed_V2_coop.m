@@ -1,5 +1,5 @@
 %% predict_6A2R_cases
-function predict_6A2R_HillV3_direct_using_pt_estimates_K_r_fixed
+function predict_6A2R_HillV3_direct_using_pt_estimates_K_r_fixed_V2_coop
 %% Description
 % This script is to predict the level of hbP2 + 2Run sites
 
@@ -125,9 +125,9 @@ end
 %% (optional) calculate the RMSE values across constructs
 
 %% Predict the Rates with Run-Run cooperativity
-% mnodel_6A2R_HillModelV3_RunCoop.m
+% model_6A2R_HillModelV3_RunCoop.m
 % w_rr > 1 : stronger repression than independent Runt binding.
-w_rr = [10^(-6), 1, 10^6, 10^12, 10^18, 10^24];
+w_rr = [10^(-12), 10^(-6), 1, 10^6, 10^12, 10^24, 10^(48)];
 
 % Predict the level for the Runt WT
 % Use a custom-function for the model : model_6A2R_HillV3
@@ -161,13 +161,21 @@ for i=1:3
 
         params_6A2R_Run_coop = [params_6A2R, omega_rr];
 
-        Prediction_Run_Run_coop_direct(i,j,:) = model_6A2R_HillModel_V3_direct_RunCoop(params_6A2R_Run_coop, TF);
+        Prediction_Run_Run_coop_direct(i,j,:) = model_6A2R_HillModel_V3_competition_RunCoop(params_6A2R_Run_coop, TF);
     end
+    
+    % Runt null data (MCMC fit)
+%     fit_nulls(i,:) = model_6A0R_HillModel_V3(params_6A2R, TF);
 end
 
 %% generate plots for Runt-Runt cooperativity
 
+% pick a colormap that is linearly scaled
 cmap = colormap('viridis');
+
+% w_rr : take logarithm
+log_w_rr = log10(w_rr);
+w_rr_range = max(log_w_rr) - min(log_w_rr);
 
 for i=1:3
     % construct define
@@ -193,9 +201,12 @@ for i=1:3
     % Runt WT
     errorbar(APaxis, Rate, Rate_SEM,'o','Color',ColorChoice(1,:),'CapSize',0,'MarkerFaceColor',ColorChoice(1,:))
     
+    % color scale
+    caxis = [min(log_w_rr) max(log_w_rr)];
+   
     % Run-Run interaction strength
     for j=1:length(w_rr)
-        cIndex = floor((log10(w_rr(j))-(-6))/30*256);
+        cIndex = floor((log10(w_rr(j))-(min(log_w_rr)))/w_rr_range*256);
         if cIndex ==0
             cIndex = cIndex + 1;
         end
@@ -219,12 +230,16 @@ for i=1:3
     
     box on
     colorbar
+%     set(gca,'colorscale','log')
+%     cbh = colorbar('XTickLabel',{'10^(-12)','10^(-6)','1','10^6','10^12','10^24','10^(48)'},...
+%                     'XTick', [-12, -6, 0, 6, 12, 24, 48]);
+    
     StandardFigure(gcf,gca)
-    pause
+
 %   %Save the plot
 %     saveas(gcf,[FigPath,filesep,'Prediction_HillV3_',constructNames{construct},'.tif']); 
 %     saveas(gcf,[FigPath,filesep,'Prediction_HillV3_',constructNames{construct},'.pdf']);
-%     pause
+    pause
 end
 
 
@@ -236,45 +251,39 @@ end
 %% Predict the Rates with higher order cooperativity between Run-RNAP
 % mnodel_6A2R_HillModelV3_RunCoop.m
 % w_rr < 1 : stronger repression than independent Runt effect.
-w_ho = 10.^([-10 -1 -0.1 0 1 10]);
+w_ho = 10.^([-10 -5  0 5 10]);
 
 % Predict the level for the Runt WT
 % Use a custom-function for the model : model_6A2R_HillV3
 % [Kb, w_bp, p, R_max, Kr1, Kr2, w_rp1, w_rp2] = params
 
-n_simu = length(MCMC_2RunSites(1).chain);
+n_simu = 20000;
 n_burn = 0.5*n_simu;
 
 % r2-new : [011]
 % r2-close : [110]
 % r2-far : [101]
 % Predict the cases of 2 binding sites
-Prediction_higher_coop = zeros(3, length(w_ho), length(TF_combined));
+Prediction_higher_coop = zeros(3, length(w_ho), length(TF));
+
 for i=1:3
-    construct = ConstructIndex(i);
+    construct = constructIndex(i);
     params_Bcd = MCMC_6A0R_RuntNulls(construct).params_inferred;
     
     if i==1 % r2-new : [011]
-        params_temp1 = params_MCMC(2,:); %[001]
-        params_temp2 = params_MCMC(3,:); %[010]
+        params_6A2R = [params_Bcd, K_r, K_r, w_rp2, w_rp3];
     elseif i==2 % r2-close : [110]
-        params_temp1 = params_MCMC(1,:); %[100]
-        params_temp2 = params_MCMC(3,:); %[010]
+        params_6A2R = [params_Bcd, K_r, K_r, w_rp1, w_rp3];
     elseif i==3 % r2-far : [101]
-        params_temp1 = params_MCMC(1,:); %[100]
-        params_temp2 = params_MCMC(2,:); %[001]
+        params_6A2R = [params_Bcd, K_r, K_r, w_rp1, w_rp2];
     end
-    Kr1 = params_temp1(2);
-    w_rp1 = params_temp1(4);
-    Kr2 = params_temp2(2);
-    w_rp2 = params_temp2(4);
     
     for j=1:length(w_ho)
         omega_ho = w_ho(j);
 
-        params_6A2R = [params_Bcd, Kr1, Kr2, w_rp1, w_rp2, omega_ho];
+        params_fit = [params_6A2R, omega_ho];
 
-        Prediction_higher_coop(i,j,:) = model_6A2R_HillModel_V3_direct_HigherCoop(params_6A2R, TF_combined);
+        Prediction_higher_coop(i,j,:) = model_6A2R_HillModel_V3_direct_HigherCoop(params_fit, TF);
     end
 end
 
@@ -282,10 +291,11 @@ end
 
 %% generate plots showing the effect of higher order cooperativity between Run-RNAP
 cmap = colormap('viridis');
-caxis([-10 10])
+% caxis([-10 10])
+w_ho_range = max(log10(w_ho)) - min(log10(w_ho));
 
 for i=1:3
-    construct = ConstructIndex(i);
+    construct = constructIndex(i);
     
     clf
     
@@ -313,7 +323,7 @@ for i=1:3
 
     % Run-Run interaction strength
     for j=1:length(w_ho)
-        cIndex = floor((log10(w_ho(j))-(-10))/20*256);
+        cIndex = floor((log10(w_ho(j))-(min(log10(w_ho))))/w_ho_range*256);
         if cIndex ==0
             cIndex = cIndex + 1;
         end
@@ -321,9 +331,9 @@ for i=1:3
         color = cmap(cIndex,:);
         % Prediction
         % Runt null
-        plot(APaxis(9:19), squeeze(Prediction_higher_coop(i,j,1:length(TF_combined)/2)),'Color',ColorChoice(4,:), 'LineWidth', 2)
+        plot(APaxis(9:21), fit_nulls(i,:),'Color',ColorChoice(4,:), 'LineWidth', 2)
         % Runt WT
-        plot(APaxis(9:19), squeeze(Prediction_higher_coop(i,j,length(TF_combined)/2+1:end)),'Color',color, 'LineWidth', 2)
+        plot(APaxis(9:21), squeeze(Prediction_higher_coop(i,j,:)),'Color',color, 'LineWidth', 2)
 
     end
 
@@ -340,11 +350,8 @@ for i=1:3
     StandardFigure(gcf,gca)
 
 %   %Save the plot
-    saveas(gcf,[FigPath,filesep,'Prediction_HillV3_HighCoop_',constructNames{construct},'.tif']); 
-    saveas(gcf,[FigPath,filesep, 'Prediction_HillV3_HighCoop_',constructNames{construct},'.pdf']);
+%     saveas(gcf,[FigPath,filesep,'Prediction_HillV3_HighCoop_',constructNames{construct},'.tif']); 
+%     saveas(gcf,[FigPath,filesep, 'Prediction_HillV3_HighCoop_',constructNames{construct},'.pdf']);
     pause
 end
-
-
-
 end

@@ -12,7 +12,7 @@ FigureRoot = 'S:/YangJoon/Dropbox/OpposingGradientsFigures/PipelineOutput';
 load([DropboxFolder,filesep,'OpposingGradients_ProcessedData',filesep,'compiledData.mat'])
 
 FigPath = [FigureRoot, filesep, 'InitialSlopes'];
-mkdir(FigPath)
+% mkdir(FigPath)
 
 %% Information for the datasets
 DataTypesForFit = {'r0-new','r1-new','r2-new','r3-new','r1-close','r1-mid','r2_1+2','r2_1+3',...
