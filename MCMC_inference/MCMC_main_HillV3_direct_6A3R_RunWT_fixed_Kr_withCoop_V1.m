@@ -1,6 +1,6 @@
-function MCMC_main_HillV3_direct_6A2R_RunWT_using_Pt_ests_fixed_Kr
+function MCMC_main_HillV3_direct_6A3R_RunWT_fixed_Kr_withCoop_V1
 %% Description
-% This script is doing MCMC fit for 6A2R, Run WT data one by one, to
+% This script is doing MCMC fit for 6A3R, Run WT data one by one, to
 % compare the Run-dependent parameters for the Hill.V3 model, to see what varies across
 % constructs.
 
@@ -43,7 +43,7 @@ load([tempPath, filesep, 'MCMC_6A0R_RuntNulls_BcdParams.mat'],'MCMC_6A0R_RuntNul
 %% Load the 6A1R MCMC inference result for the Run-dependent parameters (Make sure to import the 6A1R, Hill.V3 result)
 % load the MCMC results for the 6A1R constructs for 1) fixed K_r (global, shared) 
 % and 2)w_rp (local) for each constructs.
-% loads : "MCMC_6A1R_RuntWT"
+% load : "MCMC_6A1R_RuntWT.mat"
 % Note that the chain is constructed as "K_r(shared) w_rp1 w_rp2 w_rp3"
 tempPath2 = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\Point_estimate_Bcd_params_fromRunNulls_fixed_K_r';
 load([tempPath2, filesep, 'MCMC_6A1R_RuntWT_params.mat'])
@@ -54,15 +54,124 @@ w_rp1 = MCMC_6A1R_RuntWT.params_inferred(2); %[100]
 w_rp2 = MCMC_6A1R_RuntWT.params_inferred(3); %[001]
 w_rp3 = MCMC_6A1R_RuntWT.params_inferred(4); %[010]
 
-% std
-K_r_std = MCMC_6A1R_RuntWT.params_inferred_sigma(1);
-w_rp1_std = MCMC_6A1R_RuntWT.params_inferred_sigma(2); %[100]
-w_rp2_std = MCMC_6A1R_RuntWT.params_inferred_sigma(3); %[001]
-w_rp3_std = MCMC_6A1R_RuntWT.params_inferred_sigma(4); %[010]
-
 % extract the std for the future usage
 params_Run = MCMC_6A1R_RuntWT.params_inferred;
 params_Run_std = MCMC_6A1R_RuntWT.params_inferred_sigma;
+
+
+% Second, the inferred parameters from the hbP2 + 2 Runt sites
+% load : MCMC_6A2R_RuntWT.mat
+tempPath3 = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\6A2R_MCMC_seq_inference_pt_estimate_fromNulls\fixed_K_r_w_rp_withCoop\both_Run_Run_higher_order\10 limit';
+load([tempPath3, filesep, 'MCMC_6A2R_RuntWT_params.mat'])
+
+% extract the Runt-Runt cooperativity, and higher-order cooperativity
+w_rr1 = MCMC_6A2R_RuntWT(1).params_inferred(1); % [011]
+w_ho1 = MCMC_6A2R_RuntWT(1).params_inferred(2); % [011]
+w_rr2 = MCMC_6A2R_RuntWT(2).params_inferred(1); % [110]
+w_ho2 = MCMC_6A2R_RuntWT(2).params_inferred(2); % [110]
+w_rr3 = MCMC_6A2R_RuntWT(3).params_inferred(1); % [101]
+w_ho3 = MCMC_6A2R_RuntWT(3).params_inferred(2); % [101]
+
+
+
+%% First, let's try to see how the prediction looks like with only pair-wise parameters
+% Using the model_6A3R_HillModel_V3_direct_HigherCoop
+% higher-order coop when all three Runt molecules are bound as well as the
+% RNAP : w_hoho
+w_hoho = 400;
+
+% take the Bcd/RNAP params for the [111] construct
+params_Bcd = MCMC_6A0R_RuntNulls(4).params_inferred;
+params_Run = MCMC_6A1R_RuntWT.params_inferred;
+% params_temp = [params_Bcd, params_Run, w_rr1, w_rr2, w_rr3, w_ho1, w_ho2, w_ho3, w_hoho];
+params_temp = [params_Bcd, params_Run, 1, 1, 1, w_ho1, w_ho2, w_ho3, 300];
+
+output = model_6A3R_HillModel_V3_direct_HigherCoop(params_temp, TFinput);
+fit_nulls = model_6A0R_HillModel_V3(params_Bcd, TF_null);
+
+%% 
+%% generate raw fits 
+APaxis = 0:0.025:1;
+APbin_start = 9;
+APbin_end = 21;
+
+% Bcd = Bicoid(APbin_start:APbin_end); 
+% Run = Runt(APbin_start:APbin_end); 
+% RunNull = RuntNull(APbin_start:APbin_end);
+% 
+% TF = [Bcd, Run];
+% TF_null = [Bcd, RunNull];
+
+
+% define the construct index (which is consistent with the way it's
+% defiend in the compiledData.mat)
+
+construct = 4;
+    
+% Runt nulls
+fit_nulls = model_6A0R_HillModel_V3(params_Bcd, TF_null);
+
+% data (Runt nulls)
+Rate_null = compiledData{construct+1+8,9};
+Rate_null_SEM = compiledData{construct+1+8,10};
+
+% data (WT)
+Rate_WT = compiledData{construct+1,9};
+Rate_WT_SEM = compiledData{construct+1,10};
+
+% find the APbins that have the data points
+NoNaN_index_WT = ~isnan(Rate_WT);
+% calculate the AP bins that are not NaNs in both WT and Null datasets
+NoNaN_index = NoNaN_index_WT; %NoNaN_index_null;
+
+NoNaNindices = find(NoNaN_index);
+    
+% Range that is set as an initial guess. We will get a common set of
+% APbins that does not have NaN values in these AP bins.
+APbin_start = 20/2.5 + 1;
+APbin_end = 50/2.5 + 1;
+
+APbinRange = (APbin_start:APbin_end)';
+
+% find the common elements of AP bins between Not-NaNs, and also the
+% pre-set range (20-45%)
+% APbins_fit = intersect(NoNaNindices, APbinRange);
+APbins_fit = APbinRange;
+
+clf
+hold on
+errorbar(APaxis, Rate_null, Rate_null_SEM, 'o', 'Color', ColorChoice(4,:),'LineWidth', 1)    
+errorbar(APaxis, Rate_WT, Rate_WT_SEM, 'o', 'Color', ColorChoice(1,:),'LineWidth', 1)
+
+% plot(APaxis(APbin_start:APbin_end), fit_nulls, 'Color', ColorChoice(4,:),'LineWidth', 2)
+% plot(APaxis(APbin_start:APbin_end), output, 'Color', ColorChoice(1,:),'LineWidth', 2)
+
+plot(APaxis(APbin_start:APbin_end), fit_nulls, 'Color', ColorChoice(4,:),'LineWidth', 2)
+% plot(APaxis(APbin_start:APbin_end), output, 'Color', ColorChoice(1,:),'LineWidth', 2)
+plot(APaxis(APbins_fit), output(APbins_fit), 'Color', ColorChoice(1,:),'LineWidth', 2)
+
+xlim([0.2 0.5])
+xticks([0.2 0.3 0.4 0.5])
+ylim([0 400])
+yticks([0 100 200 300 400])
+
+xlabel('embryo length')
+ylabel('initial rate (AU/min)')
+
+box on
+legend('data(null)','data(WT)','Fit (null)', 'Fit (WT)')
+StandardFigure(gcf,gca)
+FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\6A2R_prediction_from_pt_estimates_fixed_Kr\fixed_K_r_w_rp_withCoop\6A3R_prediction_w_rr_w_ho_pairwiseOnly';
+% saveas(gcf,[FigPath,filesep,'raw_fits_null_WT_w_hoho_300', constructNames{construct}  ,'.tif']); 
+% saveas(gcf,[FigPath,filesep,'raw_fits_null_WT_w_hoho_300', constructNames{construct} ,'.pdf']); 
+
+
+
+
+
+
+
+
 
 %% Set up the MCMC inference
 % Note that we don't have any parameters regarding the repressor, thus we
@@ -79,7 +188,7 @@ model.ssfun = @(params, InputData) sum((InputData.ydata-mdl(InputData.xdata, par
 % model.ssfun = @model_6A2R_HillV3_direct_batch_SS;
 %% MCMC - Options
 options = [];
-n_steps = 2*10^5;
+n_steps = 2*10^4;
 options.nsimu = n_steps; %n_steps; %Number of steps
 options.updatesigma = 1; %Update error variance
 %     options.qcov = J0; %Initial covariance
@@ -186,7 +295,8 @@ for index=1:3 % [100, 001, 010]
 
     % Bounds of the parameters
     LB = [0,0];
-    UB = [10^(1), 10^(2)];
+%     UB = [10^(1), 10^(2)];
+    UB = [10, 20];
 
     for i = 1:length(names)
         % default values
@@ -198,6 +308,9 @@ for index=1:3 % [100, 001, 010]
         % For all parameters, define the priors from the posteriors from
         % the previous rounds of MCMC (either on Runt nulls or 6A1R cases)
 %         if i==2 % w_ho
+%             targetflag = 0; % fix the parameter
+%         end
+%         if i==1 % w_rr
 %             targetflag = 0; % fix the parameter
 %         end
         
@@ -269,8 +382,12 @@ for index = 1:3
     % point estimates from the Runt nulls
     params_Bcd = MCMC_6A0R_RuntNulls(construct).params_inferred;
     % MCMC inferred parameters for the Runt WT 
-    % : [K_r, w_rp1, w_rp2, w_rp3];
-        % Runt parameters
+    % : [K_r, w_rp1, w_rp2, w_rp3]; 
+    % w_rp1 : [100]
+    % w_rp2 : [001]
+    % w_rp3 : [010]
+    
+    % Runt parameters
     if index==1 % r2-new : [011]
         params_Run = [K_r, w_rp2, w_rp3];
     elseif index==2 % r2-close : [110]
@@ -286,10 +403,11 @@ for index = 1:3
 %     % fixing the w_rr = 1;
 %     params_MCMC(1) = 1;
     
-    % when the w_ho is set to be 1 using the targetflag
-    if length(params_MCMC)==1
+    % when the w_rr or w_ho is set to be 1 using the targetflag
+    if length(params_MCMC)==1 &&  params{1,2}{1,7}==0 % targetflag 
         params_MCMC = [params_MCMC, 1];
-    else
+    elseif length(params_MCMC)==1 &&  params{1,1}{1,7} ==0
+        params_MCMC = [1, params_MCMC];
     end
     
     output = model_6A2R_HillModel_V3_direct_fixed_Kr_Bcd_RNAP_w_rp_params(params_MCMC, TF, params_fixed);
@@ -323,17 +441,106 @@ for index = 1:3
     legend('data(null)','data(WT)','Fit (null)', 'Fit (WT)')
     StandardFigure(gcf,gca)
     pause
-%     saveas(gcf,[FigPath,filesep,'raw_fits_null_WT_', constructNames{construct}  ,'.tif']); 
-%     saveas(gcf,[FigPath,filesep,'raw_fits_null_WT_', constructNames{construct} ,'.pdf']); 
+    saveas(gcf,[FigPath,filesep,'raw_fits_null_WT_', constructNames{construct}  ,'.tif']); 
+    saveas(gcf,[FigPath,filesep,'raw_fits_null_WT_', constructNames{construct} ,'.pdf']); 
 end
 
+%% generate the raw fits for only Runt WT, also three constructs combined into one plot
+
+APaxis = 0:0.025:1;
+APbin_start = 9;
+APbin_end = 21;
+
+Bcd = Bicoid(APbin_start:APbin_end); 
+Run = Runt(APbin_start:APbin_end); 
+RunNull = RuntNull(APbin_start:APbin_end);
+
+TF = [Bcd, Run];
+TF_null = [Bcd, RunNull];
+
+hold on
+for index = 1:3
+    % define the construct index (which is consistent with the way it's
+    % defiend in the compiledData.mat)
+    constructIndex = [3,7,8];
+    construct = constructIndex(index);
+    
+    % extract parameters from the MCMC results (we're pulling the Bcd
+    % dependent parameters and Run dependent parameters respectively from
+    % their own inferences. (Bcd parameters from the Run null, and Run
+    % parameters from the Run WT).
+%     params_Bcd = MCMC_6A0R_RuntNulls(construct).params_inferred;
+%     params_Run = MCMC_6A1R_RuntWT(index).params_inferred;
+    
+    % point estimates from the Runt nulls
+    params_Bcd = MCMC_6A0R_RuntNulls(construct).params_inferred;
+    % MCMC inferred parameters for the Runt WT 
+    % : [K_r, w_rp1, w_rp2, w_rp3]; 
+    % w_rp1 : [100]
+    % w_rp2 : [001]
+    % w_rp3 : [010]
+    
+    % Runt parameters
+    if index==1 % r2-new : [011]
+        params_Run = [K_r, w_rp2, w_rp3];
+    elseif index==2 % r2-close : [110]
+        params_Run = [K_r, w_rp1, w_rp3];
+    elseif index==3 % r2-far : [101]
+        params_Run = [K_r, w_rp1, w_rp2];
+    end
+    params_fixed = [params_Bcd, params_Run];
+    
+    % grab the inferred parameters from this MCMC
+    params_MCMC = MCMC_6A2R_RuntWT(index).params_inferred;
+    
+%     % fixing the w_rr = 1;
+%     params_MCMC(1) = 1;
+    
+    % when the w_rr or w_ho is set to be 1 using the targetflag
+    % for w_ho=1
+    if length(params_MCMC)==1 &&  params{1,2}{1,7}==0 % targetflag 
+        params_MCMC = [params_MCMC, 1];
+    % for w_rr=1
+    elseif length(params_MCMC)==1 &&  params{1,1}{1,7} ==0
+        params_MCMC = [1, params_MCMC];
+    end
+    
+    output = model_6A2R_HillModel_V3_direct_fixed_Kr_Bcd_RNAP_w_rp_params(params_MCMC, TF, params_fixed);
+
+    % data (WT)
+    Rate_WT = compiledData{construct+1,9};
+    Rate_WT_SEM = compiledData{construct+1,10};
+    
+    errorbar(APaxis, Rate_WT, Rate_WT_SEM, 'o', 'Color', ColorChoice(construct,:),'LineWidth', 1)
+    
+    plot(APaxis(APbin_start:APbin_end), output, 'Color', ColorChoice(construct,:),'LineWidth', 2)
+
+    
+end
+
+% figure format
+xlim([0.2 0.5])
+xticks([0.2 0.3 0.4 0.5])
+ylim([0 400])
+yticks([0 100 200 300 400])
+
+xlabel('embryo length')
+ylabel('initial rate (AU/min)')
+
+box on
+legend('011','fit','110','fit','101','fit')
+StandardFigure(gcf,gca)
+
+
+saveas(gcf,[FigPath,filesep,'raw_fits_RuntWT_6A2R_compiled','.tif']); 
+saveas(gcf,[FigPath,filesep,'raw_fits_RuntWT_6A2R_compiled','.pdf']); 
 %% generate corner plots
 
 for index = 1:3
     construct = constructIndex(index);
     chain = MCMC_6A2R_RuntWT(index).chain;
     n_burn = 0.5*n_steps;
-    m = [chain(n_burn+1:end,1), log10(chain(n_burn+1:end,2))];
+    m = [chain(n_burn+1:end,1), chain(n_burn+1:end,2)];
     corner = figure;
     %     names = {'K_{b}','\omega_{bp}','p','R_{max}'};
     names = {'\omega_{rr}', '\omega_{ho}'};
@@ -341,10 +548,13 @@ for index = 1:3
 %     histogram(chain(n_burn+1:end),50,'Normalization','probability')
 
 %     saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct} ,'.tif']); 
-%     saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct} ,'.pdf']); 
+%     saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct} ,'.pdf']);
+    exportgraphics(gcf,[FigPath, filesep,'Corner_plot_highres_', constructNames{construct},'.pdf'],'ContentType','vector')
 end
 
-%% generate histogram for w_rr ONLY case
+%% Error bar using MCMCPred
+% out=mcmcpred(results,chain,s2chain,data,modelfun,nsample,varargin)
+%% generate histogram for w_rr ONLY case (w_ho = 1)
 
 for index = 1:3
     construct = constructIndex(index);
@@ -373,6 +583,43 @@ for index = 1:3
 
     saveas(gcf,[FigPath,filesep,'histogram_', constructNames{construct} ,'.tif']); 
     saveas(gcf,[FigPath,filesep,'histogram_', constructNames{construct} ,'.pdf']); 
+end
+
+%% 
+%% generate histogram for w_ho ONLY case (w_rr = 1)
+
+for index = 1:3
+    construct = constructIndex(index);
+    chain = MCMC_6A2R_RuntWT(index).chain;
+    n_burn = 0.5*n_steps;
+    
+    chain_temp = chain(n_burn+1:end,1);
+    mean_posterior = mean(chain_temp);
+    std_posterior = std(chain_temp);
+    
+    chain_temp = log10(chain_temp);
+    mean_posterior = log10(mean_posterior);
+    std_posterior = log10(std_posterior);
+    
+    % histogram of posterior
+    histogram(chain_temp,50,'Normalization','probability')
+    % mean and std of posterior
+    xline(mean_posterior,'LineWidth',2)
+    xline(mean_posterior-std_posterior,'--','LineWidth',2)
+    xline(mean_posterior+std_posterior,'--','LineWidth',2)
+    
+%     ylim([0 0.04])
+    
+    xlabel('log_{10} \omega_{ho}')
+    ylabel('frequency')
+    legend('postrior','mean','Location','NorthWest')
+
+    box on
+    StandardFigure(gcf,gca)
+%     pause
+
+    saveas(gcf,[FigPath,filesep,'histogram_logscale_', constructNames{construct} ,'.tif']); 
+    saveas(gcf,[FigPath,filesep,'histogram_logscale_', constructNames{construct} ,'.pdf']); 
 end
 
 %% generate plots of inferred parameters

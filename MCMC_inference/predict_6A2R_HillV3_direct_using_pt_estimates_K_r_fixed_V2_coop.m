@@ -76,6 +76,55 @@ for i=1:3
     fit_nulls(i,:) = model_6A0R_HillModel_V3(params_6A2R, TF);
 end
 
+
+%% generate the raw fits for only Runt WT, also three constructs combined into one plot
+
+APaxis = 0:0.025:1;
+APbin_start = 9;
+APbin_end = 21;
+
+Bcd = Bicoid(APbin_start:APbin_end); 
+Run = Runt(APbin_start:APbin_end); 
+RunNull = RuntNull(APbin_start:APbin_end);
+
+TF = [Bcd, Run];
+TF_null = [Bcd, RunNull];
+
+hold on
+for index = 1:3
+    % define the construct index (which is consistent with the way it's
+    % defiend in the compiledData.mat)
+    constructIndex = [3,7,8];
+    construct = constructIndex(index);
+
+    % data (WT)
+    Rate_WT = compiledData{construct+1,9};
+    Rate_WT_SEM = compiledData{construct+1,10};
+    
+    errorbar(APaxis, Rate_WT, Rate_WT_SEM, 'o', 'Color', ColorChoice(construct,:),'LineWidth', 1)
+    
+    plot(APaxis(APbin_start:APbin_end), Prediction(index,:), 'Color', ColorChoice(construct,:),'LineWidth', 2)
+
+    
+end
+
+% figure format
+xlim([0.2 0.5])
+xticks([0.2 0.3 0.4 0.5])
+ylim([0 400])
+yticks([0 100 200 300 400])
+
+xlabel('embryo length')
+ylabel('initial rate (AU/min)')
+
+box on
+legend('011','','110','','101','')
+StandardFigure(gcf,gca)
+
+FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\6A2R_prediction_from_pt_estimates_fixed_Kr';
+saveas(gcf,[FigPath,filesep,'raw_fits_RuntWT_6A2R_compiled','.tif']); 
+saveas(gcf,[FigPath,filesep,'raw_fits_RuntWT_6A2R_compiled','.pdf']); 
+
 %% generate plots of Prediction versus Data (2 Run sites)
 
 for i=1:3

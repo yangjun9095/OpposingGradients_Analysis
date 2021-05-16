@@ -159,13 +159,15 @@ Nstep_window = floor(time_window/tFrame);
 BcdFluo_tAveraged = nanmean(BcdFluo(Bcd_nc14:Bcd_nc14+Nstep_window,:));
 BcdFluo_tAveraged_SE = nanmean(BcdFluoSE(Bcd_nc14:Bcd_nc14+Nstep_window,:));
 
+BcdFluo_tAveraged(9) = BcdFluo_tAveraged
+
 APaxis = 0:0.025:1;
 
 figure
 hold on
-errorbar(APaxis(10:end), BcdFluo_tAveraged(10:end), BcdFluo_tAveraged_SE(10:end))
+errorbar(APaxis(1:end), BcdFluo_tAveraged(1:end), BcdFluo_tAveraged_SE(1:end))
 
-xlim([0.2 0.6])
+xlim([0.2 0.8])
 ylim([0 600])
        
 xlabel('embryo length')
@@ -176,9 +178,14 @@ box on
 StandardFigure(gcf,gca)
 
 %% Bcd extrapolation
-BcdFluo_extrap = interp1(0.225:0.025:0.6, BcdFluo_tAveraged(10:25), 0.2:0.025:0.8, 'linear','extrap')
+% anterior (20%)
+% temp = interp1(0.225:0.025:0.6, BcdFluo_tAveraged(10:25), 0.2:0.025:0.225, 'linear','extrap');
+% BcdFluo_extrap(9) = temp(1);
 
+% posterior
+BcdFluo_extrap = interp1(0.225:0.025:0.6, BcdFluo_tAveraged(10:25), 0.2:0.025:0.8, 'linear','extrap');
 
+BcdFluo_extrap(BcdFluo_extrap<15) = BcdFluo_extrap(23)
 %%
 RuntFluo_tAveraged = RuntData.AveragedFluo_tAveraged_mixed(2,:); % averaged within the 10 min into nc14
 
@@ -219,13 +226,20 @@ figure
 hold on
 % plot(0.2:0.025:0.8, Bcd,'color',ColorChoice(1,:),'LineWidth',2)
 % plot(0.2:0.025:0.8, BcdFluo_extrap,'color',ColorChoice(1,:),'LineWidth',2)
+% this nc13 profile is basically the same as nc14, I'm using it just for
+% prediction's sake, in that we could show a nicer 20-80% profile of
+% Bicoid. The actual modeling is done with real Bicoid profile.
 plot(0.2:0.025:0.8, BcdFluo_NC13*3,'color',ColorChoice(1,:),'LineWidth',2)
 plot(0.2:0.025:0.8,RuntFluo_extrap*1,'color',ColorChoice(2,:),'LineWidth',2)
-xlim([0.2 0.8])
+% xlim([0.2 0.8])
+% xticks([0.2 0.3 0.4 0.5 0.6 0.7 0.8])
+xlim([0.2 0.6])
+xticks([0.2 0.3 0.4 0.5 0.6])
+yticks([0 100 200 300 400])
 ylim([0 400])
        
 xlabel('embryo length')
-ylabel('transcription factor conc.(AU)')
+ylabel('transcription factor (AU)')
 
 legend('Bicoid','Runt')
 box on
@@ -233,8 +247,8 @@ StandardFigure(gcf,gca)
 
 % save figure
 FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\Modeling\ThesisMeeting_6A1R_model_20200824';
-saveas(gcf,[FigPath,filesep,'inputTF_spatial_gradient','.tif']); 
-saveas(gcf,[FigPath,filesep,'inputTF_spatial_gradient','.pdf']); 
+saveas(gcf,[FigPath,filesep,'inputTF_spatial_gradient_20-60%','.tif']); 
+saveas(gcf,[FigPath,filesep,'inputTF_spatial_gradient_20-60%','.pdf']); 
 
 
 %% Load the input TF data
@@ -251,11 +265,11 @@ Runt = TFinput(:,2);
 
 hold on
 APaxis = 0:0.025:1;
-plot(APaxis, Bicoid*5,'color',ColorChoice(1,:),'LineWidth',2)
-plot(APaxis, Runt*1.5,'color',ColorChoice(2,:),'LineWidth',2)
+plot(APaxis, Bicoid*3,'color',ColorChoice(1,:),'LineWidth',2)
+plot(APaxis, Runt,'color',ColorChoice(2,:),'LineWidth',2)
 
-xlim([0.2 0.8])
-ylim([0 600])
+xlim([0.2 0.6])
+ylim([0 400])
        
 xlabel('embryo length')
 ylabel('transcription factor conc.(AU)')
@@ -265,9 +279,9 @@ box on
 StandardFigure(gcf,gca)
 
 % save figure
-figPath = 'S:\YangJoon\Dropbox\Garcia Lab\Figures\OpposingGradientsFigures\Modeling';
-%saveas(gcf,[figPath,filesep,'inputTF_spatial_gradient','.tif']); 
-%saveas(gcf,[figPath,filesep,'inputTF_spatial_gradient','.pdf']); 
+FigPath = 'S:\YangJoon\Dropbox\Garcia Lab\Figures\OpposingGradientsFigures\Modeling';
+%saveas(gcf,[FigPath,filesep,'inputTF_spatial_gradient','.tif']); 
+%saveas(gcf,[FigPath,filesep,'inputTF_spatial_gradient','.pdf']); 
 
 
 %% model prediction - 3D space
@@ -321,21 +335,36 @@ xlabel('Runt')
 zlabel('RNAP loading rate')
 StandardFigure(gcf,gca)
 
-view(-30,50)
+view(-30,60)
 
 % save the plot
-FigPath = '';
+% FigPath = '';
 %% model fit (for a set of parameters)
 % Bcd : using the length constant of 0.2
-Bcd = exp(-5*AP);
-Bcdscale = 25;
-Bcd = Bcdscale*Bcd;
+% Bcd = exp(-5*AP);
+% Bcdscale = 25;
+% Bcd = Bcdscale*Bcd;
 
-Run = RuntFluo_extrap; % taking only 20-80% of AP axis
-Run = Run/30;
-Runscale = 0.01;
-Run = Run*Runscale;
+% Run = RuntFluo_extrap; % taking only 20-80% of AP axis
+% Run = Run/30;
+% Kr = 100;
+% Run = Run/Kr;
 
+% Here, we will use the real Bicoid and Runt data (temporally averaged,
+% spatial profile), to predict the transcription rate for different w_rp
+% values.
+% b : Bicoid concentration scaled by Kb
+% r : Runt concentration scaled by Kr
+
+% Note that I used the BcdFluo_NC13 from Liz & Jonathan's data to generate
+% this theoretical prediction, as 
+Kb = 30;
+% b = Bicoid/Kb
+b = BcdFluo_NC13/Kb;
+
+Kr = 10000;
+% r = Runt/Kr;
+r = RuntFluo_extrap/Kr;
 
 p = 0.001;
 wAP = 3;
@@ -345,29 +374,112 @@ wRP = 0.001;
 clear bound
 clear partitionFunct
 clear P_bound
-for i=1:length(AP)
-    
-    partitionFunct(i) = (1+Bcd(i).^6 + Run(i) + Bcd(i).^6*Run(i)) +...
-                            p*(1+Bcd(i).^6*wAP + Run(i)*wRP + Bcd(i).^6*Run(i)*wAP*wRP);
-    bound(i) =p*(1+Bcd(i).^6*wAP + Run(i)*wRP + Bcd(i).^6*Run(i)*wAP*wRP);
 
-end
+    
+partitionFunct = 1+b.^6 + r + b.^6.*r +...
+                    p*(1+b.^6*wAP + r*wRP + b.^6.*r*wAP*wRP);
+bound = p*(1+b.^6*wAP + r*wRP + b.^6.*r*wAP*wRP);
 
 P_bound = bound./partitionFunct;
 
 % plot on top of the 3D surface plot
 hold on
-plot3(Run,Bcd,P_bound,'LineWidth',3,'Color','r') %ColorChoice(4,:)) % red
+plot3(r,b,P_bound,'LineWidth',3,'Color','r') %ColorChoice(4,:)) % red
 
-plot(Run,Bcd,'LineWidth',3,'Color','b') %ColorChoice(2,:)) % brown
+plot(r,b,'LineWidth',3,'Color','b') %ColorChoice(2,:)) % brown
 
 % Save the figures
 FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\Modeling\ThesisMeeting_6A1R_model_20200824';
 %saveas(gcf,[figPath,filesep,'prediction_act_rep_3D','.tif']); 
 %saveas(gcf,[figPath,filesep,'prediction_act_rep_3D','.pdf']); 
-exportgraphics(gcf,[FigPath, filesep,'vectorfig.pdf'],'ContentType','vector')
+exportgraphics(gcf,[FigPath, filesep,'3D_prediction_mapped_2D_input_v2.pdf'],'ContentType','vector')
+
+%% generate the plot of predicted rate of Txn over AP
+figure(2)
+hold on
+plot(AP, P_bound,'LineWidth',2,'Color','r')
+% ylim([0 max(P_bound)+0.0005])
+xticks([0.2 0.3 0.4 0.5 0.6 0.7 0.8])
+set(gca,'yticklabel',[])
+box on
+
+xlabel('AP axis (embryo length)')
+ylabel('RNAP loading rate')
+% legend('WT','No Repressor','Location','SouthWest')
+
+StandardFigure(gcf,gca)
+%save the plot
+% FigPath = '';
+saveas(gcf,[FigPath,filesep,'prediction_overAP','.tif']); 
+saveas(gcf,[FigPath,filesep,'prediction_overAP','.pdf']); 
+
+%% Rate of Txn (prediction) over AP for 6A1R, for different w_rp values
+
+clear bound
+clear partitionFunct
+clear P_bound
+
+Kb = 30;
+% b = Bicoid/Kb
+b = BcdFluo_NC13/Kb;
+
+Kr = 100;
+% r = Runt/Kr;
+r = RuntFluo_extrap/Kr;
+
+p = 0.001;
+wAP = 100;
+%wRP = 0;
+% w_rp = [1 0.1 0.01 0.001 0.0001];
+% w_rp = 10.^[0 -3 -6 -9 -12];
+w_rp = 10.^(linspace(0,-2,5))
+
+% 1) [Run] = 0
+
+partitionFunct = (1+b.^6 ) +...
+                        p*(1+b.^6*wAP);
+bound = p*(1+b.^6*wAP);
+P_bound_RunNull = bound./partitionFunct;
+
+plot(AP, P_bound_RunNull)
+
+pause
+% 2) [Run] ~=0, with different values of w_rp
+hold on
+for i=1:length(w_rp)
+    wRP = w_rp(i);
+    partitionFunct = 1+b.^6 + r + b.^6.*r +...
+                    p*(1+b.^6*wAP + r*wRP + b.^6.*r*wAP*wRP);
+    bound = p*(1+b.^6*wAP + r*wRP + b.^6.*r*wAP*wRP);
+
+    P_bound = bound./partitionFunct;
+    plot(AP, P_bound)
+    pause
+end
 
 
+
+% ylim([0 max(P_bound)+0.0005])
+xticks([0.2 0.3 0.4 0.5 0.6 0.7 0.8])
+set(gca,'yticklabel',[])
+box on
+
+xlabel('embryo length')
+ylabel('RNAP loading rate')
+% legend('WT','No Repressor','Location','SouthWest')
+
+StandardFigure(gcf,gca)
+%save the plot
+% FigPath = '';
+% saveas(gcf,[FigPath,filesep,'prediction_overAP','.tif']); 
+% saveas(gcf,[FigPath,filesep,'prediction_overAP','.pdf']); 
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%% OLD %%%%%%%%%%%%%%%%%%%%%%%
 %% [Run] = 0 case (or n_R =0)
 for i=1:length(AP)
     partitionFunct(i) = (1+Bcd(i).^6 ) +...
@@ -385,7 +497,7 @@ plot3(Run,Bcd,P_bound_RunNull,'LineWidth',2,'Color',ColorChoice(1,:))
 plot(Run,Bcd,'LineWidth',2,'Color','k')
 
 % Save the figures
-figPath = 'S:\YangJoon\Dropbox\Garcia Lab\Figures\OpposingGradientsFigures\Modeling';
+FigPath = 'S:\YangJoon\Dropbox\Garcia Lab\Figures\OpposingGradientsFigures\Modeling';
 %saveas(gcf,[figPath,filesep,'prediction_act_rep_3D','.tif']); 
 %saveas(gcf,[figPath,filesep,'prediction_act_rep_3D','.pdf']); 
 %% Plot the predicted rate of Txn along the AP axis
@@ -460,9 +572,9 @@ legend('0','1 site','2 sites','3 sites','Location','SouthWest')
 
 StandardFigure(gcf,gca)
 %save the plot
-figPath = 'S:\YangJoon\Dropbox\Garcia Lab\Figures\OpposingGradientsFigures\Modeling';
-saveas(gcf,[figPath,filesep,'prediction_num_RepSites_overAP','.tif']); 
-saveas(gcf,[figPath,filesep,'prediction_num_RepSites_overAP','.pdf']); 
+FigPath = 'S:\YangJoon\Dropbox\Garcia Lab\Figures\OpposingGradientsFigures\Modeling';
+saveas(gcf,[FigPath,filesep,'prediction_num_RepSites_overAP','.tif']); 
+saveas(gcf,[FigPath,filesep,'prediction_num_RepSites_overAP','.pdf']); 
 
 
 %% 3D space prediction (input-output) : 

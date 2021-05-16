@@ -15,7 +15,7 @@ function MCMC_main_HillModel_V3_RuntNulls
 % script. : This is now done in the "preprocess_data_for_MCMC.m" script.
 FilePath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3';
 
-% Load the output data
+% Load the output  
 preprocessedData = load([FilePath, filesep, 'PreProcessedData_ForMCMC.mat']);
 data = preprocessedData.data;
 
@@ -62,7 +62,7 @@ model.ssfun = @(params, InputData) sum((InputData.ydata-mdl(InputData.xdata, par
 
 %% MCMC - Options
 options = [];
-n_steps = 2*10^4;
+n_steps = 2*10^5;
 n_burn = 0.5*n_steps;
 options.nsimu = n_steps; %n_steps; %Number of steps
 options.updatesigma = 1; %Update error variance
@@ -74,7 +74,8 @@ options.verbosity = 0; %Decrease text output
 %% Loop over all constructs to perform the MCMC inference on the Bcd-dependent parameters
 % [Kb, w_bp, p, R_max];
 
-for construct=2 %1:length(data)
+
+for construct = 1:length(data)
     %% Pull the construct of our interest (for the parameter inference)
     % Choose a construct 
     % Pick the dataset from the data.mat
@@ -146,8 +147,8 @@ for construct=2 %1:length(data)
     params0 = [Kb0, w_bp0, p0, R_max0];
 
     % Bounds of the parameters
-    LB = [0.1, 0, 0, 50];
-    UB = [10, 10, 1, 500];
+    LB = [0.1, 0, 0.0001, 50];
+    UB = [100, 100, 1, R_max0+100];
 
 
     for i = 1:length(names)
@@ -256,7 +257,7 @@ APbin_start=9;
 APbin_end=21;
 Bcd = Bicoid(APbin_start:APbin_end); 
 
-for construct = 5%1:length(data)
+for construct = 1:length(data)
     params = MCMC_6A0R_RuntNulls(construct).params_inferred;
     output = model_6A0R_HillModel_V3(params, Bcd);
     
@@ -279,24 +280,33 @@ for construct = 5%1:length(data)
     box on
     legend('data','MCMC fit')
     StandardFigure(gcf,gca)
+    pause
 %     
 %     saveas(gcf,[FigPath,filesep,'raw_fits_yLimFree_', constructNames{construct}  ,'.tif']); 
 %     saveas(gcf,[FigPath,filesep,'raw_fits_yLimFree_', constructNames{construct} ,'.pdf']); 
 end
 
+%% filter out some weird posteriors
+% this is for the visualization purpose only.
+% Fro example, the R_max never goes above 200, for the most cases, thus we
+% will limit the maximum bounds to be 200.
+
+
 %% generate corner plots
-for construct = 2 %1:length(data)
+for construct = 5 %1:length(data)
 %     clf
     chain = MCMC_6A0R_RuntNulls(construct).chain;
     n_burn = 0.5*n_steps;
     m = [chain(n_burn+1:end,1), chain(n_burn+1:end,2), chain(n_burn+1:end,3), chain(n_burn+1:end,4)];
     corner = figure;
-    names = {'K_{b}','\omega_{bp}','p','R_{max}'};
+    names = {'K_{b}','\omega_{bp}','p','R'}; 
     ecornerplot(m,'names',names);
     
     
 %     saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct}  ,'.tif']); 
 %     saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct} ,'.pdf']); 
+%   exportgraphics
+    exportgraphics(gcf,[FigPath, filesep,'Corner_plot_highres_', constructNames{construct},'.pdf'],'ContentType','vector')
 end
 
 %% generate histogram for posterior chains from each parameter (with point estimates)
@@ -380,8 +390,8 @@ box on
 StandardFigure(gcf,gca)
 
 % save the plots
-saveas(gcf,[FigPath,filesep, 'MCMCfit_6A0R_RuntNull_AllConstructs_LogScale','.tif']);
-saveas(gcf,[FigPath,filesep, 'MCMCfit_6A0R_RuntNull_AllConstructs_LogScale','.pdf']);
+% saveas(gcf,[FigPath,filesep, 'MCMCfit_6A0R_RuntNull_AllConstructs_LogScale','.tif']);
+% saveas(gcf,[FigPath,filesep, 'MCMCfit_6A0R_RuntNull_AllConstructs_LogScale','.pdf']);
 
 %% generate the plot for C.V. of inferred parameters
 
@@ -418,8 +428,8 @@ box on
 StandardFigure(gcf,gca)
 
 % save the plots
-saveas(gcf,[FigPath,filesep, 'CV_parameters','.tif']);
-saveas(gcf,[FigPath,filesep, 'CV_parameters','.pdf']);
+% saveas(gcf,[FigPath,filesep, 'CV_parameters','.tif']);
+% saveas(gcf,[FigPath,filesep, 'CV_parameters','.pdf']);
 
 %% generate a plot of Rate/Rate_max over AP axis for all construts : to see if the plots are collapsed
 hold on

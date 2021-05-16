@@ -305,15 +305,17 @@ end
 
 chain = MCMC_6A1R_RuntWT.chain;
 n_burn = 0.5*n_steps;
-m = [log10(chain(n_burn+1:end,1)), chain(n_burn+1:end,2),  chain(n_burn+1:end,3), chain(n_burn+1:end,4)];
+% arrange the parameters on the order of [001], [010], and [100]
+m = [log10(chain(n_burn+1:end,1)), chain(n_burn+1:end,4),  chain(n_burn+1:end,3), chain(n_burn+1:end,2)];
 corner = figure;
 %     names = {'K_{b}','\omega_{bp}','p','R_{max}'};
 names = {'log(K_{r})','\omega_{rp1}','\omega_{rp2}','\omega_{rp3}'};
 ecornerplot(m,'names',names);
 
-saveas(gcf,[FigPath,filesep,'Corner_plot_K_r_1000_logscale_', constructNames{construct} ,'.tif']); 
-saveas(gcf,[FigPath,filesep,'Corner_plot_K_r_1000_logscale_', constructNames{construct} ,'.pdf']); 
-
+% saveas(gcf,[FigPath,filesep,'Corner_plot_K_r_logscale_', constructNames{construct} ,'.tif']); 
+% saveas(gcf,[FigPath,filesep,'Corner_plot_K_r_logscale_', constructNames{construct} ,'.pdf']); 
+% higher resolution
+exportgraphics(gcf,[FigPath, filesep,'Corner_plot_K_r_logscale_highres', '.pdf'],'ContentType','vector')
 %% generate plots of inferred parameters
 hold on
 
@@ -431,7 +433,7 @@ distance = [170, 62, 128];
 
 errorbar(distance, MCMC_6A1R_RuntWT.params_inferred(2:4), MCMC_6A1R_RuntWT.params_inferred_sigma(2:4),'o','LineWidth',2)
 
-xlim([0 300])
+xlim([0 225])
 ylim([0 1.2])
 xlabel('distance from the promoter')
 ylabel('\omega_{rp}')
@@ -440,8 +442,8 @@ box on
 StandardFigure(gcf,gca)
 
 % save the plots
-saveas(gcf,[FigPath,filesep, 'distance_w_rp','.tif']);
-saveas(gcf,[FigPath,filesep, 'distance_w_rp','.pdf']);
+saveas(gcf,[FigPath,filesep, 'distance_w_rp_0-225','.tif']);
+saveas(gcf,[FigPath,filesep, 'distance_w_rp_0-225','.pdf']);
 %% save the result into mat files (MCMC_6A0R_RuntNulls)
 FilePath = FigPath;
 save([FilePath, filesep, 'MCMC_6A1R_RuntWT_params.mat'],'MCMC_6A1R_RuntWT')

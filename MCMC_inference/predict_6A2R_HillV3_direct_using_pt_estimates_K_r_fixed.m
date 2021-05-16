@@ -95,9 +95,9 @@ for i=1:3
     
     hold on
     % Runt nulls
-    errorbar(APaxis, Rate_null, Rate_null_SEM,'o','Color',ColorChoice(4,:),'CapSize',0,'MarkerFaceColor',ColorChoice(4,:))
+    errorbar(APaxis, Rate_null, Rate_null_SEM,'o','Color',ColorChoice(4,:),'LineWidth', 1)%'CapSize',0,'MarkerFaceColor',ColorChoice(4,:))
     % Runt WT
-    errorbar(APaxis, Rate, Rate_SEM,'o','Color',ColorChoice(1,:),'CapSize',0,'MarkerFaceColor',ColorChoice(1,:))
+    errorbar(APaxis, Rate, Rate_SEM,'o','Color',ColorChoice(1,:),'LineWidth', 1)%'CapSize',0,'MarkerFaceColor',ColorChoice(1,:))
     
     % Prediction
     % Runt null
@@ -161,6 +161,7 @@ for i=1:3
 
         params_6A2R_Run_coop = [params_6A2R, omega_rr];
 
+        %Prediction_Run_Run_coop_direct(i,j,:) = model_6A2R_HillModel_V3_direct_RunCoop_fixed_Kr(params_6A2R_Run_coop, TF);
         Prediction_Run_Run_coop_direct(i,j,:) = model_6A2R_HillModel_V3_direct_RunCoop(params_6A2R_Run_coop, TF);
     end
 end
@@ -194,8 +195,14 @@ for i=1:3
     errorbar(APaxis, Rate, Rate_SEM,'o','Color',ColorChoice(1,:),'CapSize',0,'MarkerFaceColor',ColorChoice(1,:))
     
     % Run-Run interaction strength
+    
+        % plot the Runt null fit
+        plot(APaxis(9:21),fit_nulls(i,:),'Color',ColorChoice(4,:), 'LineWidth', 2)
+        
+        opacity = 1; % opacity of the line color: 4th element of the Color array
+            
     for j=1:length(w_rr)
-        cIndex = floor((log10(w_rr(j))-(-6))/30*256);
+        cIndex = floor((log10(w_rr(j))-(min(log10(w_rr))))/30*256);
         if cIndex ==0
             cIndex = cIndex + 1;
         end
@@ -205,7 +212,8 @@ for i=1:3
         % Runt null
         plot(APaxis(9:21),fit_nulls(i,:),'Color',ColorChoice(4,:), 'LineWidth', 2)
         % Runt WT
-        plot(APaxis(9:21), squeeze(Prediction_Run_Run_coop_direct(i,j,:)),'Color',color, 'LineWidth', 2)
+        plot(APaxis(9:21), squeeze(Prediction_Run_Run_coop_direct(i,j,:)),...
+            'Color',[color, opacity], 'LineWidth', 2)
 %         pause
     end
 
@@ -218,12 +226,14 @@ for i=1:3
     ylabel({'initial RNAP', 'loading rate (AU/min)'})
     
     box on
+%     % transparency of the colormap
+%     alpha(viridis,0.7)
     colorbar
     StandardFigure(gcf,gca)
-    pause
+%     pause
 %   %Save the plot
-%     saveas(gcf,[FigPath,filesep,'Prediction_HillV3_',constructNames{construct},'.tif']); 
-%     saveas(gcf,[FigPath,filesep,'Prediction_HillV3_',constructNames{construct},'.pdf']);
+    saveas(gcf,[FigPath,filesep,'Prediction_HillV3_',constructNames{construct},'.tif']); 
+    saveas(gcf,[FigPath,filesep,'Prediction_HillV3_',constructNames{construct},'.pdf']);
 %     pause
 end
 
