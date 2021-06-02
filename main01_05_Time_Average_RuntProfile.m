@@ -12,7 +12,7 @@ function main01_05_Time_Average_RuntProfile
 
 
 %% Load the pre-processed data (before averaging over multiple embryos)
-FilePath = 'S:\YangJoon\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
+FilePath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\mat files';
 
 RuntFemale = load([FilePath, filesep,'Runt_preprocessed_female.mat'])
    
@@ -36,10 +36,10 @@ Time_male = RuntMale.Time_male;
 %% Calculate the time-averaged Runt profile (spatial profile)
 
 % First, let's define the time window (for averaging)
-% 0-10 minutes of NC14
+% 5-10 minutes of NC14
 % The datasets were taken with frame rate of 1 frame / 1 min, so we can
 % easily define the time window.
-tWindow = NC14_female:NC14_female +9 ; % beginning 10 minutes of NC14
+tWindow = NC14_female+5:NC14_female +10 ; % beginning 10 minutes of NC14
 % In future, this wWindow can be fed into this function as an input.
 
 % In case indexing is different for males and females

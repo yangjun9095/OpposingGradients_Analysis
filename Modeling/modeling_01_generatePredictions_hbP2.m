@@ -93,8 +93,8 @@ Bcd = Bcdscale*Bcd;
 
 % Bcd, Runt : using the time-averaged data
 filePath = 'S:\YangJoon\Dropbox\OpposingGradient\OpposingGradients_ProcessedData\AveragedDatasets_Feb2020';
-BcdData = load([filePath, filesep, 'Bcd-Averaged.mat'])
-RuntData =  load([filePath, filesep, 'Runt_TimeAveraged_mixedSex_NC14.mat'])
+BcdData = load([filePath, filesep, 'Bcd-Averaged.mat']);
+RuntData =  load([filePath, filesep, 'Runt_TimeAveraged_mixedSex_NC14.mat']);
 
 % Average over the 10 minutes into nc14
 Bcd_nc13 = BcdData.nc13;
@@ -157,14 +157,17 @@ BcdFluo_extrap = interp1(0.225:0.025:0.6, BcdFluo_tAveraged(10:25), 0.2:0.025:0.
 
 %%
 RuntFluo_tAveraged = RuntData.AveragedFluo_tAveraged_mixed(2,:); % averaged within the 10 min into nc14
+RuntFluo_tAveraged_SE = RuntData.SEFluo_tAveraged_mixed(2,:); % averaged within the 10 min into nc14
 
 RuntFluo = RuntFluo_tAveraged;
 RuntFluo_tAveraged(isnan(RuntFluo)) = [];
+RuntFluo_tAveraged_SE(isnan(RuntFluo)) = [];
 APaxis = 0:0.025:1;
 APaxis(isnan(RuntFluo)) = [];
 
 % extrapolate the posterior data points
-RuntFluo_extrap = interp1(APaxis, RuntFluo_tAveraged, 0.2:0.025:0.8, 'linear','extrap')
+RuntFluo_extrap = interp1(APaxis, RuntFluo_tAveraged, 0.2:0.025:0.8, 'linear','extrap');
+RuntFluo_SE_extrap = interp1(APaxis, RuntFluo_tAveraged_SE, 0.2:0.025:0.8, 'linear','extrap');
 
 Run = RuntFluo_extrap; % taking only 20-80% of AP axis
 
@@ -178,10 +181,14 @@ BcdData_EE_JL = load('S:\YangJoon\Dropbox\OpposingGradient\eGFP-Bcd-From-Liz-Jon
 
 % extract data from 0.2-0.8 
 BcdFluoTemp = nanmean(BcdData_EE_JL.BcdNC13Ant);
+BcdFluoTemp_SE = nanstd(BcdData_EE_JL.BcdNC13Ant)./sqrt(42); % the number of time points are 42.
 BcdFluo_NC13(1:17) = BcdFluoTemp(9:25); %20-60%
+BcdFluo_NC13_SE(1:17) = BcdFluoTemp_SE(9:25);
 
 BcdFluoTemp = nanmean(BcdData_EE_JL.BcdNC13Pos);
+BcdFluoTemp_SE = nanstd(BcdData_EE_JL.BcdNC13Pos)./sqrt(42); % the number of time points are 42.
 BcdFluo_NC13(18:25) = BcdFluoTemp(26:33); %62.5-80%
+BcdFluo_NC13_SE(18:25) = BcdFluoTemp_SE(26:33);
 
 %% generate plots of Bicoid and Runt spatial gradient
 
@@ -194,8 +201,12 @@ AP = 0.2:0.025:0.8;
 hold on
 % plot(0.2:0.025:0.8, Bcd,'color',ColorChoice(1,:),'LineWidth',2)
 % plot(0.2:0.025:0.8, BcdFluo_extrap,'color',ColorChoice(1,:),'LineWidth',2)
-plot(0.2:0.025:0.8, BcdFluo_NC13*5,'color',ColorChoice(1,:),'LineWidth',2)
-plot(0.2:0.025:0.8,RuntFluo_extrap*1.5,'color',ColorChoice(2,:),'LineWidth',2)
+
+% plot(0.2:0.025:0.8, BcdFluo_NC13*5,'color',ColorChoice(1,:),'LineWidth',2)
+% plot(0.2:0.025:0.8,RuntFluo_extrap*1.5,'color',ColorChoice(2,:),'LineWidth',2)
+
+errorbar(0.2:0.025:0.8, BcdFluo_NC13*5, BcdFluo_NC13_SE*5,'LineWidth',2)
+errorbar(0.2:0.025:0.8,RuntFluo_extrap*1.5, RuntFluo_SE_extrap, 'color',ColorChoice(2,:),'LineWidth',2)
 
 xlim([0.2 0.8])
 ylim([0 600])
@@ -208,9 +219,9 @@ box on
 StandardFigure(gcf,gca)
 
 % save figure
-figPath = 'S:\YangJoon\Dropbox\Garcia Lab\Figures\OpposingGradientsFigures\Modeling';
-%saveas(gcf,[figPath,filesep,'inputTF_spatial_gradient','.tif']); 
-%saveas(gcf,[figPath,filesep,'inputTF_spatial_gradient','.pdf']); 
+figPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\Modeling';
+saveas(gcf,[figPath,filesep,'inputTF_spatial_gradient','.tif']); 
+saveas(gcf,[figPath,filesep,'inputTF_spatial_gradient','.pdf']); 
 
 
 %% model

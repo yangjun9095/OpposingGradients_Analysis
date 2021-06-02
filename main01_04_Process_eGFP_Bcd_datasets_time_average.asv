@@ -205,16 +205,10 @@ end
 time_averaged_fluo_mean = nanmean(time_averaged_fluo);
 time_averaged_fluo_sem = nanstd(time_averaged_fluo)/sqrt(length(BcdData));
 
-%% compile the data into a structure
-BcdData_processed.timewindow = '5-10min_nc14'
-BcdData_processed.time_averaged_fluo_mean = time_averaged_fluo_mean;
-BcdData_processed.time_averaged_fluo_mean_sem = time_averaged_fluo_sem;
-BcdData_processed.time_averaged_fluo = time_averaged_fluo;
-
-
 %% save the results
 FilePath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\InputTF';
-save([FilePath, filesep, 'BcdData_processed_nc14.mat'],'BcdData_processed')
+saveas(gcf,[FigPath,filesep,'Bcd_',num2str(APpos),'%_nc14.tif'])
+saveas(gcf,[FigPath,filesep,'Bcd_',num2str(APpos),'%_nc14.pdf'])
 
 %% Part3. Test this idea with different time window of time-averaging
 % Just to check whether it's a scaling issue or not.

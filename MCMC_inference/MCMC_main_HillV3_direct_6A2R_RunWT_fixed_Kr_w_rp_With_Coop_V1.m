@@ -187,7 +187,7 @@ for index=1:3 % [100, 001, 010]
     % Bounds of the parameters
     LB = [0,0];
 %     UB = [10^(1), 10^(2)];
-    UB = [10, 20];
+    UB = [3, 20];
 
     for i = 1:length(names)
         % default values
@@ -332,8 +332,8 @@ for index = 1:3
     legend('data(null)','data(WT)','Fit (null)', 'Fit (WT)')
     StandardFigure(gcf,gca)
     pause
-    saveas(gcf,[FigPath,filesep,'raw_fits_null_WT_', constructNames{construct}  ,'.tif']); 
-    saveas(gcf,[FigPath,filesep,'raw_fits_null_WT_', constructNames{construct} ,'.pdf']); 
+%     saveas(gcf,[FigPath,filesep,'raw_fits_null_WT_', constructNames{construct}  ,'.tif']); 
+%     saveas(gcf,[FigPath,filesep,'raw_fits_null_WT_', constructNames{construct} ,'.pdf']); 
 end
 
 %% generate corner plots
@@ -351,7 +351,7 @@ for index = 1:3
 
 %     saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct} ,'.tif']); 
 %     saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct} ,'.pdf']);
-    exportgraphics(gcf,[FigPath, filesep,'Corner_plot_highres_', constructNames{construct},'.pdf'],'ContentType','vector')
+%     exportgraphics(gcf,[FigPath, filesep,'Corner_plot_highres_', constructNames{construct},'.pdf'],'ContentType','vector')
 end
 
 %% Error bar using MCMCPred
@@ -450,9 +450,9 @@ box on
 StandardFigure(gcf,gca)
 
 % save the plot
-FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\6A2R_prediction_from_pt_estimates_fixed_Kr\fixed_K_r_w_rp_withCoop\both_Run_Run_higher_order\10 limit';
-saveas(gcf,[FigPath,filesep, 'inferred_params_w_rr_w_ho_logScale','.tif']);
-saveas(gcf,[FigPath,filesep, 'inferred_params_w_rr_w_ho_logScale','.pdf']);
+% FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\6A2R_prediction_from_pt_estimates_fixed_Kr\fixed_K_r_w_rp_withCoop\both_Run_Run_higher_order\10 limit';
+% saveas(gcf,[FigPath,filesep, 'inferred_params_w_rr_w_ho_logScale','.tif']);
+% saveas(gcf,[FigPath,filesep, 'inferred_params_w_rr_w_ho_logScale','.pdf']);
 
 
 %% generate plots of inferred parameters (compare the w_rp values from 6A1R or 6A2R)

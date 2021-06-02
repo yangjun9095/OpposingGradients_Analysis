@@ -3,6 +3,23 @@ function main01_10_GeneratePlots_Runt_Bcd_profiles
 % spatio-temporal profiles of Runt and Bcd. Those datasets are pretty much
 % directly processed from main01_01,02,03,04, etc.
 
+%% Bicoid
+% Load the datasets
+% Two choices, Mine versus Liz's
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 %% Part1. Deprecated
 %% Runt profile (NC14)
 % 

@@ -61,16 +61,32 @@ params_Run_std = MCMC_6A1R_RuntWT.params_inferred_sigma;
 
 % Second, the inferred parameters from the hbP2 + 2 Runt sites
 % load : MCMC_6A2R_RuntWT.mat
-tempPath3 = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\6A2R_MCMC_seq_inference_pt_estimate_fromNulls\fixed_K_r_w_rp_withCoop\both_Run_Run_higher_order\10 limit';
-load([tempPath3, filesep, 'MCMC_6A2R_RuntWT_params.mat'])
+% tempPath3 = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\6A2R_prediction_from_pt_estimates_fixed_Kr\fixed_K_r_w_rp_withCoop\both_Run_Run_higher_order\10 limit';
+% load([tempPath3, filesep, 'MCMC_6A2R_RuntWT_params.mat'])
 
 % extract the Runt-Runt cooperativity, and higher-order cooperativity
-w_rr1 = MCMC_6A2R_RuntWT(1).params_inferred(1); % [011]
-w_ho1 = MCMC_6A2R_RuntWT(1).params_inferred(2); % [011]
-w_rr2 = MCMC_6A2R_RuntWT(2).params_inferred(1); % [110]
-w_ho2 = MCMC_6A2R_RuntWT(2).params_inferred(2); % [110]
-w_rr3 = MCMC_6A2R_RuntWT(3).params_inferred(1); % [101]
-w_ho3 = MCMC_6A2R_RuntWT(3).params_inferred(2); % [101]
+% w_rr1 = MCMC_6A2R_RuntWT(1).params_inferred(1); % [011]
+% w_ho1 = MCMC_6A2R_RuntWT(1).params_inferred(2); % [011]
+% w_rr2 = MCMC_6A2R_RuntWT(2).params_inferred(1); % [110]
+% w_ho2 = MCMC_6A2R_RuntWT(2).params_inferred(2); % [110]
+% w_rr3 = MCMC_6A2R_RuntWT(3).params_inferred(1); % [101]
+% w_ho3 = MCMC_6A2R_RuntWT(3).params_inferred(2); % [101]
+
+
+% Third, hybrid form of the parameters, w_ho only for [011], [101], w_rr & w_ho for [110]
+tempPath4 = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\6A2R_prediction_from_pt_estimates_fixed_Kr\fixed_K_r_w_rp_withCoop\hybrid_w_ho_only_w_rr_w_ho_only_[110]';
+load([tempPath4, filesep, 'MCMC_6A2R_hybrid_w_rr_w_ho.mat']); 
+% this will load two matrices, "MCMC_6A2R_params", and
+% "MCMC_6A2R_params_std".
+
+
+% extract the Runt-Runt cooperativity, and higher-order cooperativity
+w_rr1 = MCMC_6A2R_params(1,1); % [011]
+w_ho1 = MCMC_6A2R_params(1,2); % [011]
+w_rr2 = MCMC_6A2R_params(2,1); % [110]
+w_ho2 = MCMC_6A2R_params(2,2); % [110]
+w_rr3 = MCMC_6A2R_params(3,1); % [101]
+w_ho3 = MCMC_6A2R_params(3,2); % [101]
 
 
 
@@ -78,29 +94,29 @@ w_ho3 = MCMC_6A2R_RuntWT(3).params_inferred(2); % [101]
 % Using the model_6A3R_HillModel_V3_direct_HigherCoop
 % higher-order coop when all three Runt molecules are bound as well as the
 % RNAP : w_hoho
-w_hoho = 400;
+w_hoho = 2300;
 
 % take the Bcd/RNAP params for the [111] construct
 params_Bcd = MCMC_6A0R_RuntNulls(4).params_inferred;
 params_Run = MCMC_6A1R_RuntWT.params_inferred;
-% params_temp = [params_Bcd, params_Run, w_rr1, w_rr2, w_rr3, w_ho1, w_ho2, w_ho3, w_hoho];
-params_temp = [params_Bcd, params_Run, 1, 1, 1, w_ho1, w_ho2, w_ho3, 300];
+params_temp = [params_Bcd, params_Run, w_rr1, w_rr2, w_rr3, w_ho1, w_ho2, w_ho3, w_hoho];
+% params_temp = [params_Bcd, params_Run, 1, 6.88, 1, 8.61, 0.0468, 0.1964, w_hoho];
 
 output = model_6A3R_HillModel_V3_direct_HigherCoop(params_temp, TFinput);
 fit_nulls = model_6A0R_HillModel_V3(params_Bcd, TF_null);
 
-%% 
-%% generate raw fits 
+        
+% generate raw fits 
 APaxis = 0:0.025:1;
 APbin_start = 9;
 APbin_end = 21;
 
-% Bcd = Bicoid(APbin_start:APbin_end); 
-% Run = Runt(APbin_start:APbin_end); 
-% RunNull = RuntNull(APbin_start:APbin_end);
-% 
-% TF = [Bcd, Run];
-% TF_null = [Bcd, RunNull];
+Bcd = Bicoid(APbin_start:APbin_end); 
+Run = Runt(APbin_start:APbin_end); 
+RunNull = RuntNull(APbin_start:APbin_end);
+
+TF = [Bcd, Run];
+TF_null = [Bcd, RunNull];
 
 
 % define the construct index (which is consistent with the way it's
@@ -135,8 +151,8 @@ APbinRange = (APbin_start:APbin_end)';
 
 % find the common elements of AP bins between Not-NaNs, and also the
 % pre-set range (20-45%)
-% APbins_fit = intersect(NoNaNindices, APbinRange);
-APbins_fit = APbinRange;
+APbins_fit = intersect(NoNaNindices, APbinRange);
+APbins_fit = 9:14; %APbinRange;
 
 clf
 hold on
@@ -161,7 +177,7 @@ ylabel('initial rate (AU/min)')
 box on
 legend('data(null)','data(WT)','Fit (null)', 'Fit (WT)')
 StandardFigure(gcf,gca)
-FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\6A2R_prediction_from_pt_estimates_fixed_Kr\fixed_K_r_w_rp_withCoop\6A3R_prediction_w_rr_w_ho_pairwiseOnly';
+% FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\6A2R_prediction_from_pt_estimates_fixed_Kr\fixed_K_r_w_rp_withCoop\6A3R_prediction_w_rr_w_ho_pairwiseOnly';
 % saveas(gcf,[FigPath,filesep,'raw_fits_null_WT_w_hoho_300', constructNames{construct}  ,'.tif']); 
 % saveas(gcf,[FigPath,filesep,'raw_fits_null_WT_w_hoho_300', constructNames{construct} ,'.pdf']); 
 
