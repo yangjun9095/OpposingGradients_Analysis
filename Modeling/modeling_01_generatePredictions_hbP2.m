@@ -106,16 +106,18 @@ BcdFluoSE = BcdData.SEVectorAP;
 
 %% generate Bcd time traces and spatial gradient plots
 % Bicoid concentration time trace (20%)
-APbin = 11; % 25%
+APbin = 17; % 40%
 
 hold on
-errorbar(BcdTime(Bcd_nc13:end) - BcdTime(Bcd_nc13),...
-            BcdFluo(Bcd_nc13:end,APbin),...
-            BcdFluoSE(Bcd_nc13:end,APbin))
+errorbar(BcdTime(Bcd_nc13:2:end) - BcdTime(Bcd_nc13),...
+            BcdFluo(Bcd_nc13:2:end,APbin),...
+            BcdFluoSE(Bcd_nc13:2:end,APbin),'Color',ColorChoice(4,:))
         
 xline(18,'--')
 
-xlim([0 60])
+xlim([0 50])
+ylim([0 500])
+yticks([0 100 200 300 400 500])
         
 xlabel('time (min)')
 ylabel('Bicoid concentration (AU)')

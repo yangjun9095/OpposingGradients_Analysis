@@ -62,7 +62,7 @@ model.ssfun = @(params, InputData) sum((InputData.ydata-mdl(InputData.xdata, par
 
 %% MCMC - Options
 options = [];
-n_steps = 2*10^5;
+n_steps = 2*10^4;
 n_burn = 0.5*n_steps;
 options.nsimu = n_steps; %n_steps; %Number of steps
 options.updatesigma = 1; %Update error variance
@@ -148,7 +148,7 @@ for construct = 1:length(data)
 
     % Bounds of the parameters
     LB = [0.1, 0, 0.0001, 50];
-    UB = [100, 100, 1, R_max0+100];
+    UB = [1000, 1000, 1, R_max0+100];
 
 
     for i = 1:length(names)
@@ -169,9 +169,9 @@ for construct = 1:length(data)
 %         elseif i==1
 %             pri_mu = 10;
 %             pri_sig = 100;
-        elseif i==2
-            pri_mu = 50;
-            pri_sig = 100;
+%         elseif i==2
+%             pri_mu = 50;
+%             pri_sig = 1000;
         else
             pri_mu = NaN;
             pri_sig = Inf;
@@ -306,7 +306,7 @@ for construct = 5 %1:length(data)
 %     saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct}  ,'.tif']); 
 %     saveas(gcf,[FigPath,filesep,'Corner_plot_', constructNames{construct} ,'.pdf']); 
 %   exportgraphics
-    exportgraphics(gcf,[FigPath, filesep,'Corner_plot_highres_', constructNames{construct},'.pdf'],'ContentType','vector')
+%     exportgraphics(gcf,[FigPath, filesep,'Corner_plot_highres_w_bp_0-200_', constructNames{construct},'.pdf'],'ContentType','vector')
 end
 
 %% generate histogram for posterior chains from each parameter (with point estimates)
@@ -366,8 +366,8 @@ box on
 StandardFigure(gcf,gca)
 
 % % save the plots
-saveas(gcf,[FigPath,filesep, 'MCMCfit_6A0R_RuntNull_AllConstructs','.tif']);
-saveas(gcf,[FigPath,filesep, 'MCMCfit_6A0R_RuntNull_AllConstructs','.pdf']);
+% saveas(gcf,[FigPath,filesep, 'MCMCfit_6A0R_RuntNull_AllConstructs','.tif']);
+% saveas(gcf,[FigPath,filesep, 'MCMCfit_6A0R_RuntNull_AllConstructs','.pdf']);
 
 %% generate the plot of inferred parameters (log scale)
 hold on
@@ -406,50 +406,52 @@ params_names = {'K_{b}','w_{bp}','p','R'};
 
 % generate the plot for each inferred parameter as individual panels
 for params=1:4
+    xindex = [0.85 0.9 0.95 1 1.05 1.1 1.15 1.2];
     figure(params)
     hold on
     for j=1:8
-        errorbar(1, params_inferred(j,params),...
+        errorbar(xindex(j), params_inferred(j,params),...
                     params_inferred_std(j,params),...
-                    'o','LineWidth',2,'Color',ColorChoice(j,:))
+                    'o','LineWidth',2,'Color',ColorChoice(j,:),'CapSize',0)
     end
-        xlim([0 2])
+        xlim([0.7 1.3])
         xticks([1])
         xticklabels(params_names(params))
         
         % y limit
-        if params==3
+        if params==3 % p
             ylim([0 1])
 %             yticks([0 0.2 0.4 0.6 0.8 1])
-        elseif params==4
-            ylim([0 400])
+        elseif params==4 % R
+            ylim([0 400]) 
 %             yticks([0 100 200 300 400])
-        else
-            ylim([0 500])
+        else % K_b and/or w_bp
+            ylim([0 100])
 %             yticks([0 20 40 60 80 100])
             
         end
 
         % xlabel('')
         ylabel('inferred parameters')
-        legend('000','100','011','111','001','010','110','101', 'Location', 'NorthEast')
+%         legend('000','100','011','111','001','010','110','101', 'Location', 'NorthEast')
         
-        set(gca,'YScale','log')
+        %set(gca,'YScale','log')
         
         box on
         StandardFigure(gcf,gca)
 
         
-        %         % % save the plots
-%         saveas(gcf,[FigPath,filesep, 'MCMCfit_6A0R_RuntNull_AllConstructs_',params_names{params},'.tif']);
-%         saveas(gcf,[FigPath,filesep, 'MCMCfit_6A0R_RuntNull_AllConstructs_',params_names{params},'.pdf']);
+        % save the plots
+        FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\RuntNulls'
+        saveas(gcf,[FigPath,filesep, 'inferred_params_',params_names{params},'.tif']);
+        saveas(gcf,[FigPath,filesep, 'inferred_params_',params_names{params},'.pdf']);
 end
 
 
 
 
 
-%% generate the plot for C.V. of inferred parameters 
+%% generate the plot for C.V. of inferred parameters (bootstrap error)
 % calculate the Coefficient of Variation (C.V.) of inferred parameters
 % across constructs (different enhancers).
 for construct = 1:length(data)
@@ -485,6 +487,47 @@ StandardFigure(gcf,gca)
 % save the plots
 % saveas(gcf,[FigPath,filesep, 'CV_parameters','.tif']);
 % saveas(gcf,[FigPath,filesep, 'CV_parameters','.pdf']);
+
+%% generate the plot for C.V. of inferred parameters (propagated error)
+% calculate the Coefficient of Variation (C.V.) of inferred parameters
+% across constructs (different enhancers).
+for construct = 1:length(data)
+    params_inferred_all(construct,:) = MCMC_6A0R_RuntNulls(construct).params_inferred;
+    params_inferred_error_all(construct,:) = MCMC_6A0R_RuntNulls(construct).params_inferred_std;
+end
+
+% calculate the mean and std of parameters "over constructs".
+params_mean = mean(params_inferred_all);
+params_std = std(params_inferred_all);
+% params_error = sqrt(sum(params_inferred_error_all.^2)/length(data))
+
+N_data = length(data); % number of constructs
+
+% propagate the error from individual measurements
+error_ind = params_inferred_error_all./params_inferred_all;
+params_mean_error_propagated = sqrt(sum(error_ind.^2))/ N_data;
+parms_std_error_propagated =  sqrt(sum(error_ind.^2*4))/ N_data;
+
+params_CV = params_std./params_mean;
+params_CV_error = params_CV.*sqrt(params_mean_error_propagated.^2 + parms_std_error_propagated.^2);
+
+errorbar(1:4, params_CV, params_CV_error,'o','LineWidth',2)
+
+xlim([0 5]) 
+xticks([1,2,3,4])
+xticklabels({'K_{b}','\omega_{bp}','p','R'})
+% yticks([0 100 200 300 400])
+ylim([0 1])
+% set(gca,'YScale','log')
+% xlabel('')
+ylabel('Coefficient of Variation')
+
+box on
+StandardFigure(gcf,gca)
+
+% save the plots
+saveas(gcf,[FigPath,filesep, 'CV_parameters_propagated_error','.tif']);
+saveas(gcf,[FigPath,filesep, 'CV_parameters_propagated_error','.pdf']);
 
 %% generate a plot of Rate/Rate_max over AP axis for all construts : to see if the plots are collapsed
 hold on
@@ -570,7 +613,7 @@ saveas(gcf,[FigPath,filesep,'raw_initial_slope_shadedError','.tif']);
 saveas(gcf,[FigPath,filesep,'raw_initial_slope_shadedError','.pdf']); 
     
 %% save the result into mat files (MCMC_6A0R_RuntNulls)
-FilePath = FigPath;
+%FilePath = FigPath;
 save([FilePath, filesep, 'MCMC_6A0R_RuntNulls_BcdParams.mat'],'MCMC_6A0R_RuntNulls')
 
 end

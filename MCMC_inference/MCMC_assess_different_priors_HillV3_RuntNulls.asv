@@ -11,7 +11,7 @@ function MCMC_assess_different_priors_HillV3_RuntNulls
 
 %% Load the MCMC result
 % FilePath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\RuntNulls\w_bp_0-100_WeakPrior_w_bp';
-FilePath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\RuntNulls\w_bp_0-100';
+FilePath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\RuntNulls\w_bp_0-1000';
 A = load([FilePath, filesep, 'MCMC_6A0R_RuntNulls_BcdParams.mat'])
 MCMC_6A0R_RuntNulls = A.MCMC_6A0R_RuntNulls;
 
@@ -54,8 +54,8 @@ box on
 StandardFigure(gcf,gca)
 
 % save the plots
-% FigPath = FilePath;
-% saveas(gcf,[FigPath,filesep, 'histogram_prior_posterior_w_bp','.tif']);
-% saveas(gcf,[FigPath,filesep, 'histogram_prior_posterior_w_bp','.pdf']);
+FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\RuntNulls\diff_priors_bounds_001';
+saveas(gcf,[FigPath,filesep, 'histogram_prior_posterior_w_bp','.tif']);
+saveas(gcf,[FigPath,filesep, 'histogram_prior_posterior_w_bp','.pdf']);
 
 end

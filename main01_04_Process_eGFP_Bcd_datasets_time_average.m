@@ -163,6 +163,8 @@ BcdNC14 = BcdData.nc14;
 BcdFluo = BcdData.MeanVectorAP;
 BcdFluoSD = BcdData.SDVectorAP;
 
+%% generate plots of time-traces
+
 %% Time-average for different time-windows
 % First, let's define different time windows for averaging
 % 0-5min, 0-10min, 0-20 min into NC14 as the first round.

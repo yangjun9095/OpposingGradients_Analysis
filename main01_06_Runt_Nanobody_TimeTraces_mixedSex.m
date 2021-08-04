@@ -8,7 +8,7 @@ AverageDatasets_LlamaTaggedProtein('Runt-1min-200Hz-mixed','savePath','E:\YangJo
 
 %% Step2. Load the mat file for plotting
 
-FilePath = 'E:\YangJoon\LivemRNA\Data\Dropbox\OpposingGradient\OpposingGradients_ProcessedData';
+FilePath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\mat files';
 Runt_mixed = load([FilePath, filesep, 'Runt-1min-200Hz-mixed_BGsubtracted-Averaged.mat']);
 
 %% Extract useful fields
