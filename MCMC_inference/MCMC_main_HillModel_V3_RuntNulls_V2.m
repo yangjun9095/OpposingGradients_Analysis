@@ -1,4 +1,4 @@
-function MCMC_main_HillModel_V3_RuntNulls
+function MCMC_main_HillModel_V3_RuntNulls_V2
 %% Description
 % This script is doing MCMC fit for all Runt null data one by one, to
 % compare the parameters for the Hill.V3 model, to see what varies across
@@ -237,7 +237,7 @@ for construct = 5 %1:length(data)
     MCMC_6A0R_RuntNulls(construct).params_inferred = params_inferred;
     MCMC_6A0R_RuntNulls(construct).params_inferred_std = params_inferred_std;
 
-    %MCMC_6A0R_RuntNulls(construct).MCMCpred_out = out;
+    MCMC_6A0R_RuntNuls(construct).MCMCpred_out = out;
     
 end   
 
@@ -270,10 +270,8 @@ Bcd = Bicoid(APbin_start:APbin_end);
 %global Bicoid_global
 
 
-%% generate plots of MCMC fitting for all constructs (Runt null)
-FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\RuntNulls'
-
-for construct = 1:length(data)
+%% 
+for construct = 5 %1:length(data)
 
     % Pick the dataset from the data.mat
     Data = data(construct);
@@ -327,21 +325,24 @@ for construct = 1:length(data)
     MCMCdata.R_max = max(MCMCdata.ydata);
     MCMCdata.R_min = min(MCMCdata.ydata);
     Data = [MCMCdata.APdata; MCMCdata.ydata];
-
-    % MCMCpred (model and data?)
+    % data for MCMCpred
     data_pred = MCMCdata.APdata;
-    model_mcmc = @(params) model_6A0R_HillModel_V3(params,Bcd);
+
+    % redefine the MCMC function for estimating the MCMC error
+%    function [output] = model_6A0R_RuntNull_BcdFixed(MCMC_params)
+%        output = model_6A0R_HillModel_V3(MCMC_params, MCMCdata.Bcd);
+%    end
 
     % MCMC fit result
     params = MCMC_6A0R_RuntNulls(construct).params_inferred;
     output = model_6A0R_HillModel_V3(params, Bcd);
 
     % MCMC estimation error (MCMCpred)
-    results = MCMC_6A0R_RuntNulls(construct).results;
-    chain = MCMC_6A0R_RuntNulls(construct).chain;
-    s2chain = MCMC_6A0R_RuntNulls(construct).s2chain;
+    results = MCMC_6A0R_RuntNulls.results;
+    chain = MCMC_6A0R_RuntNulls.chain;
+    s2chain = MCMC_6A0R_RuntNulls.s2chain;
+    out = mcmcpred(results, chain, [], data_pred, model_6A0R_HillModel_V3(~,Bcd))
 
-    out = mcmcpred(results, chain(n_burn+1:end,:), [], data_pred, model_mcmc);
 
     
     % data
@@ -350,22 +351,12 @@ for construct = 1:length(data)
     
     clf
     hold on
-    % data
     errorbar(APaxis, Rate_null, Rate_null_SEM)
-    % MCMCpred
-    nn = (size(out.predlims{1}{1},1)+1)/2;
-    plimi = out.predlims{1};
-    yl = plimi{1}(3,:);
-    yu = plimi{1}(2*nn-3,:);
-    %plot(APaxis(APbin_start:APbin_end), output)
-    % MCMC pred plot
-    %shadedErrorBar(APbins, output, [yu;yl],'lineProps','-r')
-    h=mcmcpredplot(out,MCMCdata.APdata)
-    
+    plot(APaxis(APbin_start:APbin_end), output)
     xlim([0.2 0.5])
     xticks([0.2 0.3 0.4 0.5])
-    ylim([0 400])
-    yticks([0 100 200 300 400])
+%     ylim([0 400])
+%     yticks([0 100 200 300 400])
     
     xlabel('embryo length')
     ylabel('initial rate (AU/min)')
@@ -375,8 +366,8 @@ for construct = 1:length(data)
     StandardFigure(gcf,gca)
     pause
 %     
-    %saveas(gcf,[FigPath,filesep,'raw_fits_yLimFree_95%CI_', constructNames{construct}  ,'.tif']); 
-    %saveas(gcf,[FigPath,filesep,'raw_fits_yLimFree_95%CI_', constructNames{construct} ,'.pdf']); 
+%     saveas(gcf,[FigPath,filesep,'raw_fits_yLimFree_', constructNames{construct}  ,'.tif']); 
+%     saveas(gcf,[FigPath,filesep,'raw_fits_yLimFree_', constructNames{construct} ,'.pdf']); 
 end
 
 %% filter out some weird posteriors

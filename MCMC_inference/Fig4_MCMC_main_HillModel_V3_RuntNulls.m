@@ -360,7 +360,18 @@ for construct = 1:length(data)
     %plot(APaxis(APbin_start:APbin_end), output)
     % MCMC pred plot
     %shadedErrorBar(APbins, output, [yu;yl],'lineProps','-r')
-    h=mcmcpredplot(out,MCMCdata.APdata)
+    %h=mcmcpredplot(out,MCMCdata.APdata)
+    xx = MCMCdata.APdata; % x-axis
+    nn = (size(out.predlims{1}{1},1) + 1) / 2;
+    plimi = out.predlims{1};
+    yl = plimi{1}(3,:); % y-lower limit
+    yu = plimi{1}(2*nn-3,:); % y-upper limit
+    yf = plimi{1}(nn,:); % y-fit
+    yy=yf;
+
+
+    fillyy(xx,yl,yu,[0.9 0.9 0.9])
+    plot(xx,yy,'-k')
     
     xlim([0.2 0.5])
     xticks([0.2 0.3 0.4 0.5])
@@ -373,10 +384,10 @@ for construct = 1:length(data)
     box on
     legend('data','MCMC fit')
     StandardFigure(gcf,gca)
-    pause
+    %pause
 %     
-    %saveas(gcf,[FigPath,filesep,'raw_fits_yLimFree_95%CI_', constructNames{construct}  ,'.tif']); 
-    %saveas(gcf,[FigPath,filesep,'raw_fits_yLimFree_95%CI_', constructNames{construct} ,'.pdf']); 
+    saveas(gcf,[FigPath,filesep,'raw_fits_yLimFree_95%CI_', constructNames{construct}  ,'.tif']); 
+    saveas(gcf,[FigPath,filesep,'raw_fits_yLimFree_95%CI_', constructNames{construct} ,'.pdf']); 
 end
 
 %% filter out some weird posteriors

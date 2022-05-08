@@ -1,4 +1,4 @@
-function MCMC_main_HillV3_direct_6A1R_RunWT_PtEst_RuntNulls_fix_Kr
+function Fig5_SI_MCMC_direct_6A1R_RunWT_alternative_assumptions
 %% Description
 % This script is doing MCMC fit for 6A1R, Run WT data one by one, to
 % compare the Run-dependent parameters for the Hill.V3 model, to see what varies across
@@ -243,7 +243,43 @@ RunNull = RuntNull(APbin_start:APbin_end);
 TF = [Bcd, Run];
 TF_null = [Bcd, RunNull];
 
+% calculate the MCMCpred (confidence interval for MCMC fitting)
+% extract parameters from the MCMC results (we're pulling the Bcd
+% dependent parameters and Run dependent parameters respectively from
+% their own inferences. (Bcd parameters from the Run null, and Run
+% parameters from the Run WT).
+params_Bcd = MCMC_6A0R_RuntNulls(construct).params_inferred;
+%params_Run = MCMC_6A1R_RuntWT.params_inferred([1,index+1]);
 
+% extract individual parameters to construct the input parameter
+Kb = params_Bcd(1);
+w_bp = params_Bcd(2);
+p = params_Bcd(3);
+R_max = params_Bcd(4);
+%Kr = params_Run(1);
+%w_rp = params_Run(2);
+
+%params_MCMC = [Kb, Kr, w_bp, w_rp, p, R_max];
+%output = model_6A1R_HillModel_V3_direct(params_MCMC, TF);
+%fit_nulls = model_6A1R_HillModel_V3_direct(params_MCMC, TF_null);
+% MCMC estimation error (MCMCpred)
+data_pred = {MCMCdata.APdata; MCMCdata.APdata; MCMCdata.APdata};
+model_mcmc = @(Kr,w_rp) model_6A1R_HillModel_V3_direct([Kb,Kr,w_bp,w_rp,p,R_max],TF);
+
+% reconstruct the "results" matrix
+results = MCMC_6A1R_RuntWT.results;
+chain = MCMC_6A1R_RuntWT.chain;
+s2chain = MCMC_6A1R_RuntWT.s2chain;
+% % Define the MCMCresults for Kr and w_rp only for each dataset
+% MCMCresults = results;
+% MCMCresults.parind = [1;2];
+% MCMCresults.local = [1,2];
+% MCMCresults.theta = [results.theta(1); results.theta(index)];
+
+out = mcmcpred(results, chain(n_burn+1:end,:), [], data_pred, model_mcmc);
+
+% chain(n_burn+1:end,:)
+%% generate plots of raw fits and MCMC errors for Runt WT (6A1R)
 for index = 1:3
     % define the construct index (which is consistent with the way it's
     % defiend in the compiledData.mat)
@@ -265,25 +301,12 @@ for index = 1:3
     Kr = params_Run(1);
     w_rp = params_Run(2);
     
+    % fit result
     params_MCMC = [Kb, Kr, w_bp, w_rp, p, R_max];
     output = model_6A1R_HillModel_V3_direct(params_MCMC, TF);
     fit_nulls = model_6A1R_HillModel_V3_direct(params_MCMC, TF_null);
-    % estimate the MCMCpred error
-    data_pred = MCMCdata.APdata;
-    model_mcmc = @(Kr,w_rp) model_6A1R_HillModel_V3_direct([Kb,Kr,w_bp,w_rp,p,R_max],TF);
-
-    % MCMC estimation error (MCMCpred)
-    % reconstruct the "results" matrix
-    MCMCresults = results;
-    MCMCresults.parind = [1;2];
-    MCMCresults.local = [1,2];
-    MCMCresults.theta = [results.theta(1); results.theta(i)];
-
-    results = MCMC_6A1R_RuntWT.results;
-    chain = MCMC_6A1R_RuntWT.chain;
-    s2chain = MCMC_6A1R_RuntWT.s2chain;
-    out = mcmcpred(MCMCresults, chain(n_burn+1:end,[1,index+1]), [], data_pred, model_mcmc);
     
+    % data
     % data (WT)
     Rate_WT = compiledData{construct+1,9};
     Rate_WT_SEM = compiledData{construct+1,10};
@@ -298,12 +321,12 @@ for index = 1:3
     
     plot(APaxis(APbin_start:APbin_end), fit_nulls, 'Color', ColorChoice(4,:),'LineWidth', 2)
     % MCMCpred
-    nn = (size(out.predlims{1}{1},1)+1)/2;
-    plimi = out.predlims{1};
-    yl = plimi{1}(3,:);
-    yu = plimi{1}(2*nn-3,:);
+    nn = (size(out.predlims{index}{1},1)+1)/2;
+    plimi = out.predlims{index}{1};
+    yl = plimi(3,:);
+    yu = plimi(2*nn-3,:);
     %plot(APaxis(APbin_start:APbin_end), output)
-    shadedErrorBar(APbins, output, [yu;yl],'Color', ColorChoice(1,:),'LineWidth', 2)
+    shadedErrorBar(APbins, output, [yu;yl],'lineProps','-k')%['color', ColorChoice(1,:),'LineWidth', 2])
     xlim([0.2 0.5])
     xticks([0.2 0.3 0.4 0.5])
     ylim([0 400])
@@ -316,8 +339,8 @@ for index = 1:3
     legend('data(null)','data(WT)','Fit (null)', 'Fit (WT)')
     StandardFigure(gcf,gca)
     pause
-    %saveas(gcf,[FigPath,filesep,'raw_fits_WT_null_', constructNames{construct}  ,'.tif']); 
-    %saveas(gcf,[FigPath,filesep,'raw_fits_WT_null_', constructNames{construct} ,'.pdf']); 
+%     saveas(gcf,[FigPath,filesep,'raw_fits_WT_null_95%CI_', constructNames{construct}  ,'.tif']); 
+%     saveas(gcf,[FigPath,filesep,'raw_fits_WT_null_95%CI_', constructNames{construct} ,'.pdf']); 
 end
 
 %% generate corner plots

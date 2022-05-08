@@ -19,7 +19,7 @@ Bcd = TF(:,1);
 % Runt = TF(:,2);
 
 % scale with the dissociation constant
-b = Bcd./Kb;
+b = Bcd/Kb;
 % r1 = Runt./Kr1;
 % r2 = Runt./Kr2;
 

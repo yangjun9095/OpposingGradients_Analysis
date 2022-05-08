@@ -360,7 +360,14 @@ for construct = 1:length(data)
     %plot(APaxis(APbin_start:APbin_end), output)
     % MCMC pred plot
     %shadedErrorBar(APbins, output, [yu;yl],'lineProps','-r')
-    h=mcmcpredplot(out,MCMCdata.APdata)
+    %h=mcmcpredplot(out,MCMCdata.APdata)
+    nn = (size(out.predlims{1}{1},1) + 1) / 2;
+    plimi = out.predlims{1};
+    yl = plimi{1}(1,:);
+    yu = plimi{1}(2*nn-1,:);
+    yf = plimi{1}(nn,:);
+
+    fillyy(xx,yyl,yyu,[0.9 0.9 0.9])
     
     xlim([0.2 0.5])
     xticks([0.2 0.3 0.4 0.5])

@@ -1,4 +1,4 @@
-function MCMC_main_HillV3_direct_6A1R_RunWT_PtEst_RuntNulls_fix_Kr
+function Fig5_MCMC_HillV3_direct_6A1R_RunWT_fixedKr
 %% Description
 % This script is doing MCMC fit for 6A1R, Run WT data one by one, to
 % compare the Run-dependent parameters for the Hill.V3 model, to see what varies across
@@ -202,7 +202,6 @@ end
 %run as conditions for the next. this is an alternative when common least
 %squares gives results too poor to initialize with
 
-
 results = [];
 [results,~,~,~]=mcmcrun(model,MCMCdata,params,options,results);
 [results,~,~,~]=mcmcrun(model,MCMCdata,params,options,results);
@@ -243,6 +242,59 @@ RunNull = RuntNull(APbin_start:APbin_end);
 TF = [Bcd, Run];
 TF_null = [Bcd, RunNull];
 
+% calculate the MCMCpred (confidence interval for MCMC fitting)
+% extract parameters from the MCMC results (we're pulling the Bcd
+% dependent parameters and Run dependent parameters respectively from
+% their own inferences. (Bcd parameters from the Run null, and Run
+% parameters from the Run WT).
+
+for index =1:3
+    construct = constructIndex(index);
+    params_Bcd = MCMC_6A0R_RuntNulls(construct).params_inferred;
+    %params_Run = MCMC_6A1R_RuntWT.params_inferred([1,index+1]);
+
+    % extract individual parameters to construct the input parameter
+    Kb = params_Bcd(1);
+    w_bp = params_Bcd(2);
+    p = params_Bcd(3);
+    R_max = params_Bcd(4);
+    %Kr = params_Run(1);
+    %w_rp = params_Run(2);
+
+    %params_MCMC = [Kb, Kr, w_bp, w_rp, p, R_max];
+    %output = model_6A1R_HillModel_V3_direct(params_MCMC, TF);
+    %fit_nulls = model_6A1R_HillModel_V3_direct(params_MCMC, TF_null);
+
+    % MCMC estimation error (MCMCpred)
+    data_pred = MCMCdata{index};
+    TF = [data_pred.Bcd, data_pred.Run];
+    model_mcmc = @(Kr,w_rp) model_6A1R_HillModel_V3_direct([Kb,Kr,w_bp,w_rp,p,R_max],TF);
+
+    % reconstruct the "results" matrix
+    results = MCMC_6A1R_RuntWT.results;
+    chain = MCMC_6A1R_RuntWT.chain;
+    s2chain = MCMC_6A1R_RuntWT.s2chain;
+
+    % Trip the results, chain, and s2chain such that they will reflect only
+    % the relevant construct (for mcmcpred)
+%     results.parind = [1, index+1];
+%     results.local = [0, index];
+%     results.theta = results.theta[(1, index+1]);
+%     results.nbatch = 1;
+
+    MCMCresults = results;
+    MCMCresults.parind = [1;2];
+    MCMCresults.local = [1,2];
+    MCMCresults.theta = [results.theta(1); results.theta(index+1)];
+    MCMCresults.nbatch = 1;
+    n_burn= 10000; % number of burn-in steps in MCMC (50% of the total chain)
+    predout{index} = mcmcpred_V2(MCMCresults, chain(n_burn+1:end,[1,index+1]), [], data_pred, model_mcmc);
+end
+
+% chain(n_burn+1:end,:)
+%% generate plots of raw fits and MCMC errors for Runt WT (6A1R)
+APbin_start = 9;
+APbin_end = 21;
 
 for index = 1:3
     % define the construct index (which is consistent with the way it's
@@ -265,25 +317,20 @@ for index = 1:3
     Kr = params_Run(1);
     w_rp = params_Run(2);
     
+    % fit result (we will only show the actual fitting regime
+%     TF = [Bcd, Run];
+%     TF_null = [Bcd, RunNull];
+    TF = [MCMCdata{index}.Bcd, MCMCdata{index}.Run];
+    TF_null = [MCMCdata{index}.Bcd, zeros([length(MCMCdata{index}.Run),1])];
+    APbins = MCMCdata{index}.APdata;
+%     APbins = MCMCdata{index}.APdata;
+
+
     params_MCMC = [Kb, Kr, w_bp, w_rp, p, R_max];
     output = model_6A1R_HillModel_V3_direct(params_MCMC, TF);
     fit_nulls = model_6A1R_HillModel_V3_direct(params_MCMC, TF_null);
-    % estimate the MCMCpred error
-    data_pred = MCMCdata.APdata;
-    model_mcmc = @(Kr,w_rp) model_6A1R_HillModel_V3_direct([Kb,Kr,w_bp,w_rp,p,R_max],TF);
-
-    % MCMC estimation error (MCMCpred)
-    % reconstruct the "results" matrix
-    MCMCresults = results;
-    MCMCresults.parind = [1;2];
-    MCMCresults.local = [1,2];
-    MCMCresults.theta = [results.theta(1); results.theta(i)];
-
-    results = MCMC_6A1R_RuntWT.results;
-    chain = MCMC_6A1R_RuntWT.chain;
-    s2chain = MCMC_6A1R_RuntWT.s2chain;
-    out = mcmcpred(MCMCresults, chain(n_burn+1:end,[1,index+1]), [], data_pred, model_mcmc);
     
+    % data
     % data (WT)
     Rate_WT = compiledData{construct+1,9};
     Rate_WT_SEM = compiledData{construct+1,10};
@@ -296,14 +343,16 @@ for index = 1:3
     errorbar(APaxis, Rate_null, Rate_null_SEM, 'o', 'Color', ColorChoice(4,:),'LineWidth', 1)    
     errorbar(APaxis, Rate_WT, Rate_WT_SEM, 'o', 'Color', ColorChoice(1,:),'LineWidth', 1)
     
-    plot(APaxis(APbin_start:APbin_end), fit_nulls, 'Color', ColorChoice(4,:),'LineWidth', 2)
+    plot(APbins, fit_nulls, 'Color', ColorChoice(4,:),'LineWidth', 2)
     % MCMCpred
-    nn = (size(out.predlims{1}{1},1)+1)/2;
-    plimi = out.predlims{1};
-    yl = plimi{1}(3,:);
-    yu = plimi{1}(2*nn-3,:);
+    out = predout{index};
+    nn = (size(out.predlims{1}{1},1) + 1) / 2;
+    plimi = out.predlims{1}{1};
+    yl = plimi(3,:);
+    yu = plimi(2*nn-3,:);
+%     plot(APbins, output)
     %plot(APaxis(APbin_start:APbin_end), output)
-    shadedErrorBar(APbins, output, [yu;yl],'Color', ColorChoice(1,:),'LineWidth', 2)
+    shadedErrorBar(APbins, output, [yu-transpose(output);transpose(output)-yl],'lineProps','-k')%['color', ColorChoice(1,:),'LineWidth', 2])
     xlim([0.2 0.5])
     xticks([0.2 0.3 0.4 0.5])
     ylim([0 400])
@@ -316,8 +365,8 @@ for index = 1:3
     legend('data(null)','data(WT)','Fit (null)', 'Fit (WT)')
     StandardFigure(gcf,gca)
     pause
-    %saveas(gcf,[FigPath,filesep,'raw_fits_WT_null_', constructNames{construct}  ,'.tif']); 
-    %saveas(gcf,[FigPath,filesep,'raw_fits_WT_null_', constructNames{construct} ,'.pdf']); 
+    saveas(gcf,[FigPath,filesep,'raw_fits_WT_null_95%CI_', constructNames{construct}  ,'.tif']); 
+    saveas(gcf,[FigPath,filesep,'raw_fits_WT_null_95%CI_', constructNames{construct} ,'.pdf']); 
 end
 
 %% generate corner plots
@@ -336,7 +385,7 @@ ecornerplot(m,'names',names);
 % saveas(gcf,[FigPath,filesep,'Corner_plot_K_r_logscale_', constructNames{construct} ,'.tif']); 
 % saveas(gcf,[FigPath,filesep,'Corner_plot_K_r_logscale_', constructNames{construct} ,'.pdf']); 
 % higher resolution
-exportgraphics(gcf,[FigPath, filesep,'Corner_plot_K_r_logscale_highres', '.pdf'],'ContentType','vector')
+% exportgraphics(gcf,[FigPath, filesep,'Corner_plot_K_r_logscale_highres', '.pdf'],'ContentType','vector')
 %% generate plots of inferred parameters
 hold on
 

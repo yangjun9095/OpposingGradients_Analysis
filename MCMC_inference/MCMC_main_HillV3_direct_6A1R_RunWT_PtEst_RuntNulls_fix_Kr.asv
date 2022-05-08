@@ -273,16 +273,10 @@ for index = 1:3
     model_mcmc = @(Kr,w_rp) model_6A1R_HillModel_V3_direct([Kb,Kr,w_bp,w_rp,p,R_max],TF);
 
     % MCMC estimation error (MCMCpred)
-    % reconstruct the "results" matrix
-    MCMCresults = results;
-    MCMCresults.parind = [1;2];
-    MCMCresults.local = [1,2];
-    MCMCresults.theta = [results.theta(1); results.theta(i)];
-
     results = MCMC_6A1R_RuntWT.results;
     chain = MCMC_6A1R_RuntWT.chain;
     s2chain = MCMC_6A1R_RuntWT.s2chain;
-    out = mcmcpred(MCMCresults, chain(n_burn+1:end,[1,index+1]), [], data_pred, model_mcmc);
+    out = mcmcpred(results, chain(n_burn+1:end,[1,index+1]), [], data_pred, model_mcmc);
     
     % data (WT)
     Rate_WT = compiledData{construct+1,9};
@@ -297,13 +291,7 @@ for index = 1:3
     errorbar(APaxis, Rate_WT, Rate_WT_SEM, 'o', 'Color', ColorChoice(1,:),'LineWidth', 1)
     
     plot(APaxis(APbin_start:APbin_end), fit_nulls, 'Color', ColorChoice(4,:),'LineWidth', 2)
-    % MCMCpred
-    nn = (size(out.predlims{1}{1},1)+1)/2;
-    plimi = out.predlims{1};
-    yl = plimi{1}(3,:);
-    yu = plimi{1}(2*nn-3,:);
-    %plot(APaxis(APbin_start:APbin_end), output)
-    shadedErrorBar(APbins, output, [yu;yl],'Color', ColorChoice(1,:),'LineWidth', 2)
+    shadedErrorBar(APaxis(APbin_start:APbin_end), output, 'Color', ColorChoice(1,:),'LineWidth', 2)
     xlim([0.2 0.5])
     xticks([0.2 0.3 0.4 0.5])
     ylim([0 400])

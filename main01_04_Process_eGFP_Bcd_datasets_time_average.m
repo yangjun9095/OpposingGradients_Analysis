@@ -178,7 +178,7 @@ tWindows{3} = 0:20; % min
 % Load the "BcdData" structure (only in nc14) - Liz & Jonathan
 % this structure consists of 6 embryos spanning from anterior-posterior
 % For each embryo, they have different frame lengths
-load('S:\YangJoon\Dropbox\OpposingGradientsFigures\mat files\BcdLevelsNC14AllDatasets.mat')
+A = load('S:\YangJoon\Dropbox\OpposingGradientsFigures\mat files\BcdLevelsNC14AllDatasets.mat')
 
 %% check the synchronization
 APbin = 13;
