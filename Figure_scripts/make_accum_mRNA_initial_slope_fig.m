@@ -75,7 +75,7 @@ APaxis = 0:0.025:1;
 % 2, 10th rows are [000], WT and Runt null
 fig_mRNA = figure;
 
-for construct=1%:8 % total number of constructs (enhancers)
+for construct=1:8 % total number of constructs (enhancers)
     clf
     hold on
     errorbar(APaxis, AccumulatedData{construct+1,8}, AccumulatedData{construct+1,9},'LineWidth',2,'CapSize',0,'Color',ColorChoice(construct,:))
@@ -98,12 +98,119 @@ for construct=1%:8 % total number of constructs (enhancers)
     box on
 
     StandardFigure(fig_mRNA, fig_mRNA.CurrentAxes)
-    pause(1)
+    pause
     % Save the plot
-    saveas(gcf,[FigPath,filesep,constructNames{construct},'.tif']); 
-    saveas(gcf,[FigPath,filesep,constructNames{construct},'.pdf']); 
+%     saveas(gcf,[FigPath,filesep,constructNames{construct},'.tif']); 
+%     saveas(gcf,[FigPath,filesep,constructNames{construct},'.pdf']); 
 end
 
+%% initial slope vs Accumulated mRNA (Runt WT)
+% For all 8 constructs, we will plot the initial rate vs accumulated mRNA
+% for (+/-) Runt in separate panels.
+
+APaxis = 0:0.025:1;
+% 2, 10th rows are [000], WT and Runt null
+%fig_mRNA = figure;
+
+
+%     % Runt WT
+%     errorbar(compiledData{construct+1,9}, AccumulatedData{construct+1,8},...
+%                 AccumulatedData{construct+1,9},...
+%                 AccumulatedData{construct+1,9},...
+%                 compiledData{construct+1,10},...
+%                 compiledData{construct+1,10},...
+%                 'LineWidth',2,'CapSize',0,'Color',ColorChoice(construct,:))
+%     % Runt null
+%     errorbar(compiledData{construct+1+8,9}, AccumulatedData{construct+1+8,8},...
+%                 AccumulatedData{construct+1+8,9},...
+%                 AccumulatedData{construct+1+8,9},...
+%                 compiledData{construct+1+8,10},...
+%                 compiledData{construct+1+8,10},...
+%                 'LineWidth',2,'CapSize',0,'Color',(ColorChoice(construct,:)+[1 1 1])/2)
+for construct=1:8 % total number of constructs (enhancers)
+    clf
+    hold on
+    
+    scatter(compiledData{construct+1,9}, AccumulatedData{construct+1,8},...
+            'LineWidth',2,'Color',ColorChoice(construct,:))
+
+    scatter(compiledData{construct+1+8,9}, AccumulatedData{construct+1+8,8},...
+            'LineWidth',2,'Color',ColorChoice(construct,:))
+
+    % xTicks, yTicks
+    xlim([0 400])
+    ylim([0 3*10^5])
+    xticks([0 100 200 300 400])
+    yticks([0 1 2 3]*10^5)
+
+    %set(gca,'yticklabel',[])
+
+    % no title, no-caps on the axis labels
+    xlabel('initial rate of RNAP loading (AU/min)')
+    ylabel('accumulated mRNA (AU)')
+
+    legend(constructNames{construct},'Location','NorthEast')
+
+    box on
+
+    StandardFigure(gcf, gca)
+    pause
+    % Save the plot
+%     saveas(gcf,[FigPath,filesep,constructNames{construct},'.tif']); 
+%     saveas(gcf,[FigPath,filesep,constructNames{construct},'.pdf']); 
+end
+
+%% initial slope vs accumulated mRNA (Runt WT and Runt nulls)
+
+FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\accumulatedmRNA\accmRNA_vs_initial_slope';
+
+xvec = [];
+yvec = [];
+
+hold on
+for construct=1:8 % total number of constructs (enhancers)
+    %clf
+    %hold on
+    scatter(compiledData{construct+1,9}, AccumulatedData{construct+1,8},...
+            70,ColorChoice(construct,:),"filled")
+
+    scatter(compiledData{construct+1+8,9}, AccumulatedData{construct+1+8,8},...
+            70,(ColorChoice(construct,:)+[1 1 1])/2,"filled")
+    
+    % compute Pearson corr. coeff
+    xvec = [xvec; compiledData{construct+1,9};compiledData{construct+1+8,9}];
+    yvec = [yvec; AccumulatedData{construct+1,8}'; AccumulatedData{construct+1+8,8}'];
+    
+  
+
+end
+  [RHO,PVAL] = corr(xvec, yvec,'rows','complete');
+    str=sprintf('r= %1.2f',RHO);
+    T = text(min(get(gca, 'xlim')), max(get(gca, 'ylim')), str); 
+    set(T, 'fontsize', 20, 'verticalalignment', 'top', 'horizontalalignment', 'left');
+
+    % xTicks, yTicks
+    xlim([0 400])
+    ylim([0 3*10^5])
+    xticks([0 100 200 300 400])
+    yticks([0 1 2 3]*10^5)
+
+    %set(gca,'yticklabel',[])
+
+    % no title, no-caps on the axis labels
+    xlabel('initial rate of RNAP loading (AU/min)')
+    ylabel('accumulated mRNA (AU)')
+
+    %legend(constructNames{construct},constructNames{construct+8},'Location','NorthEast')
+
+    box on
+
+    StandardFigure(gcf, gca)
+    %pause
+    % Save the plot
+%    saveas(gcf,[FigPath,filesep,constructNames{construct},'.tif']); 
+%      saveas(gcf,[FigPath,filesep,constructNames{construct},'.pdf']); 
+    saveas(gcf,[FigPath, filesep, 'all_constructs.pdf'])
 %% Accumulated mRNA (from individual embryo) with average
 APaxis = 0:0.025:1;
 % 2, 10th rows are [000], WT and Runt null
@@ -299,40 +406,31 @@ APaxis = 0:0.025:1;
 fig_mRNA = figure;
 FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\accumulatedmRNA\accumulatedmRNA_vs_RuntConc'
 
-%hold on
 for construct=1:8 % total number of constructs (enhancers)
     clf
     hold on
-    yyaxis left
     errorbar(Runt(9:end), AccumulatedData{construct+1,10}(9:end), AccumulatedData{construct+1,11}(9:end),'LineWidth',2,'Color',ColorChoice(construct,:))
     errorbar(RuntNull(9:end), AccumulatedData{construct+1+8,10}(9:end), AccumulatedData{construct+1+8,11}(9:end),'LineWidth',2,'Color',(ColorChoice(construct,:)+[1 1 1])/2);
-    
+
     % xTicks, yTicks
     xlim([0 500])
     ylim([0 3*10^5])
     xticks([0 100 200 300 400 500])
     yticks([0 1 2 3]*10^5)
+
+    %set(gca,'yticklabel',[])
+
     % no title, no-caps on the axis labels
     xlabel('Runt concentration (AU)')
     ylabel('accumulated mRNA (AU)')
 
-    yyaxis right
-    %errorbar(Runt(9:end), BcdFluo_tAveraged(9:end), BcdFluo_tAveraged_SE(9:end))
-    plot(Runt(9:end),Bicoid(9:end),'LineWidth',2,'Color','k')
-    ylim([0 150])
-    yticks([0 20 40 60 80 100 120 140])
-    ylabel('Bicoid concentration (AU)')
-
-
-
-
-    legend(constructNames{construct},constructNames{construct+8},'Bicoid','Location','NorthEast')
+    legend(constructNames{construct},constructNames{construct+8},'Location','NorthEast')
 
     box on
 
     StandardFigure(fig_mRNA, fig_mRNA.CurrentAxes)
-     pause
+    % pause
     % Save the plot
-    saveas(gcf,[FigPath,filesep,constructNames{construct},'_Bcd','.tif']); 
-    saveas(gcf,[FigPath,filesep,constructNames{construct},'_Bcd','.pdf']); 
+    saveas(gcf,[FigPath,filesep,constructNames{construct},'.tif']); 
+    saveas(gcf,[FigPath,filesep,constructNames{construct},'.pdf']); 
 end

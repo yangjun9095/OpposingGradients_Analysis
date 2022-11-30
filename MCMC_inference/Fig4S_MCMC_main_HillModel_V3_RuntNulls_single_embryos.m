@@ -1,8 +1,12 @@
-function MCMC_main_HillModel_V3_RuntNulls
+function Fig4S_MCMC_main_HillModel_V3_RuntNulls_single_embryos
 %% Description
 % This script is doing MCMC fit for all Runt null data one by one, to
 % compare the parameters for the Hill.V3 model, to see what varies across
 % constructs.
+
+% This expended script is for fitting to individual embryos. As an example,
+% we will use the [010] construct, which seems to have the highest
+% embryo-to-embryo variability.
 
 %% Variables
 
@@ -79,8 +83,13 @@ options.verbosity = 0; %Decrease text output
 %% Loop over all constructs to perform the MCMC inference on the Bcd-dependent parameters
 % [Kb, w_bp, p, R_max];
 
+construct = 6; % [010] (r1-mid)
 
-for construct = 1:length(data)
+Data = data(construct);
+
+[~, num_embryos] = size(Data.Rate_null_individual);
+
+for embryo = 1:num_embryos
     %% Pull the construct of our interest (for the parameter inference)
     % Choose a construct 
     % Pick the dataset from the data.mat
@@ -92,7 +101,7 @@ for construct = 1:length(data)
 
     %Truncate APbins to user-specified range (input was optional argument in
     %this function.
-    NoNaN_index_null = ~isnan(Data.Rate_null);
+    NoNaN_index_null = ~isnan(Data.Rate_null_individual(:,embryo));
 %     NoNaN_index_WT = ~isnan(Data.Rate_WT);
     % calculate the AP bins that are not NaNs in both WT and Null datasets
     NoNaN_index = NoNaN_index_null;%.*NoNaN_index_WT;
@@ -112,7 +121,7 @@ for construct = 1:length(data)
 
     % initialize the initial rate (slope)
     Rate_WT = Data.Rate_WT;
-    Rate_null = Data.Rate_null;
+    Rate_null = Data.Rate_null_individual(:,embryo);
 
     % Truncate the vectors using the range of AP bins
     APbins = APaxis(APbins_fit);
@@ -229,17 +238,78 @@ for construct = 1:length(data)
     end
     
     %% Save the MCMC result into a structure for future usage
-    MCMC_6A0R_RuntNulls(construct).results = results;
-    MCMC_6A0R_RuntNulls(construct).chain = chain;
-    MCMC_6A0R_RuntNulls(construct).s2chain = s2chain;
+    MCMC_6A0R_RuntNulls_010(embryo).results = results;
+    MCMC_6A0R_RuntNulls_010(embryo).chain = chain;
+    MCMC_6A0R_RuntNulls_010(embryo).s2chain = s2chain;
     
 %     % inferred parameters
-    MCMC_6A0R_RuntNulls(construct).params_inferred = params_inferred;
-    MCMC_6A0R_RuntNulls(construct).params_inferred_std = params_inferred_std;
+    MCMC_6A0R_RuntNulls_010(embryo).params_inferred = params_inferred;
+    MCMC_6A0R_RuntNulls_010(embryo).params_inferred_std = params_inferred_std;
 
     %MCMC_6A0R_RuntNulls(construct).MCMCpred_out = out;
     
 end   
+
+
+%% post-processing for inferred parameters (from individual embryos)
+
+params_inferred = zeros(num_embryos,4);
+params_inferred_std = zeros(num_embryos,4);
+
+for i=1:num_embryos
+    params_inferred(i,:) = MCMC_6A0R_RuntNulls_010(i).params_inferred;
+    params_inferred_std(i,:) = MCMC_6A0R_RuntNulls_010(i).params_inferred_std;
+end
+
+params_inferred_mean = mean(params_inferred);
+params_inferred_sem = std(params_inferred)./sqrt(num_embryos);
+
+%% plot the mean and std of inferred parameters
+% 1) inferred from individual embryos, 2) inferred from "averaged embryos"
+
+hold on
+% inferred from "averaged embryo"
+errorbar([1,3,5,7], MCMC_6A0R_RuntNulls(6).params_inferred, ...
+            MCMC_6A0R_RuntNulls(6).params_inferred_std,'o','CapSize',0)
+
+% inferred from individual embryos
+errorbar([2,4,6,8], params_inferred_mean, params_inferred_sem,'o','CapSize',0)
+
+
+%% plot the mean and std of inferred parameters 
+% one parameter at a time, as the y-axis scale is different
+
+yscale = {[0, 100], [0,100], [0, 1], [0, 400]};
+ytickslabels = {[0,20,40,60,80,100],[0,20,40,60,80,100],[0, 0.2 0.4 0.6 0.8 1], [0,100,200,300,400] };
+params_names = {'K_{b}', '\omega_{bp}','p','R'};
+
+params_names_save = {'K_b','w_bp','p','R'};
+
+
+for i= 1:4 % number of parameters
+    clf
+    hold on
+    errorbar(0.5, MCMC_6A0R_RuntNulls(6).params_inferred(i),...
+                MCMC_6A0R_RuntNulls(6).params_inferred_std(i),'o','MarkerFaceColor','auto')
+    errorbar(1.5, params_inferred_mean(i), params_inferred_sem(i),'o','MarkerFaceColor','auto')
+    
+    legend('averaged','individual')
+
+    xlim([0 2])
+    ylim(yscale{i})
+    yticks(ytickslabels{i})
+    xticks([1])
+    xticklabels(params_names{i})
+    box on
+
+    StandardFigure(gcf,gca)
+
+    %Save the plot
+    saveas(gcf,[FigPath,filesep,'params_inferred_individual_vs_averaged_',params_names_save{i},'_',constructNames{construct},'.tif']); 
+    saveas(gcf,[FigPath,filesep,'params_inferred_individual_vs_averaged_',params_names_save{i},'_',constructNames{construct},'.pdf']);
+    pause
+end
+
 
 %% Post-processing for inferred parameters (mean and std)
 % for construct=1:length(data)

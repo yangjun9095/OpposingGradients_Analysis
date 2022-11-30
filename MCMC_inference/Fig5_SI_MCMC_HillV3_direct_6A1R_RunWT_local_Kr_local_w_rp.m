@@ -1,4 +1,4 @@
-function Fig5_MCMC_HillV3_direct_6A1R_RunWT_fixedKr
+function Fig5_SI_MCMC_HillV3_direct_6A1R_RunWT_loca_Kr_local_w_rp
 %% Description
 % This script is doing MCMC fit for 6A1R, Run WT data one by one, to
 % compare the Run-dependent parameters for the Hill.V3 model, to see what varies across
@@ -163,7 +163,7 @@ params0_std = [100, 10];
 
 % Bounds of the parameters
 LB = [0.1, 0];
-UB = [10^3, 1.2];
+UB = [50, 1.2];
 
 
 for i = 1:length(names)
@@ -177,7 +177,7 @@ for i = 1:length(names)
 %             pri_mu = Kr0;
 %             pri_sig = 20;
         targetflag = 1;
-        localflag = 0;
+        localflag = 1;
     elseif i==2 % w_rp
 %             pri_mu = w_rp0;
 %             pri_sig = 10;
@@ -214,14 +214,14 @@ params_inferred = [];
 params_inferred_sigma = [];
 n_burn = 0.5*n_steps;
 
-for k=1:4 %length(names)
+for k=1:6 %length(names)
     params_inferred(1,k) = mean(chain(n_burn+1:end,k));
     params_inferred_sigma(1,k) = std(chain(n_burn+1:end,k));
 end
 
 %% Save the MCMC result into a structure for future usage
 
-MCMC_6A1R_RuntWT.name = '6A1R_K_r_global_w_rp_local';
+MCMC_6A1R_RuntWT.name = '6A1R_K_r_local_w_rp_local';
 MCMC_6A1R_RuntWT.results = results;
 MCMC_6A1R_RuntWT.chain = chain;
 MCMC_6A1R_RuntWT.s2chain = s2chain;
@@ -233,7 +233,7 @@ MCMC_6A1R_RuntWT.params_inferred_sigma = params_inferred_sigma;
 %% Load the results of the MCMC
 % In case we have already run up to this point, we will just re-load the
 % MCMC result for fitting.
-tempPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\6A1R_Bcd_params_fromRuntNulls_fixed_Kr'
+tempPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\6A1R_Bcd_params_fromRuntNulls_local_Kr_local_w_rp'
 load([tempPath, filesep, 'MCMC_6A1R_RuntWT_params.mat'])
 %% generate raw fits 
 APaxis = 0:0.025:1;
@@ -288,12 +288,12 @@ for index =1:3
 %     results.nbatch = 1;
 
     MCMCresults = results;
-    MCMCresults.parind = [1;2];
+    MCMCresults.parind = [1,2];
     MCMCresults.local = [1,2];
-    MCMCresults.theta = [results.theta(1); results.theta(index+1)];
+    MCMCresults.theta = [results.theta(index); results.theta(index+3)]; % Kr, w_rp
     MCMCresults.nbatch = 1;
     n_burn= 10000; % number of burn-in steps in MCMC (50% of the total chain)
-    predout(index) = mcmcpred_V2(MCMCresults, chain(n_burn+1:end,[1,index+1]), [], data_pred, model_mcmc);
+    predout{index} = mcmcpred_V2(MCMCresults, chain(n_burn+1:end,[index,index+3]), [], data_pred, model_mcmc);
 
 end
 
@@ -306,7 +306,7 @@ MCMC_6A1R_RuntWT.predout = predout;
 APbin_start = 9;
 APbin_end = 21;
 
-FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\6A1R_Bcd_params_fromRuntNulls_fixed_Kr'
+FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\6A1R_Bcd_params_fromRuntNulls_local_Kr_local_w_rp'
 
 for index = 1:3
     % define the construct index (which is consistent with the way it's
@@ -319,7 +319,7 @@ for index = 1:3
     % their own inferences. (Bcd parameters from the Run null, and Run
     % parameters from the Run WT).
     params_Bcd = MCMC_6A0R_RuntNulls(construct).params_inferred;
-    params_Run = MCMC_6A1R_RuntWT.params_inferred([1,index+1]);
+    params_Run = MCMC_6A1R_RuntWT.params_inferred([index,index+3]);
     
     % extract individual parameters to construct the input parameter
     Kb = params_Bcd(1);
@@ -356,7 +356,7 @@ for index = 1:3
     
     plot(APaxis(APbin_start:APbin_end), fit_nulls, 'Color', ColorChoice(4,:),'LineWidth', 2)
     % MCMCpred
-    out = predout(index);
+    out = predout{index};
     nn = (size(out.predlims{1}{1},1) + 1) / 2;
     plimi = out.predlims{1}{1};
     yl = plimi(3,:);
@@ -376,39 +376,42 @@ for index = 1:3
     legend('data(null)','data(WT)','Fit (null)', 'Fit (WT)')
     StandardFigure(gcf,gca)
     pause
-%     saveas(gcf,[FigPath,filesep,'raw_fits_WT_null_95%CI_', constructNames{construct}  ,'.tif']); 
-%     saveas(gcf,[FigPath,filesep,'raw_fits_WT_null_95%CI_', constructNames{construct} ,'.pdf']); 
+    %saveas(gcf,[FigPath,filesep,'raw_fits_WT_null_95%CI_', constructNames{construct}  ,'.tif']); 
+    %saveas(gcf,[FigPath,filesep,'raw_fits_WT_null_95%CI_', constructNames{construct} ,'.pdf']); 
 end
 
 %% generate corner plots
 
-% chain = [K_r, w_rp1, w_rp2, w_rp3];
+% chain = [K_r1, K_r2, K_r3, w_rp1, w_rp2, w_rp3];
 
 chain = MCMC_6A1R_RuntWT.chain;
 n_burn = 0.5*n_steps;
 % arrange the parameters on the order of [001], [010], and [100]
-m = [log10(chain(n_burn+1:end,1)), chain(n_burn+1:end,3),  chain(n_burn+1:end,4), chain(n_burn+1:end,2)];
+m = [log10(chain(n_burn+1:end,2)), log10(chain(n_burn+1:end,3)), log10(chain(n_burn+1:end,1)),...
+        chain(n_burn+1:end,5),  chain(n_burn+1:end,6), chain(n_burn+1:end,4)];
 corner = figure;
 %     names = {'K_{b}','\omega_{bp}','p','R_{max}'};
-names = {'log(K_{r})','\omega_{rp1}','\omega_{rp2}','\omega_{rp3}'};
+names = {'log(K_{r1})','log(K_{r2})','log(K_{r3})','\omega_{rp1}','\omega_{rp2}','\omega_{rp3}'};
 ecornerplot(m,'names',names);
 
 % saveas(gcf,[FigPath,filesep,'Corner_plot_K_r_logscale_', constructNames{construct} ,'.tif']); 
 % saveas(gcf,[FigPath,filesep,'Corner_plot_K_r_logscale_', constructNames{construct} ,'.pdf']); 
 % higher resolution
-% exportgraphics(gcf,[FigPath, filesep,'Corner_plot_K_r_logscale_highres', '.pdf'],'ContentType','vector')
+exportgraphics(gcf,[FigPath, filesep,'Corner_plot_K_r_logscale_highres', '.pdf'],'ContentType','vector')
 %% generate plots of inferred parameters
 hold on
 
 params_inferred = MCMC_6A1R_RuntWT.params_inferred;
 params_inferred_std = MCMC_6A1R_RuntWT.params_inferred_sigma;
-errorbar(1:4, params_inferred([1,3,4,2]), params_inferred_std([1,3,4,2]), 'o','LineWidth',2)
+% re-order such that it'll show [001],[010],[100] order
+errorbar(1:6, [log10(params_inferred([2,3,1])),params_inferred([4,5,6])],...
+                [log10(params_inferred_std([2,3,1])),params_inferred_std([4,5,6])], 'o','LineWidth',2)
 
 
-xlim([0 5])
-xticks([1,2,3,4])
-xticklabels({'K_{r}','\omega_{rp1}','\omega_{rp2}','\omega_{rp3}'})
-ylim([0 20])
+xlim([0 7])
+xticks([1,2,3,4,5,6])
+xticklabels({'log(K_{r1})','log(K_{r2})','log(K_{r3})','\omega_{rp1}','\omega_{rp2}','\omega_{rp3}'})
+ylim([0 6])
 % yticks([0 20 40 60 80 100])
 xlabel('parameters')
 ylabel('inferred values')
@@ -418,113 +421,145 @@ box on
 StandardFigure(gcf,gca)
 
 % save the plots
-saveas(gcf,[FigPath,filesep, 'MCMCfit_6A1R_RuntWT_point_estimate_BcdParams_fixed_Kr','.tif']);
-saveas(gcf,[FigPath,filesep, 'MCMCfit_6A1R_RuntWT_point_estimate_BcdParams_fixed_Kr','.pdf']);
+%saveas(gcf,[FigPath,filesep, 'MCMCfit_6A1R_RuntWT_point_estimate_BcdParams_fixed_Kr','.tif']);
+%saveas(gcf,[FigPath,filesep, 'MCMCfit_6A1R_RuntWT_point_estimate_BcdParams_fixed_Kr','.pdf']);
 
-%% generate the plot of inferred parameters (log scale)
+%% generate the plot for the inferred parameters (K_r and w_rp)
 hold on
 
 params_inferred = MCMC_6A1R_RuntWT.params_inferred;
 params_inferred_std = MCMC_6A1R_RuntWT.params_inferred_sigma;
-errorbar(1:4, params_inferred([1,3,4,2]), params_inferred_std([1,3,4,2]), 'o','LineWidth',2)
+% 
+errorbar([0.9,1,1.1], params_inferred(1:3), params_inferred_std(1:3),'o','LineWidth',2)
+errorbar([1.9,2,2.1], params_inferred(4:6), params_inferred_std(4:6),'o','LineWidth',2)
 
-
-xlim([0 5])
-xticks([1,2,3,4])
-xticklabels({'K_{r}','\omega_{rp1}','\omega_{rp2}','\omega_{rp3}'})
+xlim([0 3])
+xticks([1,2])
+xticklabels({'K_{r}','\omega_{rp}'})
+set(gca,'YScale','log')
+ylim([0 100])
 % yticks([0 20 40 60 80 100])
-ylim([10^(-1) 10^(2)])
 xlabel('parameters')
 ylabel('inferred values')
 % legend('100','001','010','Location', 'NorthEast')
 
-set(gca,'YScale','log')
 box on
 StandardFigure(gcf,gca)
 
-% % save the plots
-saveas(gcf,[FigPath,filesep, 'MCMCfit_6A1R_RuntWT_point_estimate_BcdParams_fixed_Kr_LogScale','.tif']);
-saveas(gcf,[FigPath,filesep, 'MCMCfit_6A1R_RuntWT_point_estimate_BcdParams_fixed_Kr_LogScale','.pdf']);
+
+% save the plot
+FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\6A1R_Bcd_params_fromRuntNulls_local_Kr_local_w_rp'
+saveas(gcf,[FigPath, filesep,'inferred_params_Y_logscale.pdf'] )
+
+
+%% generate the plot for the inferred parameters (p)
+hold on
+
+for i=1:8
+    params_inferred(i) = MCMC_6A0R_RuntNulls(i).params_inferred(3);
+    params_inferred_std(i) = MCMC_6A0R_RuntNulls(i).params_inferred_std(3);
+end
+% 
+errorbar([0.7:0.1:1.4], params_inferred, params_inferred_std,'o','LineWidth',2)
+%errorbar([1.9,2,2.1], params_inferred(4:6), params_inferred_std(4:6),'o','LineWidth',2)
+
+xlim([0, 2])
+xticks([1 ])
+xticklabels({'[RNAP]/K_{p}'})
+set(gca,'YScale','log')
+ylim([0 100])
+% yticks([0 20 40 60 80 100])
+xlabel('parameters')
+ylabel('inferred values')
+% legend('100','001','010','Location', 'NorthEast')
+
+box on
+StandardFigure(gcf,gca)
+
+
+% save the plot
+FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\6A1R_Bcd_params_fromRuntNulls_local_Kr_local_w_rp'
+saveas(gcf,[FigPath, filesep,'inferred_params_p_Y_logscale.pdf'] )
 
 %% generate the plot for C.V. of inferred parameters
 
-% calculate the Coefficient of Variation (C.V.) of inferred parameters
-% across constructs (different enhancers).
-
-% First, initialize the matrix
-params_inferred_all = [];
-params_inferred_error_all = [];
-
-for index = 1:3
-    construct = constructIndex(index);
-    % params from the Runt null 
-    params_inferred_null(index,:) = MCMC_6A0R_RuntNulls(construct).params_inferred;
-    params_inferred_std_null(index,:) = MCMC_6A0R_RuntNulls(construct).params_inferred;
-end
-
-% params from the Runt WT (only w_rp)
-params_inferred_all = MCMC_6A1R_RuntWT.params_inferred([2,3,4]);
-params_inferred_error_all(index,:) = MCMC_6A1R_RuntWT.params_inferred_sigma([2,3,4]);
-
-% calculate the mean and std of parameters "over constructs".
-params_null_mean = mean(params_inferred_null);
-params_null_std = std(params_inferred_std_null);
-
-params_mean = mean(params_inferred_all);
-params_std = std(params_inferred_all);
-% params_error = sqrt(sum(params_inferred_error_all.^2)/length(data))
-n_boots = 100;
-params_null_std_boostrap = bootstrp(n_boots, @std, params_inferred_null);
-parms_std_boostrap = bootstrp(n_boots, @std, params_inferred_all);
-
-params_null_SEM = std(params_null_std_boostrap)./sqrt(n_boots-1);
-params_SEM = std(parms_std_boostrap)./sqrt(n_boots-1);
-
-params_null_CV = params_null_std./params_null_mean;
-params_null_CV_error = params_null_SEM./params_null_mean;
-
-params_CV = params_std./params_mean;
-params_CV_error = params_SEM./params_mean;
-
-% plot
-hold on
-errorbar([2,4],[0 params_CV], [0 params_CV_error],'o','LineWidth',2)
-errorbar([1,3,5,6], params_null_CV, params_null_CV_error, 'o','LineWidth',2)
-
-xlim([0 7])
-xticks([1,2,3,4,5,6])
-xticklabels({'K_{b}','K_{r}','\omega_{bp}','\omega_{rp}','p','R_{max}'})
-% yticks([0 100 200 300 400])
-ylim([0 1.2])
-yticks([0 0.2 0.4 0.6 0.8 1.0 1.2])
-% set(gca,'YScale','log')
-% xlabel('')
-ylabel('coefficient of variation')
-legend('MCMC (Run WT)','MCMC (Run null)','Location','NorthWest')
-
-box on
-StandardFigure(gcf,gca)
-
-% save the plots
-saveas(gcf,[FigPath,filesep, 'CV_parameters','.tif']);
-saveas(gcf,[FigPath,filesep, 'CV_parameters','.pdf']);
+% % calculate the Coefficient of Variation (C.V.) of inferred parameters
+% % across constructs (different enhancers).
+% 
+% % First, initialize the matrix
+% params_inferred_all = [];
+% params_inferred_error_all = [];
+% 
+% for index = 1:3
+%     construct = constructIndex(index);
+%     % params from the Runt null 
+%     params_inferred_null(index,:) = MCMC_6A0R_RuntNulls(construct).params_inferred;
+%     params_inferred_std_null(index,:) = MCMC_6A0R_RuntNulls(construct).params_inferred;
+% end
+% 
+% % params from the Runt WT (only w_rp)
+% params_inferred_all = MCMC_6A1R_RuntWT.params_inferred;
+% params_inferred_error_all(index,:) = MCMC_6A1R_RuntWT.params_inferred_sigma;
+% 
+% % calculate the mean and std of parameters "over constructs".
+% params_null_mean = mean(params_inferred_null);
+% params_null_std = std(params_inferred_std_null);
+% 
+% params_mean = mean(params_inferred_all);
+% params_std = std(params_inferred_all);
+% % params_error = sqrt(sum(params_inferred_error_all.^2)/length(data))
+% n_boots = 100;
+% params_null_std_boostrap = bootstrp(n_boots, @std, params_inferred_null);
+% parms_std_boostrap = bootstrp(n_boots, @std, params_inferred_all);
+% 
+% params_null_SEM = std(params_null_std_boostrap)./sqrt(n_boots-1);
+% params_SEM = std(parms_std_boostrap)./sqrt(n_boots-1);
+% 
+% params_null_CV = params_null_std./params_null_mean;
+% params_null_CV_error = params_null_SEM./params_null_mean;
+% 
+% params_CV = params_std./params_mean;
+% params_CV_error = params_SEM./params_mean;
+% 
+% % plot
+% hold on
+% errorbar([2,4],[0 params_CV], [0 params_CV_error],'o','LineWidth',2)
+% errorbar([1,3,5,6], params_null_CV, params_null_CV_error, 'o','LineWidth',2)
+% 
+% xlim([0 7])
+% xticks([1,2,3,4,5,6])
+% xticklabels({'K_{b}','K_{r}','\omega_{bp}','\omega_{rp}','p','R_{max}'})
+% % yticks([0 100 200 300 400])
+% ylim([0 1.2])
+% yticks([0 0.2 0.4 0.6 0.8 1.0 1.2])
+% % set(gca,'YScale','log')
+% % xlabel('')
+% ylabel('coefficient of variation')
+% legend('MCMC (Run WT)','MCMC (Run null)','Location','NorthWest')
+% 
+% box on
+% StandardFigure(gcf,gca)
+% 
+% % save the plots
+% saveas(gcf,[FigPath,filesep, 'CV_parameters','.tif']);
+% saveas(gcf,[FigPath,filesep, 'CV_parameters','.pdf']);
 
 %% plot the distance (from the promoter to the binding site) vs w_rp
-distance = [170, 62, 128];
-
-errorbar(distance, MCMC_6A1R_RuntWT.params_inferred(2:4), MCMC_6A1R_RuntWT.params_inferred_sigma(2:4),'o','LineWidth',2)
-
-xlim([0 225])
-ylim([0 1.2])
-xlabel('distance from the promoter')
-ylabel('\omega_{rp}')
-
-box on
-StandardFigure(gcf,gca)
-
-% save the plots
-saveas(gcf,[FigPath,filesep, 'distance_w_rp_0-225','.tif']);
-saveas(gcf,[FigPath,filesep, 'distance_w_rp_0-225','.pdf']);
+% distance = [170, 62, 128];
+% 
+% errorbar(distance, MCMC_6A1R_RuntWT.params_inferred(2:4), MCMC_6A1R_RuntWT.params_inferred_sigma(2:4),'o','LineWidth',2)
+% 
+% xlim([0 225])
+% ylim([0 1.2])
+% xlabel('distance from the promoter')
+% ylabel('\omega_{rp}')
+% 
+% box on
+% StandardFigure(gcf,gca)
+% 
+% % save the plots
+% saveas(gcf,[FigPath,filesep, 'distance_w_rp_0-225','.tif']);
+% saveas(gcf,[FigPath,filesep, 'distance_w_rp_0-225','.pdf']);
 %% save the result into mat files (MCMC_6A0R_RuntNulls)
 FilePath = FigPath;
 save([FilePath, filesep, 'MCMC_6A1R_RuntWT_params.mat'],'MCMC_6A1R_RuntWT')

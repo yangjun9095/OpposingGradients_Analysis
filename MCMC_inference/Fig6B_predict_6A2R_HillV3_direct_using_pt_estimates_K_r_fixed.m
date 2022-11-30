@@ -107,8 +107,8 @@ load([tempPath2, filesep, 'MCMC_6A1R_RuntWT_params.mat'])
 
 
 %% Predict the level for the Runt WT
-% Use a custom-function for the model : model_6A2R_HillV3_competition
-% [Kb, w_bp, p, R_max, Kr1, Kr2, w_br1, w_br2] = params
+% Use a custom-function for the model : model_6A2R_HillV3_direct
+% [Kb, w_bp, p, R_max, Kr1, Kr2, w_rp1, w_rp2] = params
 
 % r2-new : [011]
 % r2-close : [110]
@@ -134,6 +134,8 @@ data_pred.APdata = APaxis(APbin_start:APbin_end);
 
 % extract the Runt-dependent parameters
 K_r = MCMC_6A1R_RuntWT.params_inferred(1);
+K_r = K_r*0.1;
+
 w_rp1 = MCMC_6A1R_RuntWT.params_inferred(2); %[100]
 w_rp2 = MCMC_6A1R_RuntWT.params_inferred(3); %[001]
 w_rp3 = MCMC_6A1R_RuntWT.params_inferred(4); %[010]
@@ -149,7 +151,7 @@ chain = MCMC_6A1R_RuntWT.chain;
 n_burn= 10000; % number of burn-in steps in MCMC (50% of the total chain)
 
 % Predict the cases of 2 binding sites
-for i=1:3
+for i=2% 1:3
     
     construct = constructIndex(i);
     % extract the Bcd-parameters from 6AnR, Runt null datasets
@@ -202,15 +204,15 @@ for i=1:3
 
 %     data_pred = MCMCdata{index};
 %     TF = [data_pred.Bcd, data_pred.Run];
-    model_mcmc = @(params_6A2R) model_6A2R_HillModel_V3_direct([params_Bcd, params_6A2R],TF);
-
-    predout{i} = mcmcpred_V2(MCMCresults, temp_chains(n_burn+1:end,:), [], data_pred, model_mcmc);
+%     model_mcmc = @(params_6A2R) model_6A2R_HillModel_V3_direct([params_Bcd, params_6A2R],TF);
+% 
+%     predout{i} = mcmcpred_V2(MCMCresults, temp_chains(n_burn+1:end,:), [], data_pred, model_mcmc);
 
 end
 
 %% generate plots of Prediction versus Data (2 Run sites)
 
-for i=1:3
+for i=2%1:3
     construct = constructIndex(i);
     clf
    % initialize the variables
@@ -242,9 +244,9 @@ for i=1:3
     
     hold on
     % Runt nulls
-    errorbar(APaxis, Rate_null, Rate_null_SEM,'o','Color',ColorChoice(4,:),'LineWidth', 1)%'CapSize',0,'MarkerFaceColor',ColorChoice(4,:))
+    errorbar(APaxis, Rate_null, Rate_null_SEM,'o','Color',ColorChoice(4,:),'LineWidth', 1,'MarkerFaceColor',ColorChoice(4,:))
     % Runt WT
-    errorbar(APaxis, Rate, Rate_SEM,'o','Color',ColorChoice(1,:),'LineWidth', 1)%'CapSize',0,'MarkerFaceColor',ColorChoice(1,:))
+    errorbar(APaxis, Rate, Rate_SEM,'o','Color',ColorChoice(1,:),'LineWidth', 1,'MarkerFaceColor',ColorChoice(1,:))
     
 %     % Prediction
 %     % Runt null
@@ -253,19 +255,20 @@ for i=1:3
 %     yl = plimi{1}(3,:); % y-lower limit
 %     yu = plimi{1}(2*nn-3,:); % y-upper limit
 %     shadedErrorBar(APaxis(APbin_start:APbin_end), fit_nulls, [yu-transpose(fit_nulls);transpose(fit_nulls)-yl],'lineProps','-k')
-     plot(APaxis(APbin_start:APbin_end), fit_nulls(i,:),'Color',ColorChoice(4,:), 'LineWidth', 2)
+     plot(APaxis(APbin_start:APbin_end), fit_nulls(i,:), 'Color',ColorChoice(4,:), 'LineWidth', 2)
     
     % Runt WT
 %     plot(APaxis(APbin_start:APbin_end), Prediction(i,:),'Color',ColorChoice(1,:), 'LineWidth', 2)
     % MCMCpred
-    out = predout{index};
-    nn = (size(out.predlims{1}{1},1) + 1) / 2;
-    plimi = out.predlims{1}{1};
-    yl = plimi(3,:);
-    yu = plimi(2*nn-3,:);
-%     plot(APbins, output)
-    %plot(APaxis(APbin_start:APbin_end), output)
-    shadedErrorBar(APaxis(APbin_start:APbin_end), Prediction(i,:), [yu-transpose(Prediction(i,:));transpose(Prediction(i,:))-yl],'lineProps','-k')
+%     out = predout{i};
+%     nn = (size(out.predlims{1}{1},1) + 1) / 2;
+%     plimi = out.predlims{1}{1};
+%     yl = plimi(3,:);
+%     yu = plimi(2*nn-3,:);
+% %     plot(APbins, output)
+%     %plot(APaxis(APbin_start:APbin_end), output)
+%     shadedErrorBar(APaxis(APbin_start:APbin_end), Prediction(i,:), [yu-(Prediction(i,:));(Prediction(i,:))-yl],'lineProps','-k')
+    plot(APaxis(APbin_start:APbin_end), Prediction(i,:), 'Color',ColorChoice(1,:), 'LineWidth', 2)
 
     xlim([0.2 0.5])
     xticks([0.2 0.3 0.4 0.5])
@@ -279,8 +282,8 @@ for i=1:3
     box on
     StandardFigure(gcf,gca)
 %   %Save the plot
-%     saveas(gcf,[FigPath,filesep,'Prediction_HillV3_direct_95%CI_',constructNames{construct},'.tif']); 
-%     saveas(gcf,[FigPath,filesep,'Prediction_HillV3_direct_95%CI_',constructNames{construct},'.pdf']);
+    saveas(gcf,[FigPath,filesep,'Prediction_HillV3_direct_95%CI_',constructNames{construct},'.tif']); 
+    saveas(gcf,[FigPath,filesep,'Prediction_HillV3_direct_95%CI_',constructNames{construct},'.pdf']);
     pause
 end
 

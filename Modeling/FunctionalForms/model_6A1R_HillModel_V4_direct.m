@@ -1,5 +1,8 @@
 function [Rate] = model_6A1R_HillModel_V4_direct(params,TF) 
 
+%% Description
+% This Hill.V4 model assumes that the K_r is inifite (Runt is always bound
+% to its binding site(s)).
 %% Definition of parameters
 % [Kb, Kr, w_bp, w_rp, p, R_max] = params;
 Kb = params(1);

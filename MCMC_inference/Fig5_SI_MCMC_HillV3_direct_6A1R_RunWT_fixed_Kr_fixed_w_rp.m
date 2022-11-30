@@ -1,4 +1,4 @@
-function Fig5_Supple_MCMC_HillV3_direct_6A1R_RunWT_fixed_w_rp
+function Fig5_MCMC_HillV3_direct_6A1R_RunWT_fixedKr
 %% Description
 % This script is doing MCMC fit for 6A1R, Run WT data one by one, to
 % compare the Run-dependent parameters for the Hill.V3 model, to see what varies across
@@ -177,7 +177,7 @@ for i = 1:length(names)
 %             pri_mu = Kr0;
 %             pri_sig = 20;
         targetflag = 1;
-        localflag = 1;
+        localflag = 0;
     elseif i==2 % w_rp
 %             pri_mu = w_rp0;
 %             pri_sig = 10;
@@ -214,15 +214,15 @@ params_inferred = [];
 params_inferred_sigma = [];
 n_burn = 0.5*n_steps;
 
-% Ordering: K_r1, K_r2, K_r3, w_rp(shared)
-for k=1:4 %length(names)
+% Ordering: K_r (shared), w_rp (shared)
+for k=1:2 %length(names)
     params_inferred(1,k) = mean(chain(n_burn+1:end,k));
     params_inferred_sigma(1,k) = std(chain(n_burn+1:end,k));
 end
 
 %% Save the MCMC result into a structure for future usage
 
-MCMC_6A1R_RuntWT.name = '6A1R_K_r_local_w_rp_global';
+MCMC_6A1R_RuntWT.name = '6A1R_K_r_global_w_rp_global';
 MCMC_6A1R_RuntWT.results = results;
 MCMC_6A1R_RuntWT.chain = chain;
 MCMC_6A1R_RuntWT.s2chain = s2chain;
@@ -231,7 +231,8 @@ MCMC_6A1R_RuntWT.s2chain = s2chain;
 MCMC_6A1R_RuntWT.params_inferred = params_inferred;
 MCMC_6A1R_RuntWT.params_inferred_sigma = params_inferred_sigma;
 
-
+%% Load the MCMC result (if it was done earlier)
+load('S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\6A1R_Bcd_parms_fromRuntNulls_fixed_Kr_fixed_w_rp\MCMC_6A1R_RuntWT_params.mat')
 
 %% generate raw fits 
 APaxis = 0:0.025:1;
@@ -268,9 +269,10 @@ for index =1:3
     %fit_nulls = model_6A1R_HillModel_V3_direct(params_MCMC, TF_null);
 
     % MCMC estimation error (MCMCpred)
-    data_pred = MCMCdata{index};
-    TF = [data_pred.Bcd, data_pred.Run];
-    model_mcmc = @(Kr,w_rp) model_6A1R_HillModel_V3_direct([Kb,Kr,w_bp,w_rp,p,R_max],TF);
+%     data_pred = MCMCdata{index};
+%     TF = [data_pred.Bcd, data_pred.Run];
+    % params_Run = [K_r,w_rp];
+    model_mcmc = @(params_Run) model_6A1R_HillModel_V3_direct([Kb,params_Run(1),w_bp,params_Run(2),p,R_max],TF);
 
     % reconstruct the "results" matrix
     results = MCMC_6A1R_RuntWT.results;
@@ -288,19 +290,23 @@ for index =1:3
     MCMCresults.parind = [1;2];
     MCMCresults.local = [1,2];
     % order: K_r1, K_r2, K_r3, w_rp(shared)
-    MCMCresults.theta = [results.theta(index); results.theta(4)];
+    MCMCresults.theta = [results.theta(1); results.theta(2)];
     MCMCresults.nbatch = 1;
     n_burn= 10000; % number of burn-in steps in MCMC (50% of the total chain)
-    predout{index} = mcmcpred_V2(MCMCresults, chain(n_burn+1:end,[index,4]), [], data_pred, model_mcmc);
+    predout{index} = mcmcpred_V2(MCMCresults, chain(n_burn+1:end,[1,2]), [], data_pred, model_mcmc);
 end
 
 % chain(n_burn+1:end,:)
+
+%% Save the predout
+MCMC_6A1R_RuntWT.predout = predout;
+
 %% generate plots of raw fits and MCMC errors for Runt WT (6A1R)
 APbin_start = 9;
 APbin_end = 21;
 
 % FigPath
-FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\6A1R_Bcd_params_fromRuntNulls_fixed_w_rp';
+FigPath = 'S:\YangJoon\Dropbox\OpposingGradientsFigures\PipelineOutput\MCMC_HillV3\Direct\seq_MCMC_inference\6A1R_Bcd_parms_fromRuntNulls_fixed_Kr_fixed_w_rp';
 
 for index = 1:3
     % define the construct index (which is consistent with the way it's
@@ -313,7 +319,7 @@ for index = 1:3
     % their own inferences. (Bcd parameters from the Run null, and Run
     % parameters from the Run WT).
     params_Bcd = MCMC_6A0R_RuntNulls(construct).params_inferred;
-    params_Run = MCMC_6A1R_RuntWT.params_inferred([1,index+1]);
+    params_Run = MCMC_6A1R_RuntWT.params_inferred([1,2]);
     
     % extract individual parameters to construct the input parameter
     Kb = params_Bcd(1);
@@ -322,16 +328,10 @@ for index = 1:3
     R_max = params_Bcd(4);
     Kr = params_Run(1);
     w_rp = params_Run(2);
-    
-    % fit result (we will only show the actual fitting regime
-%     TF = [Bcd, Run];
-%     TF_null = [Bcd, RunNull];
-    TF = [MCMCdata{index}.Bcd, MCMCdata{index}.Run];
-    TF_null = [MCMCdata{index}.Bcd, zeros([length(MCMCdata{index}.Run),1])];
-    APbins = MCMCdata{index}.APdata;
-%     APbins = MCMCdata{index}.APdata;
 
-
+    % calculate the output with a set of parameters
+    % Note that this is now from 20-50% of the embryo length as we have
+    % used TF and TF_null defined earlier on.
     params_MCMC = [Kb, Kr, w_bp, w_rp, p, R_max];
     output = model_6A1R_HillModel_V3_direct(params_MCMC, TF);
     fit_nulls = model_6A1R_HillModel_V3_direct(params_MCMC, TF_null);
@@ -346,10 +346,10 @@ for index = 1:3
     
     clf
     hold on
-    errorbar(APaxis, Rate_null, Rate_null_SEM, 'o', 'Color', ColorChoice(4,:),'LineWidth', 1)    
-    errorbar(APaxis, Rate_WT, Rate_WT_SEM, 'o', 'Color', ColorChoice(1,:),'LineWidth', 1)
+    errorbar(APaxis, Rate_null, Rate_null_SEM, 'o', 'Color', ColorChoice(4,:),'LineWidth', 1,'MarkerFaceColor',ColorChoice(4,:))    
+    errorbar(APaxis, Rate_WT, Rate_WT_SEM, 'o', 'Color', ColorChoice(1,:),'LineWidth', 1,'MarkerFaceColor',ColorChoice(1,:))
     
-    plot(APbins, fit_nulls, 'Color', ColorChoice(4,:),'LineWidth', 2)
+    plot(APaxis(APbin_start:APbin_end), fit_nulls, 'Color', ColorChoice(4,:),'LineWidth', 2)
     % MCMCpred
     out = predout{index};
     nn = (size(out.predlims{1}{1},1) + 1) / 2;
@@ -358,13 +358,7 @@ for index = 1:3
     yu = plimi(2*nn-3,:);
 %     plot(APbins, output)
     %plot(APaxis(APbin_start:APbin_end), output)
-%     if output(1)>yu(1) & output(1)>yl(1)
-%         y_upper = transpose(output)-yu;
-%         y_lower = transpose(output)-yl;
-%     elseif output(1)<=yu(1) & output(1)>yl(1)
-%         y_upper = yu- transpose(output);
-%         y_lower = transpose(output)-yl;
-    shadedErrorBar(APbins, output, [abs(transpose(output)-yu);abs(transpose(output)-yl)],'lineProps','-k')%['color', ColorChoice(1,:),'LineWidth', 2])
+    shadedErrorBar(APaxis(APbin_start:APbin_end), output, [abs(transpose(output)-yu);abs(transpose(output)-yl)],'lineProps','-k')%['color', ColorChoice(1,:),'LineWidth', 2])
     xlim([0.2 0.5])
     xticks([0.2 0.3 0.4 0.5])
     ylim([0 400])
@@ -376,22 +370,21 @@ for index = 1:3
     box on
     legend('data(null)','data(WT)','Fit (null)', 'Fit (WT)')
     StandardFigure(gcf,gca)
-    pause
+    %pause
     saveas(gcf,[FigPath,filesep,'raw_fits_WT_null_95%CI_', constructNames{construct}  ,'.tif']); 
     saveas(gcf,[FigPath,filesep,'raw_fits_WT_null_95%CI_', constructNames{construct} ,'.pdf']); 
 end
 
 %% generate corner plots
 
-% chain = [K_r, w_rp1, w_rp2, w_rp3];
+% chain = [K_r, w_rp];
 
 chain = MCMC_6A1R_RuntWT.chain;
 n_burn = 0.5*n_steps;
-% arrange the parameters on the order of [001], [010], and [100]
-m = [log10(chain(n_burn+1:end,2)), log10(chain(n_burn+1:end,3)),  log10(chain(n_burn+1:end,1)), chain(n_burn+1:end,4)];
+m = [log10(chain(n_burn+1:end,1)), chain(n_burn+1:end,2)];
 corner = figure;
 %     names = {'K_{b}','\omega_{bp}','p','R_{max}'};
-names = {'log(K_{r1})','log(K_{r2})','log(K_{r3})','\omega_{rp}'};
+names = {'log(K_{r})','\omega_{rp}'};
 ecornerplot(m,'names',names);
 
 % saveas(gcf,[FigPath,filesep,'Corner_plot_K_r_logscale_', constructNames{construct} ,'.tif']); 
@@ -403,13 +396,13 @@ hold on
 
 params_inferred = MCMC_6A1R_RuntWT.params_inferred;
 params_inferred_std = MCMC_6A1R_RuntWT.params_inferred_sigma;
-errorbar(1:4, [log10(params_inferred([2,3,1])), params_inferred(4)], [log10(params_inferred_std([2,3,1])), params_inferred_std(4)], 'o','LineWidth',2)
+errorbar(1:2, [log10(params_inferred(1)), params_inferred(2)], [log10(params_inferred_std(1)), params_inferred_std(2)], 'o','LineWidth',2)
 
 
-xlim([0 5])
-xticks([1,2,3,4])
-xticklabels({'log(K_{r1})','log(K_{r2})','log(K_{r3})','\omega_{rp}'})
-ylim([0 6])
+xlim([0 3])
+xticks([1,2])
+xticklabels({'log(K_{r})','\omega_{rp}'})
+ylim([0 3])
 % yticks([0 20 40 60 80 100])
 xlabel('parameters')
 ylabel('inferred values')
@@ -419,10 +412,10 @@ box on
 StandardFigure(gcf,gca)
 
 % save the plots
-saveas(gcf,[FigPath,filesep, 'MCMCfit_6A1R_RuntWT_point_estimate_BcdParams_fixed_w_rp','.tif']);
-saveas(gcf,[FigPath,filesep, 'MCMCfit_6A1R_RuntWT_point_estimate_BcdParams_fixed_w_rp','.pdf']);
+saveas(gcf,[FigPath,filesep, 'MCMCfit_6A1R_RuntWT_point_estimate_BcdParams_fixed_Kr_fixed_w_rp','.tif']);
+saveas(gcf,[FigPath,filesep, 'MCMCfit_6A1R_RuntWT_point_estimate_BcdParams_fixed_Kr_fixed_w_rp','.pdf']);
 
-% %% generate the plot of inferred parameters (log scale)
+%% generate the plot of inferred parameters (log scale)
 % hold on
 % 
 % params_inferred = MCMC_6A1R_RuntWT.params_inferred;
